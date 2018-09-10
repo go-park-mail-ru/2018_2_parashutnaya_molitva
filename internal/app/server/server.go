@@ -23,7 +23,7 @@ func StartApp(port int, errChan chan<- error) {
 
 	log.Println(port)
 	router := routes.NewRouter(http.DefaultServeMux)
-	router.HandleFunc("/api/signin", controllers.SignIn)
-	router.HandleFunc("/api/signup", controllers.SignUp)
+	router.HandleFunc("/api/signin", controllers.SignIn).Method("GET")
+	router.HandleFunc("/api/signup", controllers.SignUp).Method("POST")
 	errChan <- http.ListenAndServe(stringPort, router)
 }
