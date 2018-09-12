@@ -2,6 +2,6 @@ package auth
 
 import "errors"
 
-func StartAuth(errChan chan<- error) {
-	errChan <- errors.New("Auth wasn't written. Nikita Forever")
+func StartAuth() error {
+	return errors.New("No code")
 }
