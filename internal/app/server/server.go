@@ -5,9 +5,8 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-
-	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/controllers"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/routes"
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/controllers"
 )
 
 var (

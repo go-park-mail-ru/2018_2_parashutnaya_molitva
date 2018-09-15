@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"log"
-
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/app/server"
 )
 
