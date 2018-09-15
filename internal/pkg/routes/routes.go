@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"errors"
 	"fmt"
+	"github.com/pkg/errors"
 	"log"
 	"net/http"
 )
