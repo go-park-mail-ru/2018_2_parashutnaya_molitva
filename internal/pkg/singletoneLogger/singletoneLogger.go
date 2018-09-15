@@ -12,11 +12,11 @@ import (
 
 var (
 	out      = os.Stdout // writer для логов
-	buffSize = 100
-	red      = color.New(color.FgRed).SprintfFunc()
-	green    = color.New(color.FgGreen).SprintFunc()
-	instance *singletonLogger
-	once     sync.Once
+	buffSize = 100 // максимальный размер каналов
+	red      = color.New(color.FgRed).SprintfFunc() // функция окрашивающая цвет для текста в консоли красным
+	green    = color.New(color.FgGreen).SprintFunc() // функция окрашивающая цвет для текста в консоли зеленым
+	instance *singletonLogger // инстанс синглтона
+	once     sync.Once // Магия для реализации singleton
 )
 
 type singletonLogger struct {
