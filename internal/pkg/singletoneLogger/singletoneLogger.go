@@ -16,6 +16,16 @@ import (
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/config"
 )
 
+func init() {
+	colorFunc = map[string]func(s string, a ...interface{}) string{
+		"red":   color.New(color.FgRed).SprintfFunc(),
+		"green": color.New(color.FgGreen).SprintfFunc(),
+	}
+	once.Do(func() {
+		instance = initLogger(configInstance)
+	})
+}
+
 const configFilename = "logger.json"
 
 // для чтения из конфига. Имя переменной совпадает с именем в конфиге
@@ -142,23 +152,10 @@ func initLogger(cfg config.Config) *singletonLogger {
 
 // LogError - пишет в writer отдельным цветом
 func LogError(err error) {
-	once.Do(func() {
-		instance = initLogger(configInstance)
-	})
 	instance.errorChan <- err
 }
 
 // LogMessage - пишет в writer отдельным цветом
 func LogMessage(message string) {
-	once.Do(func() {
-		instance = initLogger(configInstance)
-	})
 	instance.messageChan <- message
-}
-
-func init() {
-	colorFunc = map[string]func(s string, a ...interface{}) string{
-		"red":   color.New(color.FgRed).SprintfFunc(),
-		"green": color.New(color.FgGreen).SprintfFunc(),
-	}
 }
