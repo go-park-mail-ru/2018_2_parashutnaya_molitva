@@ -2,7 +2,7 @@ package singletoneLogger
 
 import (
 	"bufio"
-	"errors"
+	"github.com/pkg/errors"
 	"io"
 	"log"
 	"os"
