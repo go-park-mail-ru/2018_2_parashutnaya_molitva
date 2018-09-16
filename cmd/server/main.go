@@ -2,9 +2,8 @@ package main
 
 import (
 	"flag"
-	"log"
-
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/app/server"
+	"log"
 )
 
 var (
@@ -15,7 +14,6 @@ func main() {
 	flag.Parse()
 	err := server.StartApp(*portFlag)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("%+v\n", err)
 	}
-
 }
