@@ -97,11 +97,11 @@ func newLoggerInfo() *loggerInfo {
 }
 
 var (
-	colorFunc        map[string]func(s string, a ...interface{}) string
+	colorFunc        map[string]func(s string, a ...interface{}) string // мап для определения функции по имени
 	configInstance   = &config.JsonConfig{}
-	loggerInfoStruct = newLoggerInfo()
-	instance         *singletonLogger // инстанс синглтона
-	once             sync.Once        // Магия для реализации singleton
+	loggerInfoStruct = newLoggerInfo() // структура со всеми данными из логгера
+	instance         *singletonLogger  // инстанс синглтона
+	once             sync.Once         // Магия для реализации singleton
 )
 
 type singletonLogger struct {
