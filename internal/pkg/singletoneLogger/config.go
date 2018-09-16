@@ -12,6 +12,13 @@ import (
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/config"
 )
 
+func init() {
+	colorFunc = map[string]func(s string, a ...interface{}) string{
+		"red":   color.New(color.FgRed).SprintfFunc(),
+		"green": color.New(color.FgGreen).SprintfFunc(),
+	}
+}
+
 const configFilename = "logger.json"
 
 // для чтения из конфига. Имя переменной совпадает с именем в конфиге
@@ -33,6 +40,7 @@ type loggerInfo struct {
 
 var (
 	errIncorrectValue = errors.New("Incorrect value")
+	colorFunc         map[string]func(s string, a ...interface{}) string // мап для определения функции по имени
 )
 
 func (l *loggerInfo) readFromConfig(filename string, conf config.Config) error {
