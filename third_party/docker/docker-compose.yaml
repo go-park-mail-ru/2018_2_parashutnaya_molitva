@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+  auth-mongo:
+    container_name: docker-auth-mongo
+    restart: always
+    build:
+      context: .
+      dockerfile: ./Dockerfile.mongo
+    volumes:
+    - ./db-auth:/data/db
+    ports:
+    - '27017:27017'
+  main-mongo:
+    container_name: docker-main-mongo
+    restart: always
+    build:
+      context: .
+      dockerfile: ./Dockerfile.mongo
+    volumes:
+    - ./db-main:/data/db
+    ports:
+    - '27018:27017'
+
+
+#    networks:
+#      static-network:
+#        ipv4_address: 172.20.128.2
+#networks:
+#  static-network:
+#    ipam:
+#      config:
+#      - subnet: 172.20.0.0/16
