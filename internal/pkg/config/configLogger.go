@@ -2,13 +2,13 @@ package config
 
 import (
 	"bufio"
-	"errors"
 	"io"
 	"log"
 	"os"
 	"strconv"
 
 	"github.com/fatih/color"
+	"github.com/pkg/errors"
 )
 
 func init() {
