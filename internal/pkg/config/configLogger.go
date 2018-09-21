@@ -1,15 +1,14 @@
-package singletoneLogger
+package config
 
 import (
 	"bufio"
-	"errors"
 	"io"
 	"log"
 	"os"
 	"strconv"
 
 	"github.com/fatih/color"
-	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/config"
+	"github.com/pkg/errors"
 )
 
 func init() {
@@ -31,11 +30,12 @@ type loggerConfigStruct struct {
 
 }
 
-type loggerInfo struct {
-	out      io.Writer                               // writer для логов
-	buffSize int                                     // максимальный размер каналов
-	errColor func(s string, a ...interface{}) string // функция окрашивающая цвет для ошибок
-	msgColor func(s string, a ...interface{}) string // функция окрашивающая цвет для сообщений
+// LoggerConfig - структура, которая предоставляет данные для инициализации логгера.
+type LoggerConfig struct {
+	Out      io.Writer                               // writer для логов
+	BuffSize int                                     // максимальный размер каналов
+	ErrColor func(s string, a ...interface{}) string // функция окрашивающая цвет для ошибок
+	MsgColor func(s string, a ...interface{}) string // функция окрашивающая цвет для сообщений
 }
 
 var (
@@ -43,7 +43,13 @@ var (
 	colorFunc         map[string]func(s string, a ...interface{}) string // мап для определения функции по имени
 )
 
-func (l *loggerInfo) readFromConfig(filename string, conf config.Config) error {
+// ReadConfig - дефолтный Reader, который читает JsonConfig из logger.json
+func (l *LoggerConfig) ReadConfig() error {
+	return l.ReadConfigSpec(configFilename, jsonConfig)
+}
+
+// ReadConfigSpec - чтение конфига из определенного файла
+func (l *LoggerConfig) ReadConfigSpec(filename string, conf Config) error {
 	var dst loggerConfigStruct
 	err := conf.Read(filename, &dst)
 	if err != nil {
@@ -52,15 +58,15 @@ func (l *loggerInfo) readFromConfig(filename string, conf config.Config) error {
 
 	switch dst.OutDist {
 	case "file":
-		// TODO: Где-то закрывать файл
+		// Так как logger синглтон, то можно не закрывать файл.
 		f, err := os.Create(dst.Filename)
 		if err != nil {
 			return err
 		}
-		l.out = bufio.NewWriter(f)
+		l.Out = bufio.NewWriter(f)
 
 	case "stdout":
-		l.out = os.Stdout
+		l.Out = os.Stdout
 	default:
 		// логируем в stdout, если логгер не создан еще
 		log.Println(errIncorrectValue.Error(), "outDst:", dst.OutDist)
@@ -70,32 +76,32 @@ func (l *loggerInfo) readFromConfig(filename string, conf config.Config) error {
 	if !ok {
 		log.Println(errIncorrectValue.Error(), "colorError:", dst.ColorError)
 	} else {
-		l.errColor = fun
+		l.ErrColor = fun
 	}
 
 	fun, ok = colorFunc[dst.ColorMsg]
 	if !ok {
 		log.Println(errIncorrectValue.Error(), "colorError:", dst.ColorError)
 	} else {
-		l.msgColor = fun
+		l.MsgColor = fun
 	}
 
 	val, err := strconv.Atoi(dst.BuffSize)
 	if err != nil {
 		log.Println(errIncorrectValue.Error(), "bufSize:", dst.BuffSize)
 	} else {
-		l.buffSize = val
+		l.BuffSize = val
 	}
 
 	return nil
 }
 
-// создает loggerInfo с значениями по умолчанию
-func newLoggerInfo() *loggerInfo {
-	return &loggerInfo{
-		out:      os.Stdout,
-		buffSize: 100,
-		errColor: color.New(color.FgRed).SprintfFunc(),
-		msgColor: color.New(color.FgGreen).SprintfFunc(),
+// NewLoggerConfig - создает LoggerConfig с значениями по умолчанию
+func NewLoggerConfig() *LoggerConfig {
+	return &LoggerConfig{
+		Out:      os.Stdout,
+		BuffSize: 100,
+		ErrColor: color.New(color.FgRed).SprintfFunc(),
+		MsgColor: color.New(color.FgGreen).SprintfFunc(),
 	}
 }
