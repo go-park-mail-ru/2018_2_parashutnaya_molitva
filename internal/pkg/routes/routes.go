@@ -3,8 +3,8 @@ package routes
 import (
 	"fmt"
 	"github.com/pkg/errors"
-	"log"
 	"net/http"
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 )
 
 type Route struct {
@@ -80,8 +80,8 @@ func (p *PathMatcher) match(req *http.Request) (bool, error) {
 	if req.URL.String() == p.Path {
 		return true, nil
 	}
-	log.Println(req.URL.String(), p.Path)
-	log.Println(errPageNotFound.Error())
+	singletoneLogger.LogMessage(req.URL.String() + p.Path)
+	singletoneLogger.LogError(errPageNotFound)
 	return false, nil
 }
 
@@ -116,7 +116,7 @@ func (r *Router) Match(req *http.Request) (bool, error) {
 
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if r.routes == nil || r.handler == nil {
-		log.Printf(errRouterNotCreated.Error())
+		singletoneLogger.LogError(errRouterNotCreated)
 		return
 	}
 
@@ -137,7 +137,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 func (r *Router) HandleFunc(path string, handlerFunc http.HandlerFunc) *Route {
 	if r.routes == nil {
-		log.Printf(errRouterNotCreated.Error())
+		singletoneLogger.LogError(errRouterNotCreated)
 		return nil
 	}
 	route := &Route{
@@ -145,6 +145,6 @@ func (r *Router) HandleFunc(path string, handlerFunc http.HandlerFunc) *Route {
 		PathName: path,
 	}
 	r.routes = append(r.routes, route)
-	log.Printf("%#v", r.routes)
+	singletoneLogger.LogMessage("Added route: " + route.PathName)
 	return route.Path(path)
 }

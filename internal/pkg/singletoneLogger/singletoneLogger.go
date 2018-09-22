@@ -4,10 +4,9 @@
 package singletoneLogger
 
 import (
+	"github.com/pkg/errors"
 	"log"
 	"sync"
-
-	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/config"
 )
 
 func init() {
@@ -17,9 +16,9 @@ func init() {
 }
 
 var (
-	configInstance = config.NewLoggerConfig()
-	instance       *singletonLogger // инстанс синглтона
-	once           sync.Once        // Магия для реализации singleton
+	data     = NewLoggerData()
+	instance *singletonLogger // инстанс синглтона
+	once     sync.Once        // Магия для реализации singleton
 )
 
 type singletonLogger struct {
@@ -34,24 +33,25 @@ func (singletonLogger *singletonLogger) startLogging() {
 	for {
 		select {
 		case err = <-singletonLogger.errorChan:
-			singletonLogger.logger.Println(configInstance.ErrColor("%+v\n", err))
+			singletonLogger.logger.Println(data.ErrColor("%+v\n", err))
 		case message = <-singletonLogger.messageChan:
-			singletonLogger.logger.Println(configInstance.MsgColor(message))
+			singletonLogger.logger.Println(data.MsgColor(message))
 		}
 	}
 }
 
 func initLogger() *singletonLogger {
-	err := configInstance.ReadConfig()
+	err := data.ReadFromConfig()
 
 	if err != nil {
-		log.Println("While reading config", err.Error()) // если не удалось, то остаются значения по умолчанию
+		err = errors.Wrap(err, "While reading config")
+		log.Printf("%+s", err)
 	}
 
-	errorChan := make(chan error, configInstance.BuffSize)
-	messageChan := make(chan string, configInstance.BuffSize)
+	errorChan := make(chan error, data.BuffSize)
+	messageChan := make(chan string, data.BuffSize)
 	errorLogger := singletonLogger{
-		log.New(configInstance.Out, "", log.LstdFlags),
+		log.New(data.Out, "", log.LstdFlags),
 		errorChan,
 		messageChan}
 	go errorLogger.startLogging()
