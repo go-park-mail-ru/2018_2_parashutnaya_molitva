@@ -15,6 +15,8 @@ type Config interface {
 
 const configsDir = "configs"
 
+var jsonConfig = new(JsonConfig)
+
 // формирует полный путь до конфига
 func normalizeFilepath(filename string) (string, error) {
 	binPath, err := filepath.Abs(filepath.Dir(os.Args[0]))

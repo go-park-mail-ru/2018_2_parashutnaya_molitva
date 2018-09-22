@@ -12,15 +12,14 @@ import (
 
 func init() {
 	once.Do(func() {
-		instance = initLogger(configInstance)
+		instance = initLogger()
 	})
 }
 
 var (
-	configInstance   = &config.JsonConfig{}
-	loggerInfoStruct = newLoggerInfo() // структура со всеми данными из логгера
-	instance         *singletonLogger  // инстанс синглтона
-	once             sync.Once         // Магия для реализации singleton
+	configInstance = config.NewLoggerConfig()
+	instance       *singletonLogger // инстанс синглтона
+	once           sync.Once        // Магия для реализации singleton
 )
 
 type singletonLogger struct {
@@ -35,24 +34,24 @@ func (singletonLogger *singletonLogger) startLogging() {
 	for {
 		select {
 		case err = <-singletonLogger.errorChan:
-			singletonLogger.logger.Println(loggerInfoStruct.errColor("%+v\n", err))
+			singletonLogger.logger.Println(configInstance.ErrColor("%+v\n", err))
 		case message = <-singletonLogger.messageChan:
-			singletonLogger.logger.Println(loggerInfoStruct.msgColor(message))
+			singletonLogger.logger.Println(configInstance.MsgColor(message))
 		}
 	}
 }
 
-func initLogger(cfg config.Config) *singletonLogger {
-	err := loggerInfoStruct.readFromConfig(configFilename, cfg)
+func initLogger() *singletonLogger {
+	err := configInstance.ReadConfig()
 
 	if err != nil {
 		log.Println("While reading config", err.Error()) // если не удалось, то остаются значения по умолчанию
 	}
 
-	errorChan := make(chan error, loggerInfoStruct.buffSize)
-	messageChan := make(chan string, loggerInfoStruct.buffSize)
+	errorChan := make(chan error, configInstance.BuffSize)
+	messageChan := make(chan string, configInstance.BuffSize)
 	errorLogger := singletonLogger{
-		log.New(loggerInfoStruct.out, "", log.LstdFlags),
+		log.New(configInstance.Out, "", log.LstdFlags),
 		errorChan,
 		messageChan}
 	go errorLogger.startLogging()
