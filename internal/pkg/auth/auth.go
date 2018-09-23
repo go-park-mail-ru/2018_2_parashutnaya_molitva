@@ -34,7 +34,6 @@ func CheckSession(guid string, token string) (bool, error) {
 	}
 }
 
-
 func DeleteSession(guid string) error {
 	err := reset(guid)
 	if err != nil {

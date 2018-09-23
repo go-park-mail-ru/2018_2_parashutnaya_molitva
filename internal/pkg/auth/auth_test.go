@@ -1,21 +1,22 @@
 package auth
 
 import (
-	"testing"
-	"gopkg.in/mgo.v2/bson"
 	"github.com/pkg/errors"
+	"gopkg.in/mgo.v2/bson"
+	"testing"
 )
+
 type TestUserStruct struct {
-	Guid string
+	Guid  string
 	Token string
 }
 
 var TestUserToStay = TestUserStruct{
-	Guid:   bson.NewObjectId().Hex(),
+	Guid: bson.NewObjectId().Hex(),
 }
 
 var TestUserToDelete = TestUserStruct{
-	Guid:bson.NewObjectId().Hex(),
+	Guid: bson.NewObjectId().Hex(),
 }
 
 func TestSetSession(t *testing.T) {
@@ -56,11 +57,8 @@ func TestCheckSessionWithWrongToken(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	status, err := CheckSession(TestUserToStay.Guid,  randomToken)
+	status, err := CheckSession(TestUserToStay.Guid, randomToken)
 	if status != false || err == nil {
 		t.Error(errors.Wrap(err, "Sees invalid session as valid"))
 	}
 }
-
-
-

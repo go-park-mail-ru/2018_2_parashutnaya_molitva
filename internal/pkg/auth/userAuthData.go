@@ -90,9 +90,7 @@ func check(guid string, token string) (Status, error) {
 	if user.Token != token {
 		return statusBadToken, nil
 	}
-	t1 := user.ExpireDate.String()
-	t2 := time.Now().String()
-	fmt.Println(t1,t2)
+
 	if user.ExpireDate.Before(time.Now()) {
 		return statusExpired, nil
 	}
@@ -100,19 +98,19 @@ func check(guid string, token string) (Status, error) {
 	return statusOk, nil
 }
 
-func reset(guid string) (error) {
+func reset(guid string) error {
 	token, err := generateToken()
 	if err != nil {
 		return nil
 	}
 	_, err = database.collection.UpsertId(bson.ObjectIdHex(guid),
 		bson.M{
-			"token": token,
+			"token":       token,
 			"expire_date": time.Now(),
 		})
 	return err
 }
 
-func remove(guid string) (error) {
+func remove(guid string) error {
 	return database.collection.RemoveId(bson.ObjectIdHex(guid))
 }
