@@ -29,6 +29,10 @@ type authDatabase struct {
 var database authDatabase
 
 func init() {
+	err := jsonConfigReader.Read(configFilename, &authConfig)
+	if err != nil {
+		singletoneLogger.LogError(err)
+	}
 	sess, err := mgo.Dial(fmt.Sprintf("mongodb://%s:%s", authConfig.MongoHost, authConfig.MongoPort))
 	if err != nil {
 		singletoneLogger.LogError(errors.WithStack(err))
