@@ -16,13 +16,6 @@ var (
 	once             sync.Once     // Магия для реализации singleton
 )
 
-func init() {
-	err := jsonConfigReader.Read(configFilename, &dbConfig)
-	if err != nil {
-		singletoneLogger.LogError(err)
-	}
-}
-
 func getInstance() *mgo.Database {
 	once.Do(func() {
 		sess, err := mgo.Dial(fmt.Sprintf("mongodb://%s:%s", dbConfig.MongoHost, dbConfig.MongoPort))
