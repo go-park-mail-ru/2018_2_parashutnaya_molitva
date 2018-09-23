@@ -21,7 +21,7 @@ func StartApp(port int) error {
 
 	stringPort := ":" + strconv.Itoa(port)
 
-	singletoneLogger.LogMessage(stringPort)
+	singletoneLogger.LogMessage("Server starting at " + stringPort)
 	router := routes.NewRouter(http.DefaultServeMux)
 	signin := middlewareChain(controllers.SignIn, auth)
 	router.HandleFunc("/api/signin", signin).Method("GET")

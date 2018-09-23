@@ -1,4 +1,4 @@
-package config
+package singletoneLogger
 
 import (
 	"bufio"
@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/fatih/color"
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/config"
 	"github.com/pkg/errors"
 )
 
@@ -18,10 +19,12 @@ func init() {
 	}
 }
 
+var jsonConfigReader = config.JsonConfigReader{}
+
 const configFilename = "logger.json"
 
 // для чтения из конфига. Имя переменной совпадает с именем в конфиге
-type loggerConfigStruct struct {
+type loggerConfig struct {
 	OutDist    string // возможные варианты: file, stdout
 	Filename   string // название файла, если указан file
 	ColorError string // цвет ошибки
@@ -30,8 +33,8 @@ type loggerConfigStruct struct {
 
 }
 
-// LoggerConfig - структура, которая предоставляет данные для инициализации логгера.
-type LoggerConfig struct {
+// loggerData - структура, которая предоставляет данные для инициализации логгера.
+type loggerData struct {
 	Out      io.Writer                               // writer для логов
 	BuffSize int                                     // максимальный размер каналов
 	ErrColor func(s string, a ...interface{}) string // функция окрашивающая цвет для ошибок
@@ -43,15 +46,15 @@ var (
 	colorFunc         map[string]func(s string, a ...interface{}) string // мап для определения функции по имени
 )
 
-// ReadConfig - дефолтный Reader, который читает JsonConfig из logger.json
-func (l *LoggerConfig) ReadConfig() error {
-	return l.ReadConfigSpec(configFilename, jsonConfig)
+// ReadFromConfig - дефолтный Reader, который читает JsonConfigReader из logger.json
+func (l *loggerData) ReadFromConfig() error {
+	return l.ReadConfigSpec(configFilename, jsonConfigReader)
 }
 
 // ReadConfigSpec - чтение конфига из определенного файла
-func (l *LoggerConfig) ReadConfigSpec(filename string, conf Config) error {
-	var dst loggerConfigStruct
-	err := conf.Read(filename, &dst)
+func (l *loggerData) ReadConfigSpec(filename string, configReader config.ConfigReader) error {
+	var dst loggerConfig
+	err := configReader.Read(filename, &dst)
 	if err != nil {
 		return err
 	}
@@ -96,9 +99,9 @@ func (l *LoggerConfig) ReadConfigSpec(filename string, conf Config) error {
 	return nil
 }
 
-// NewLoggerConfig - создает LoggerConfig с значениями по умолчанию
-func NewLoggerConfig() *LoggerConfig {
-	return &LoggerConfig{
+// NewLoggerData - создает loggerData с значениями по умолчанию
+func NewLoggerData() *loggerData {
+	return &loggerData{
 		Out:      os.Stdout,
 		BuffSize: 100,
 		ErrColor: color.New(color.FgRed).SprintfFunc(),
