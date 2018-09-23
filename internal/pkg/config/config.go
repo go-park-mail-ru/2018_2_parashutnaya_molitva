@@ -2,6 +2,7 @@ package config
 
 import (
 	"path/filepath"
+	"os"
 )
 
 const configsDir = "configs"
@@ -12,10 +13,7 @@ type ConfigReader interface {
 
 // формирует полный путь до конфига
 func normalizeFilepath(filename string) (string, error) {
-	binPath, err := filepath.Abs(".")
-	if err != nil {
-		return "", err
-	}
-	fullPath := filepath.Join(binPath, configsDir, filename)
+	projectPath := "/src/github.com/go-park-mail-ru/2018_2_parashutnaya_molitva"
+	fullPath := filepath.Join(os.Getenv("GOPATH"),projectPath, configsDir, filename)
 	return fullPath, nil
 }

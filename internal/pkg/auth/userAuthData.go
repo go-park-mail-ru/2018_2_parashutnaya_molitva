@@ -90,7 +90,10 @@ func check(guid string, token string) (Status, error) {
 	if user.Token != token {
 		return statusBadToken, nil
 	}
-	if user.ExpireDate.After(time.Now()) {
+	t1 := user.ExpireDate.String()
+	t2 := time.Now().String()
+	fmt.Println(t1,t2)
+	if user.ExpireDate.Before(time.Now()) {
 		return statusExpired, nil
 	}
 

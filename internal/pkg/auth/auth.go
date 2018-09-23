@@ -9,8 +9,9 @@ func SetSession(guid string) (string, error) {
 	token, err := updateOrAddIfNotExist(guid)
 	if err != nil {
 		singletoneLogger.LogError(err)
+		return token, errors.New("Couldn't set the session")
 	}
-	return token, errors.New("Couldn't set the session")
+	return token, nil
 }
 
 func CheckSession(guid string, token string) (bool, error) {
@@ -38,6 +39,7 @@ func DeleteSession(guid string) error {
 	err := reset(guid)
 	if err != nil {
 		singletoneLogger.LogError(err)
+		return errors.New("Couldn't delete session")
 	}
-	return errors.New("Couldn't delete session")
+	return nil
 }

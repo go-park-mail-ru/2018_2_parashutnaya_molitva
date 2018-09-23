@@ -24,7 +24,7 @@ func TestSetSession(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	TestUserToDelete.Token, err = SetSession(TestUserToStay.Guid)
+	TestUserToDelete.Token, err = SetSession(TestUserToDelete.Guid)
 	if err != nil {
 		t.Error(err)
 	}
@@ -39,14 +39,14 @@ func TestDeleteSession(t *testing.T) {
 
 func TestCheckDeletedSession(t *testing.T) {
 	status, err := CheckSession(TestUserToDelete.Guid, TestUserToDelete.Token)
-	if status != false || err == nil {
+	if (status != false) || (err == nil) {
 		t.Error(errors.Wrap(err, "Sees deleted session as Valid"))
 	}
 }
 
 func TestCheckValidSession(t *testing.T) {
 	status, err := CheckSession(TestUserToStay.Guid, TestUserToStay.Token)
-	if status != true || err != nil {
+	if (status != true) || (err != nil) {
 		t.Error(errors.Wrap(err, "Sees valid session as invalid"))
 	}
 }
