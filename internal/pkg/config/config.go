@@ -16,6 +16,6 @@ func normalizeFilepath(filename string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	fullPath := filepath.Join(binPath,configsDir, filename)
+	fullPath := filepath.Join(binPath, configsDir, filename)
 	return fullPath, nil
 }

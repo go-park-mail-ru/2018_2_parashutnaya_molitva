@@ -2,9 +2,9 @@ package routes
 
 import (
 	"fmt"
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"github.com/pkg/errors"
 	"net/http"
-	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 )
 
 type Route struct {

@@ -9,17 +9,19 @@ const (
 	configFilename = "auth.json"
 )
 
-var (
-	jsonConfigReader = config.JsonConfigReader{}
-)
-
 type authConfigData struct {
-	MongoHost string
-	MongoPort string
+	MongoHost       string
+	MongoPort       string
+	TokenExpireTime int
+	TokenLength     int
 }
 
+var (
+	jsonConfigReader = config.JsonConfigReader{}
+	authConfig       authConfigData
+)
+
 func init() {
-	var authConfig authConfigData
 	err := jsonConfigReader.Read(configFilename, &authConfig)
 	if err != nil {
 		singletoneLogger.LogError(err)
