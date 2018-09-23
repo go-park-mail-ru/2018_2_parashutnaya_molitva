@@ -9,14 +9,12 @@ import (
 
 type middleware func(h http.HandlerFunc) http.HandlerFunc
 
-func auth() middleware {
-	return func(h http.HandlerFunc) http.HandlerFunc {
-		return func(res http.ResponseWriter, req *http.Request) {
-			singletoneLogger.LogMessage("Auth middleware")
-			ctx := context.WithValue(req.Context(), "isAuth", true)
+func auth(h http.HandlerFunc) http.HandlerFunc {
+	return func(res http.ResponseWriter, req *http.Request) {
+		singletoneLogger.LogMessage("Auth middleware")
+		ctx := context.WithValue(req.Context(), "isAuth", true)
 
-			h.ServeHTTP(res, req.WithContext(ctx))
-		}
+		h.ServeHTTP(res, req.WithContext(ctx))
 	}
 }
 

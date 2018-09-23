@@ -23,7 +23,7 @@ func StartApp(port int) error {
 
 	singletoneLogger.LogMessage(stringPort)
 	router := routes.NewRouter(http.DefaultServeMux)
-	signin := middlewareChain(controllers.SignIn, auth())
+	signin := middlewareChain(controllers.SignIn, auth)
 	router.HandleFunc("/api/signin", signin).Method("GET")
 	router.HandleFunc("/api/signup", controllers.SignUp).Method("POST")
 	return http.ListenAndServe(stringPort, router)
