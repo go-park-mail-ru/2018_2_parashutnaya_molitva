@@ -1,12 +1,13 @@
 package server
 
 import (
-	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/controllers"
-	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/routes"
-	"github.com/pkg/errors"
 	"net/http"
 	"strconv"
+
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/controllers"
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/routes"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
+	"github.com/pkg/errors"
 )
 
 var (
@@ -22,7 +23,8 @@ func StartApp(port int) error {
 
 	singletoneLogger.LogMessage(stringPort)
 	router := routes.NewRouter(http.DefaultServeMux)
-	router.HandleFunc("/api/signin", controllers.SignIn).Method("GET")
+	signin := middlewareChain(controllers.SignIn, auth())
+	router.HandleFunc("/api/signin", signin).Method("GET")
 	router.HandleFunc("/api/signup", controllers.SignUp).Method("POST")
 	return http.ListenAndServe(stringPort, router)
 }
