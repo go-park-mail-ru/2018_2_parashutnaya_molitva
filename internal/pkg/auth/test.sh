@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd
+
+
 
 go test -c
-cp *.test $PWD
