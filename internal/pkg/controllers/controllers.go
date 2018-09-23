@@ -1,9 +1,18 @@
 package controllers
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
+)
 
 // api/signin
 func SignIn(w http.ResponseWriter, r *http.Request) {
+	b := r.Context().Value("isAuth")
+
+	if val, _ := b.(bool); val {
+		singletoneLogger.LogMessage("isAuth")
+	}
 	w.Write([]byte("Signin Page"))
 }
 
