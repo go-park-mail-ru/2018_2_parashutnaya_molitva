@@ -14,23 +14,21 @@ func SetSession(guid string) (string, error) {
 	return token, nil
 }
 
-func CheckSession(guid string, token string) (bool, error) {
-	status, err := check(guid, token)
+func CheckSession(token string) (bool, string, error) {
+	status, guid, err := check(token)
 	if err != nil {
 		singletoneLogger.LogError(err)
 
 	}
 	switch status {
-	case statusNotExist:
-		return false, errors.New("User not exist")
 	case statusBadToken:
-		return false, errors.New("Bad token")
+		return false, "", errors.New("Bad token")
 	case statusExpired:
-		return false, errors.New("Session expired")
+		return false, "", errors.New("Session expired")
 	case statusOk:
-		return true, nil
+		return true, guid, nil
 	default:
-		return false, errors.New("Couldn't check the session")
+		return false, "", errors.New("Couldn't check the session")
 	}
 }
 
