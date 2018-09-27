@@ -136,6 +136,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *Router) HandleFunc(path string, handlerFunc http.HandlerFunc) *Route {
+
 	if r.routes == nil {
 		singletoneLogger.LogError(errRouterNotCreated)
 		return nil
@@ -148,3 +149,4 @@ func (r *Router) HandleFunc(path string, handlerFunc http.HandlerFunc) *Route {
 	singletoneLogger.LogMessage("Added route: " + route.PathName)
 	return route.Path(path)
 }
+

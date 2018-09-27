@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/randomGenerator"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"github.com/pkg/errors"
 )
@@ -39,4 +40,8 @@ func DeleteSession(guid string) error {
 		return errors.New("Couldn't delete session")
 	}
 	return nil
+}
+
+func generateToken() (string, error) {
+	return randomGenerator.RandomString(authConfig.TokenLength)
 }

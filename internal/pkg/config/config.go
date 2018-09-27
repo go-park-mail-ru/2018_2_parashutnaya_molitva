@@ -11,9 +11,14 @@ type ConfigReader interface {
 	Read(filename string, structure interface{}) error
 }
 
-// формирует полный путь до конфига
-func normalizeFilepath(filename string) (string, error) {
+func ProjectPath() string {
 	projectPath := "/src/github.com/go-park-mail-ru/2018_2_parashutnaya_molitva"
-	fullPath := filepath.Join(os.Getenv("GOPATH"), projectPath, configsDir, filename)
+	fullPath := filepath.Join(os.Getenv("GOPATH"), projectPath)
+	return fullPath
+}
+
+// формирует полный путь до конфига
+func configsPath(filename string) (string, error) {
+	fullPath := filepath.Join(ProjectPath(), configsDir, filename)
 	return fullPath, nil
 }

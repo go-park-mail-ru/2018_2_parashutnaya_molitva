@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"net/http"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
+	"net/http"
 )
 
 // api/signin
@@ -15,7 +15,14 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Signin Page"))
 }
 
-// api/signup
-func SignUp(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Signup Page"))
+type signInRequest struct {
+
+}
+
+type SignInResponse struct {
+	Error  string               `json:"error"`
+	Result SignInResponseResult `json:"result"`
+}
+
+type SignInResponseResult struct {
 }

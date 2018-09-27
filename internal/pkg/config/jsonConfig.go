@@ -9,7 +9,7 @@ import (
 type JsonConfigReader struct{}
 
 func (JsonConfigReader) Read(filename string, structure interface{}) error {
-	fullFileName, err := normalizeFilepath(filename)
+	fullFileName, err := configsPath(filename)
 	if err != nil {
 		return err
 	}
