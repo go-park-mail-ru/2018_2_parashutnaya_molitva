@@ -1,0 +1,71 @@
+package routes
+
+import (
+	"log"
+	"net/http"
+
+	"github.com/pkg/errors"
+)
+
+var (
+	errRouterNotCreated = errors.New("Router wasn't created")
+)
+
+type Router struct {
+	routes  []*Route
+	handler http.Handler
+}
+
+func NewRouter(h http.Handler) *Router {
+	return &Router{
+		routes:  make([]*Route, 0),
+		handler: h,
+	}
+}
+
+func (r *Router) Match(req *http.Request) (bool, error) {
+	for _, route := range r.routes {
+		if ok, err := route.Match(req); err != nil {
+			return false, err
+		} else if ok == true {
+			r.handler = route.Handler
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	if r.routes == nil || r.handler == nil {
+		log.Printf(errRouterNotCreated.Error())
+		return
+	}
+
+	ok, err := r.Match(req)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	if ok != true {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte(errPageNotFound.Error()))
+		return
+	}
+
+	r.handler.ServeHTTP(w, req)
+}
+
+func (r *Router) HandleFunc(path string, handlerFunc http.HandlerFunc) *Route {
+	if r.routes == nil {
+		log.Printf(errRouterNotCreated.Error())
+		return nil
+	}
+	route := &Route{
+		Handler:  handlerFunc,
+		PathName: path,
+	}
+	r.routes = append(r.routes, route)
+	return route.Path(path)
+}
