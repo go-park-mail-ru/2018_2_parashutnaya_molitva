@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"net/http"
-
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/routes"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 )
@@ -28,5 +27,4 @@ func User(w http.ResponseWriter, r *http.Request) {
 	if ok {
 		w.Write([]byte(value["id"]))
 	}
-
 }
