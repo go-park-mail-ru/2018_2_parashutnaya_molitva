@@ -2,16 +2,17 @@ package user
 
 import (
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
+	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2/bson"
 )
 
 type User struct {
 	Guid         bson.ObjectId `bson:"_id"`
 	Email        string        `bson:"email"`
-	Password     string	`bson:"-"`
-	HashPassword string `bson:"password"`
-	Avatar       string `bson:"avatar"`
-	Score        uint   `bson:"score"`
+	Password     string        `bson:"-"`
+	HashPassword string        `bson:"password"`
+	Avatar       string        `bson:"avatar"`
+	Score        int           `bson:"score"`
 }
 
 func (u *User) ChangeAvatar(avatarName string) error {
@@ -55,13 +56,21 @@ func (u *User) ChangePassword(password string) error {
 	return err
 }
 
-func (u *User) AddScore(score uint) error {
+func (u *User) AddScore(score int) error {
 	u.Score += score
 	err := collection.UpdateId(bson.M{"_id": u.Guid}, u)
 	return err
 }
 
 func CreateUser(email string, password string) (User, error) {
+	isExisting, err := IsUserExisting(email)
+	if err != nil {
+		singletoneLogger.LogError(err)
+		return User{}, err
+	}
+	if isExisting {
+		return User{}, errors.New("User already exists")
+	}
 	hashedPassword, err := hashPassword(password)
 	if err != nil {
 		singletoneLogger.LogError(err)
@@ -99,4 +108,22 @@ func GetUserByEmail(email string) (User, error) {
 
 func CreateIdFromString(str string) bson.ObjectId {
 	return bson.ObjectIdHex(str)
+}
+
+func GetUsersCount() (int, error) {
+	count, err := collection.Count()
+	if err != nil {
+		return 0, err
+	}
+	return count, err
+}
+
+func IsUserExisting(email string) (bool, error) {
+	_, err := GetUserByEmail(email)
+	if (err != nil) && (err.Error() == "not found") {
+		return false, nil
+	} else if err != nil {
+		return false, err
+	}
+	return true, nil
 }

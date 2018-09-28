@@ -2,12 +2,12 @@ package fileStorage
 
 import (
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/config"
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/randomGenerator"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"io"
 	"mime/multipart"
 	"os"
 	"path/filepath"
-	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/randomGenerator"
 	"strings"
 )
 
@@ -17,7 +17,7 @@ func init() {
 	StoragePath = filepath.Join(config.ProjectPath(), "storage")
 }
 
-func UploadFile(fileFromRequest multipart.File, fileName string)  error {
+func UploadFile(fileFromRequest multipart.File, fileName string) error {
 	fileToSave, err := os.OpenFile(filepath.Join(StoragePath, fileName), os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
 		singletoneLogger.LogError(err)

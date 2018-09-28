@@ -16,7 +16,6 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 }
 
 type signInRequest struct {
-
 }
 
 type SignInResponse struct {

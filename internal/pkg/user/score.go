@@ -1,17 +1,17 @@
 package user
 
-import "gopkg.in/mgo.v2/bson"
-
 type UserScore struct {
-	Guid         bson.ObjectId `bson:"_id"`
 	Email string `bson:"email"`
-	Score uint `bson:"score"`
+	Score int    `bson:"score"`
 }
 
-type GetScoreParameters struct  {
-
+type GetScoreParameters struct {
+	Limit  int
+	Offset int
 }
 
-func GetScore() {
-
+func GetScores(param GetScoreParameters) ([]UserScore, error) {
+	var result []UserScore
+	err := collection.Find(nil).Skip(param.Offset).Limit(param.Limit).All(&result)
+	return result, err
 }
