@@ -21,10 +21,17 @@ func TestPathVarMatcher(t *testing.T) {
 			withoutVarName: "/url",
 			value:          "1",
 		},
+		&PathVarMatcherTestCase{
+			path:           "/url/",
+			varName:        "",
+			url:            "/url/1",
+			withoutVarName: "/url/",
+			value:          "",
+		},
 	}
 
 	for idx, test := range tests {
-		testPathMatcher := PathMatcher{
+		testPathMatcher := pathMatcher{
 			Path:    test.path,
 			varName: test.varName,
 		}

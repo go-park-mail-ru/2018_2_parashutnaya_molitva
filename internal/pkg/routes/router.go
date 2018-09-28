@@ -67,5 +67,5 @@ func (r *Router) HandleFunc(path string, handlerFunc http.HandlerFunc) *Route {
 		PathName: path,
 	}
 	r.routes = append(r.routes, route)
-	return route.Path(path)
+	return route.path(path)
 }

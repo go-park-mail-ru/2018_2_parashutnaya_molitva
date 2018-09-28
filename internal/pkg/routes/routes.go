@@ -34,7 +34,7 @@ func (r *Route) Match(req *http.Request) (bool, error) {
 	return true, nil
 }
 
-func (r *Route) Path(path string) *Route {
+func (r *Route) path(path string) *Route {
 	return r.addMatcher(NewPathMatcher(path))
 }
 
@@ -72,7 +72,7 @@ var (
 	errPageNotFound = errors.New("Page not found, 404")
 )
 
-type PathMatcher struct {
+type pathMatcher struct {
 	Path           string
 	varName        string
 	withoutVarName string
@@ -94,16 +94,16 @@ func parsePathVars(path string) (string, string) {
 	return "", path
 }
 
-func NewPathMatcher(path string) *PathMatcher {
+func NewPathMatcher(path string) *pathMatcher {
 	varName, withoutVarName := parsePathVars(path)
-	return &PathMatcher{
+	return &pathMatcher{
 		Path:           path,
 		varName:        varName,
 		withoutVarName: withoutVarName,
 	}
 }
 
-func (p *PathMatcher) parseVarURL(url string) (string, string) {
+func (p *pathMatcher) parseVarURL(url string) (string, string) {
 	if p.varName == "" {
 		return "", p.Path
 	}
@@ -124,7 +124,7 @@ const (
 	contextVarKey = iota
 )
 
-func (p *PathMatcher) match(req *http.Request) (bool, error) {
+func (p *pathMatcher) match(req *http.Request) (bool, error) {
 	reqURL := req.URL.String()
 	if reqURL == p.Path {
 		return true, nil
