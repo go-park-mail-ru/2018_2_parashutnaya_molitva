@@ -149,4 +149,3 @@ func (r *Router) HandleFunc(path string, handlerFunc http.HandlerFunc) *Route {
 	singletoneLogger.LogMessage("Added route: " + route.PathName)
 	return route.Path(path)
 }
-
