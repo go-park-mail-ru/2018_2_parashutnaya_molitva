@@ -26,5 +26,7 @@ func StartApp(port int) error {
 	signin := middlewareChain(controllers.SignIn, authMiddleware)
 	router.HandleFunc("/api/signin", signin).Method("GET")
 	router.HandleFunc("/api/signup", controllers.SignUp).Method("POST")
+	router.HandleFunc("/user/:id", controllers.User)
+	router.HandleFunc("/user/", controllers.User)
 	return http.ListenAndServe(stringPort, router)
 }
