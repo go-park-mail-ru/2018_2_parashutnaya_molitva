@@ -12,6 +12,6 @@ type GetScoreParameters struct {
 
 func GetScores(param GetScoreParameters) ([]UserScore, error) {
 	var result []UserScore
-	err := collection.Find(nil).Skip(param.Offset).Limit(param.Limit).All(&result)
+	err := collection.Find(nil).Sort("-score").Skip(param.Offset).Limit(param.Limit).All(&result)
 	return result, err
 }
