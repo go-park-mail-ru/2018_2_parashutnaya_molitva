@@ -1,10 +1,14 @@
 package routes
 
 import (
+	"context"
 	"fmt"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"github.com/pkg/errors"
 	"net/http"
+	"strings"
+
+	"github.com/pkg/errors"
 )
 
 type Route struct {
@@ -31,11 +35,8 @@ func (r *Route) Match(req *http.Request) (bool, error) {
 	return true, nil
 }
 
-func (r *Route) Path(path string) *Route {
-	pathMatcher := &PathMatcher{
-		Path: path,
-	}
-	return r.addMatcher(pathMatcher)
+func (r *Route) path(path string) *Route {
+	return r.addMatcher(NewPathMatcher(path))
 }
 
 func (r *Route) Method(methods ...string) *Route {
@@ -72,79 +73,75 @@ var (
 	errPageNotFound = errors.New("Page not found, 404")
 )
 
-type PathMatcher struct {
-	Path string
+type pathMatcher struct {
+	Path           string
+	varName        string
+	withoutVarName string
 }
 
-func (p *PathMatcher) match(req *http.Request) (bool, error) {
-	if req.URL.String() == p.Path {
-		return true, nil
+func parsePathVars(path string) (string, string) {
+	s := strings.TrimSuffix(path, "/")
+	if s[len(s)-1] == '/' {
+		return "", path
+  }
+
+	urlPaths := strings.Split(s, "/")
+	if urlPaths[len(urlPaths)-1][0] == ':' {
+		withoutVarName := strings.Join(urlPaths[:len(urlPaths)-1], "/")
+		return urlPaths[len(urlPaths)-1][1:], withoutVarName
 	}
-	singletoneLogger.LogMessage(req.URL.String() + p.Path)
-	singletoneLogger.LogError(errPageNotFound)
-	return false, nil
+
+	return "", path
 }
 
-var (
-	errRouterNotCreated = errors.New("Router wasn't created")
+func NewPathMatcher(path string) *pathMatcher {
+	varName, withoutVarName := parsePathVars(path)
+	return &pathMatcher{
+		Path:           path,
+		varName:        varName,
+		withoutVarName: withoutVarName,
+	}
+}
+
+func (p *pathMatcher) parseVarURL(url string) (string, string) {
+	if p.varName == "" {
+		return "", p.Path
+	}
+	s := strings.TrimSuffix(url, "/")
+
+	if s[len(s)-1] == '/' {
+		return "", p.Path
+	}
+
+	urlPaths := strings.Split(s, "/")
+	urlVar := urlPaths[len(urlPaths)-1]
+
+	return urlVar, strings.Join(urlPaths[:len(urlPaths)-1], "/")
+
+}
+
+const (
+	contextVarKey = iota
 )
 
-type Router struct {
-	routes  []*Route
-	handler http.Handler
-}
-
-func NewRouter(h http.Handler) *Router {
-	return &Router{
-		routes:  make([]*Route, 0),
-		handler: h,
+func (p *pathMatcher) match(req *http.Request) (bool, error) {
+	reqURL := req.URL.String()
+	if reqURL == p.Path {
+		return true, nil
 	}
-}
 
-func (r *Router) Match(req *http.Request) (bool, error) {
-	for _, route := range r.routes {
-		if ok, err := route.Match(req); err != nil {
-			return false, err
-		} else if ok == true {
-			r.handler = route.Handler
-			return true, nil
-		}
+	value, withoutVarName := p.parseVarURL(req.URL.String())
+	if value != "" && withoutVarName == p.withoutVarName {
+
+		ctx := context.WithValue(req.Context(), contextVarKey, map[string]string{p.varName: value})
+		*req = *req.WithContext(ctx)
+		return true, nil
 	}
 
 	return false, nil
 }
 
-func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	if r.routes == nil || r.handler == nil {
-		singletoneLogger.LogError(errRouterNotCreated)
-		return
-	}
-
-	ok, err := r.Match(req)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
-		return
-	}
-	if ok != true {
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte(errPageNotFound.Error()))
-		return
-	}
-
-	r.handler.ServeHTTP(w, req)
-}
-
-func (r *Router) HandleFunc(path string, handlerFunc http.HandlerFunc) *Route {
-	if r.routes == nil {
-		singletoneLogger.LogError(errRouterNotCreated)
-		return nil
-	}
-	route := &Route{
-		Handler:  handlerFunc,
-		PathName: path,
-	}
-	r.routes = append(r.routes, route)
-	singletoneLogger.LogMessage("Added route: " + route.PathName)
-	return route.Path(path)
+func GetVar(req *http.Request) (map[string]string, bool) {
+	value, ok := req.Context().Value(contextVarKey).(map[string]string)
+	return value, ok
 }
