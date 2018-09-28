@@ -16,7 +16,7 @@ var (
 	once             sync.Once     // Магия для реализации singleton
 )
 
-func getInstance() *mgo.Database {
+func GetInstance() *mgo.Database {
 	once.Do(func() {
 		sess, err := mgo.Dial(fmt.Sprintf("mongodb://%s:%s", dbConfig.MongoHost, dbConfig.MongoPort))
 		if err != nil {

@@ -62,30 +62,36 @@ func updateOrAddIfNotExist(guid string) (string, error) {
 	return token, err
 }
 
-func find(guid string) (*UserAuthData, error) {
+func findByGuid(guid string) (*UserAuthData, error) {
 	user := &UserAuthData{}
 	err := database.collection.Find(bson.M{"_id": bson.ObjectIdHex(guid)}).One(&user)
 	return user, err
 }
 
-func check(guid string, token string) (Status, error) {
-	user, err := find(guid)
+func findByToken(token string) (*UserAuthData, error) {
+	user := &UserAuthData{}
+	err := database.collection.Find(bson.M{"token": token}).One(&user)
+	return user, err
+}
+
+func check(token string) (Status, string, error) {
+	user, err := findByToken(token)
 
 	if err != nil && err == mgo.ErrNotFound {
-		return statusNotExist, nil
+		return statusBadToken, "", nil
 	}
 	if err != nil {
-		return statusError, err
+		return statusError, "", err
 	}
-	if user.Token != token {
-		return statusBadToken, nil
+	if user.Guid == "" {
+		return statusNotExist, "", nil
 	}
 
 	if user.ExpireDate.Before(time.Now()) {
-		return statusExpired, nil
+		return statusExpired, "", nil
 	}
 
-	return statusOk, nil
+	return statusOk, user.Guid.Hex(), nil
 }
 
 func reset(guid string) error {

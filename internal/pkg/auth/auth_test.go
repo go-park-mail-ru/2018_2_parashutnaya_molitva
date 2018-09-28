@@ -39,15 +39,15 @@ func TestDeleteSession(t *testing.T) {
 }
 
 func TestCheckDeletedSession(t *testing.T) {
-	status, err := CheckSession(TestUserToDelete.Guid, TestUserToDelete.Token)
-	if (status != false) || (err == nil) {
+	status, guid, err := CheckSession(TestUserToDelete.Token)
+	if (status != false) || (err == nil) || (guid == TestUserToDelete.Guid) {
 		t.Error(errors.Wrap(err, "Sees deleted session as Valid"))
 	}
 }
 
 func TestCheckValidSession(t *testing.T) {
-	status, err := CheckSession(TestUserToStay.Guid, TestUserToStay.Token)
-	if (status != true) || (err != nil) {
+	status, guid, err := CheckSession(TestUserToStay.Token)
+	if (status != true) || (err != nil) || (guid != TestUserToStay.Guid) {
 		t.Error(errors.Wrap(err, "Sees valid session as invalid"))
 	}
 }
@@ -57,8 +57,8 @@ func TestCheckSessionWithWrongToken(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	status, err := CheckSession(TestUserToStay.Guid, randomToken)
-	if status != false || err == nil {
+	status, guid, err := CheckSession(randomToken)
+	if (status != false) || (err == nil) || (guid == TestUserToStay.Guid) {
 		t.Error(errors.Wrap(err, "Sees invalid session as valid"))
 	}
 }

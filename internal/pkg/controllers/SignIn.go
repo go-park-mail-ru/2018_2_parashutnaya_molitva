@@ -17,9 +17,15 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Signin Page"))
 }
 
-// api/signup
-func SignUp(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Signup Page"))
+type signInRequest struct {
+}
+
+type SignInResponse struct {
+	Error  string               `json:"error"`
+	Result SignInResponseResult `json:"result"`
+}
+
+type SignInResponseResult struct {
 }
 
 func User(w http.ResponseWriter, r *http.Request) {

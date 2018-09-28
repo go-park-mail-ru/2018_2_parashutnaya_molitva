@@ -3,12 +3,9 @@ package routes
 import (
 	"context"
 	"fmt"
-	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"github.com/pkg/errors"
 	"net/http"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 type Route struct {
@@ -140,6 +137,7 @@ func (p *pathMatcher) match(req *http.Request) (bool, error) {
 
 	return false, nil
 }
+
 
 func GetVar(req *http.Request) (map[string]string, bool) {
 	value, ok := req.Context().Value(contextVarKey).(map[string]string)
