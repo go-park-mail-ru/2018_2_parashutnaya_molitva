@@ -3,9 +3,12 @@ package routes
 import (
 	"context"
 	"fmt"
-	"github.com/pkg/errors"
+	"log"
 	"net/http"
+	"reflect"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 type Route struct {
@@ -32,8 +35,8 @@ func (r *Route) Match(req *http.Request) (bool, error) {
 	return true, nil
 }
 
-func (r *Route) path(path string) *Route {
-	return r.addMatcher(NewPathMatcher(path))
+func (r *Route) path(pattern string) *Route {
+	return r.addMatcher(&pathMatcher{Pattern: pattern})
 }
 
 func (r *Route) Method(methods ...string) *Route {
@@ -71,9 +74,7 @@ var (
 )
 
 type pathMatcher struct {
-	Path           string
-	varName        string
-	withoutVarName string
+	Pattern string
 }
 
 func parsePathVars(path string) (string, string) {
@@ -83,6 +84,7 @@ func parsePathVars(path string) (string, string) {
 	}
 
 	urlPaths := strings.Split(s, "/")
+	log.Printf("%#v", urlPaths)
 	if urlPaths[len(urlPaths)-1][0] == ':' {
 		withoutVarName := strings.Join(urlPaths[:len(urlPaths)-1], "/")
 		return urlPaths[len(urlPaths)-1][1:], withoutVarName
@@ -91,30 +93,10 @@ func parsePathVars(path string) (string, string) {
 	return "", path
 }
 
-func NewPathMatcher(path string) *pathMatcher {
-	varName, withoutVarName := parsePathVars(path)
+func NewPathMatcher(pattern string) *pathMatcher {
 	return &pathMatcher{
-		Path:           path,
-		varName:        varName,
-		withoutVarName: withoutVarName,
+		Pattern: pattern,
 	}
-}
-
-func (p *pathMatcher) parseVarURL(url string) (string, string) {
-	if p.varName == "" {
-		return "", p.Path
-	}
-	s := strings.TrimSuffix(url, "/")
-
-	if s[len(s)-1] == '/' {
-		return "", p.Path
-	}
-
-	urlPaths := strings.Split(s, "/")
-	urlVar := urlPaths[len(urlPaths)-1]
-
-	return urlVar, strings.Join(urlPaths[:len(urlPaths)-1], "/")
-
 }
 
 const (
@@ -123,15 +105,16 @@ const (
 
 func (p *pathMatcher) match(req *http.Request) (bool, error) {
 	reqURL := req.URL.String()
-	if reqURL == p.Path {
-		return true, nil
+
+	isValid, resultParse, err := parseURL(reqURL, p.Pattern)
+	if err != nil {
+		return false, err
 	}
-
-	value, withoutVarName := p.parseVarURL(req.URL.String())
-	if value != "" && withoutVarName == p.withoutVarName {
-
-		ctx := context.WithValue(req.Context(), contextVarKey, map[string]string{p.varName: value})
-		*req = *req.WithContext(ctx)
+	if isValid {
+		if !reflect.DeepEqual(resultParse, emptyParserResult) {
+			ctx := context.WithValue(req.Context(), contextVarKey, resultParse.vars)
+			*req = *req.WithContext(ctx)
+		}
 		return true, nil
 	}
 

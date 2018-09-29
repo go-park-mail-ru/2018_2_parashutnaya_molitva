@@ -1,13 +1,13 @@
 package controllers
 
 import (
+	"io/ioutil"
+	"net/http"
+
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/auth"
-	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/routes"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/session"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/user"
-	"io/ioutil"
-	"net/http"
 )
 
 func GetSesson(w http.ResponseWriter, r *http.Request) {
@@ -28,13 +28,6 @@ type SignInResponse struct {
 }
 
 type SignInResponseResult struct {
-}
-
-func User(w http.ResponseWriter, r *http.Request) {
-	value, ok := routes.GetVar(r)
-	if ok {
-		w.Write([]byte(value["id"]))
-	}
 }
 
 // SignIn godoc
@@ -88,5 +81,3 @@ type SignInParameters struct {
 	Email    string `json:"email" example:"test@mail.ru"`
 	Password string `json:"password" example:"1234qwerty"`
 }
-
-
