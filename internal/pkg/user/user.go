@@ -7,13 +7,14 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+//easyjson:json
 type User struct {
-	Guid         bson.ObjectId `bson:"_id"`
-	Email        string        `bson:"email"`
-	Password     string        `bson:"-"`
-	HashPassword string        `bson:"password"`
-	Avatar       string        `bson:"avatar"`
-	Score        int           `bson:"score"`
+	Guid         bson.ObjectId `bson:"_id" json:"guid"`
+	Email        string        `bson:"email" json:"email"`
+	Password     string        `bson:"-" json:"-"`
+	HashPassword string        `bson:"password" json:"-"`
+	Avatar       string        `bson:"avatar" json:"avatar"`
+	Score        int           `bson:"score" json:"score"`
 }
 
 func (u *User) ChangeAvatar(avatarName string) error {

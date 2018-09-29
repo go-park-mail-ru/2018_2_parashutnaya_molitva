@@ -18,6 +18,36 @@
     "basePath": "/api/v1",
     "paths": {
         "/session": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get current user of session",
+                "operationId": "get-session",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/definitions/controllers.responseUserGuidStruct"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/definitions/controllers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/definitions/controllers.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "consumes": [
                     "application/json"
@@ -40,7 +70,13 @@
                     }
                 ],
                 "responses": {
-                    "200": {},
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/definitions/controllers.responseUserGuidStruct"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -79,6 +115,14 @@
                 "password": {
                     "type": "string",
                     "example": "1234qwerty"
+                }
+            }
+        },
+        "controllers.responseUserGuidStruct": {
+            "type": "object",
+            "properties": {
+                "user_guid": {
+                    "type": "string"
                 }
             }
         }

@@ -15,6 +15,11 @@ definitions:
         example: 1234qwerty
         type: string
     type: object
+  controllers.responseUserGuidStruct:
+    properties:
+      user_guid:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -29,6 +34,27 @@ info:
   version: "1.0"
 paths:
   /session:
+    get:
+      operationId: get-session
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.responseUserGuidStruct'
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+      summary: Get current user of session
     post:
       consumes:
       - application/json
@@ -44,7 +70,11 @@ paths:
       produces:
       - application/json
       responses:
-        "200": {}
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.responseUserGuidStruct'
+            type: object
         "404":
           description: Not Found
           schema:

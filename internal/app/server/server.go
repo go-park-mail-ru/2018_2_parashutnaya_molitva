@@ -23,11 +23,9 @@ func StartApp(port int) error {
 
 	singletoneLogger.LogMessage("Server starting at " + stringPort)
 	router := routes.NewRouter(http.DefaultServeMux)
-	signIn := middlewareChain(controllers.SignIn, authMiddleware)
-	router.HandleFunc("/api/session", signIn).Method("POST")
-	router.HandleFunc("/api/signup", controllers.SignUp).Method("POST")
-	router.HandleFunc("/user/:id/:kek", controllers.User)
-	router.HandleFunc("/foo/*", controllers.Foo).Method("GET")
-
+	sessionController := middlewareChain(controllers.Session, authMiddleware)
+	router.HandleFunc("/api/session/", sessionController).Method("POST", "GET")
+	router.HandleFunc("/user/:id", controllers.User)
+	router.HandleFunc("/user/", controllers.User)
 	return http.ListenAndServe(stringPort, router)
 }
