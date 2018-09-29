@@ -37,7 +37,7 @@ func StartApp(port int) error {
 	router.HandleFunc("/docks/*", httpSwagger.WrapHandler)
 
 	// Статика
-	router.HandleFunc("/storage/*", fileStorage.StorageHandleFunc)
+	router.Handle("/storage/*", fileStorage.StorageHandler)
 
 	return http.ListenAndServe(stringPort, router)
 }
