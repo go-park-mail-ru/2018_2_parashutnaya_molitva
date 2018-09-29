@@ -20,6 +20,17 @@ definitions:
       user_guid:
         type: string
     type: object
+  user.User:
+    properties:
+      avatar:
+        type: string
+      email:
+        type: string
+      guid:
+        type: string
+      score:
+        type: integer
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -86,6 +97,41 @@ paths:
             $ref: '#/definitions/controllers.ErrorResponse'
             type: object
       summary: Sign in with your account with email and password, set session cookie
+  /user/{guid}:
+    get:
+      consumes:
+      - application/json
+      operationId: get-user
+      parameters:
+      - description: User id
+        in: query
+        name: guid
+        required: true
+        type: controllers.GetUserParameters
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.User'
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+      summary: Get user data by global user id
 securityDefinitions:
   ApiKeyAuth:
     in: header

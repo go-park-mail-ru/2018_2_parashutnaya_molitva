@@ -7,7 +7,7 @@ import (
 )
 
 type ErrorResponse struct {
-	Error string `json:"error" example:"Already signed in"`
+	Error string `json:"error" example:"Some error happened"`
 }
 
 func GenerateErrorJSON(errorResponseMessage string) []byte {

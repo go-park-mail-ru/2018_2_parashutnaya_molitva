@@ -10,13 +10,12 @@ import (
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/user"
 )
 
-
-func Session (w http.ResponseWriter, r *http.Request) {
+func Session(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "POST":
-		signIn(w,r)
+		signIn(w, r)
 	case "GET":
-		getSesson(w,r)
+		getSesson(w, r)
 	}
 }
 
@@ -47,7 +46,6 @@ func getSesson(w http.ResponseWriter, r *http.Request) {
 	}
 	responseWithOk(w, responseUserGuidStruct{guid})
 }
-
 
 type SignInResponseResult struct {
 }

@@ -26,3 +26,10 @@ func GetInstance() *mgo.Database {
 	})
 	return instance
 }
+
+func IsNotFoundError(err error) bool {
+	if (err != nil) && (err.Error() == "not found") {
+		return true
+	}
+	return true
+}

@@ -55,7 +55,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	r.handler.ServeHTTP(w, req)
 }
 
-func (r *Router) HandleFuncWithMiddleware(path string, handlerFunc http.HandlerFunc)  *Route {
+func (r *Router) HandleFuncWithMiddleware(path string, handlerFunc http.HandlerFunc) *Route {
 	handlerFunc = middlewareChain(handlerFunc, authMiddleware)
 	return r.HandleFunc(path, handlerFunc)
 }
