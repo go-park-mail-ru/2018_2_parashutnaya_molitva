@@ -7,7 +7,10 @@
 - Алтунин Никита [@ksenobait09](https://github.com/ksenobait09)
 - Цыганков Максим [@Chubasik](https://github.com/Chubasik)
 
-## Описание
+## Применение
+### Документация
+Сгенерировать через команду `swag init -g internal/app/server/api.go`, где swag - swaggo пакет Golang
+искать на роуте  /docks/index.html
 
 
 
