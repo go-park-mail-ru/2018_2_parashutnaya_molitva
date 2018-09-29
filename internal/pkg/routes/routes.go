@@ -2,10 +2,9 @@ package routes
 
 import (
 	"context"
-	"log"
+
 	"net/http"
 	"reflect"
-	"strings"
 
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 
@@ -74,28 +73,6 @@ var (
 
 type pathMatcher struct {
 	Pattern string
-}
-
-func parsePathVars(path string) (string, string) {
-	s := strings.TrimSuffix(path, "/")
-	if s[len(s)-1] == '/' {
-		return "", path
-	}
-
-	urlPaths := strings.Split(s, "/")
-	log.Printf("%#v", urlPaths)
-	if urlPaths[len(urlPaths)-1][0] == ':' {
-		withoutVarName := strings.Join(urlPaths[:len(urlPaths)-1], "/")
-		return urlPaths[len(urlPaths)-1][1:], withoutVarName
-	}
-
-	return "", path
-}
-
-func NewPathMatcher(pattern string) *pathMatcher {
-	return &pathMatcher{
-		Pattern: pattern,
-	}
 }
 
 const (

@@ -35,7 +35,7 @@ type responseUserGuidStruct struct {
 // @Failure 500 {object} controllers.ErrorResponse
 // @Router /session [GET]
 func getSesson(w http.ResponseWriter, r *http.Request) {
-	b := r.Context().Value("isAuth").(bool)
+	b := isAuth(r)
 	if !b {
 		responseWithError(w, http.StatusUnauthorized, "Does not authorised")
 		return
@@ -64,7 +64,7 @@ type SignInResponseResult struct {
 // @Failure 500 {object} controllers.ErrorResponse
 // @Router /session [post]
 func signIn(w http.ResponseWriter, r *http.Request) {
-	b := r.Context().Value("isAuth").(bool)
+	b := isAuth(r)
 	if b {
 		responseWithError(w, http.StatusBadRequest, "Already signed in")
 		return
