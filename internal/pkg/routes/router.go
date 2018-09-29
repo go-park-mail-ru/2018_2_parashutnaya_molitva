@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
+
 	"github.com/pkg/errors"
 )
 
@@ -61,8 +63,12 @@ func (r *Router) HandleFuncWithMiddleware(path string, handlerFunc http.HandlerF
 }
 
 func (r *Router) HandleFunc(path string, handlerFunc http.HandlerFunc) *Route {
+	return r.Handle(path, handlerFunc)
+}
+
+func (r *Router) Handle(path string, handlerFunc http.Handler) *Route {
 	if r.routes == nil {
-		log.Printf(errRouterNotCreated.Error())
+		singletoneLogger.LogError(errRouterNotCreated)
 		return nil
 	}
 	route := &Route{
