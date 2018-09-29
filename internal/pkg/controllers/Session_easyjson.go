@@ -17,7 +17,7 @@ var (
 	_ easyjson.Marshaler
 )
 
-func easyjson28b420baDecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers(in *jlexer.Lexer, out *signInRequest) {
+func easyjson28b420baDecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers(in *jlexer.Lexer, out *responseUserGuidStruct) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -36,6 +36,8 @@ func easyjson28b420baDecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternal
 			continue
 		}
 		switch key {
+		case "user_guid":
+			out.UserGuid = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -46,181 +48,47 @@ func easyjson28b420baDecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternal
 		in.Consumed()
 	}
 }
-func easyjson28b420baEncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers(out *jwriter.Writer, in signInRequest) {
+func easyjson28b420baEncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers(out *jwriter.Writer, in responseUserGuidStruct) {
 	out.RawByte('{')
 	first := true
 	_ = first
+	{
+		const prefix string = ",\"user_guid\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.UserGuid))
+	}
 	out.RawByte('}')
 }
 
 // MarshalJSON supports json.Marshaler interface
-func (v signInRequest) MarshalJSON() ([]byte, error) {
+func (v responseUserGuidStruct) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
 	easyjson28b420baEncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
-func (v signInRequest) MarshalEasyJSON(w *jwriter.Writer) {
+func (v responseUserGuidStruct) MarshalEasyJSON(w *jwriter.Writer) {
 	easyjson28b420baEncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
-func (v *signInRequest) UnmarshalJSON(data []byte) error {
+func (v *responseUserGuidStruct) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
 	easyjson28b420baDecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *signInRequest) UnmarshalEasyJSON(l *jlexer.Lexer) {
+func (v *responseUserGuidStruct) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjson28b420baDecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers(l, v)
 }
-func easyjson28b420baDecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers1(in *jlexer.Lexer, out *SignInResponseResult) {
-	isTopLevel := in.IsStart()
-	if in.IsNull() {
-		if isTopLevel {
-			in.Consumed()
-		}
-		in.Skip()
-		return
-	}
-	in.Delim('{')
-	for !in.IsDelim('}') {
-		key := in.UnsafeString()
-		in.WantColon()
-		if in.IsNull() {
-			in.Skip()
-			in.WantComma()
-			continue
-		}
-		switch key {
-		default:
-			in.SkipRecursive()
-		}
-		in.WantComma()
-	}
-	in.Delim('}')
-	if isTopLevel {
-		in.Consumed()
-	}
-}
-func easyjson28b420baEncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers1(out *jwriter.Writer, in SignInResponseResult) {
-	out.RawByte('{')
-	first := true
-	_ = first
-	out.RawByte('}')
-}
-
-// MarshalJSON supports json.Marshaler interface
-func (v SignInResponseResult) MarshalJSON() ([]byte, error) {
-	w := jwriter.Writer{}
-	easyjson28b420baEncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers1(&w, v)
-	return w.Buffer.BuildBytes(), w.Error
-}
-
-// MarshalEasyJSON supports easyjson.Marshaler interface
-func (v SignInResponseResult) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson28b420baEncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers1(w, v)
-}
-
-// UnmarshalJSON supports json.Unmarshaler interface
-func (v *SignInResponseResult) UnmarshalJSON(data []byte) error {
-	r := jlexer.Lexer{Data: data}
-	easyjson28b420baDecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers1(&r, v)
-	return r.Error()
-}
-
-// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *SignInResponseResult) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson28b420baDecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers1(l, v)
-}
-func easyjson28b420baDecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers2(in *jlexer.Lexer, out *SignInResponse) {
-	isTopLevel := in.IsStart()
-	if in.IsNull() {
-		if isTopLevel {
-			in.Consumed()
-		}
-		in.Skip()
-		return
-	}
-	in.Delim('{')
-	for !in.IsDelim('}') {
-		key := in.UnsafeString()
-		in.WantColon()
-		if in.IsNull() {
-			in.Skip()
-			in.WantComma()
-			continue
-		}
-		switch key {
-		case "error":
-			out.Error = string(in.String())
-		case "result":
-			if data := in.Raw(); in.Ok() {
-				in.AddError((out.Result).UnmarshalJSON(data))
-			}
-		default:
-			in.SkipRecursive()
-		}
-		in.WantComma()
-	}
-	in.Delim('}')
-	if isTopLevel {
-		in.Consumed()
-	}
-}
-func easyjson28b420baEncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers2(out *jwriter.Writer, in SignInResponse) {
-	out.RawByte('{')
-	first := true
-	_ = first
-	{
-		const prefix string = ",\"error\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.Error))
-	}
-	{
-		const prefix string = ",\"result\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.Raw((in.Result).MarshalJSON())
-	}
-	out.RawByte('}')
-}
-
-// MarshalJSON supports json.Marshaler interface
-func (v SignInResponse) MarshalJSON() ([]byte, error) {
-	w := jwriter.Writer{}
-	easyjson28b420baEncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers2(&w, v)
-	return w.Buffer.BuildBytes(), w.Error
-}
-
-// MarshalEasyJSON supports easyjson.Marshaler interface
-func (v SignInResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson28b420baEncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers2(w, v)
-}
-
-// UnmarshalJSON supports json.Unmarshaler interface
-func (v *SignInResponse) UnmarshalJSON(data []byte) error {
-	r := jlexer.Lexer{Data: data}
-	easyjson28b420baDecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers2(&r, v)
-	return r.Error()
-}
-
-// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *SignInResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson28b420baDecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers2(l, v)
-}
-func easyjson28b420baDecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers3(in *jlexer.Lexer, out *SignInParameters) {
+func easyjson28b420baDecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers1(in *jlexer.Lexer, out *SignInParameters) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -253,7 +121,7 @@ func easyjson28b420baDecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternal
 		in.Consumed()
 	}
 }
-func easyjson28b420baEncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers3(out *jwriter.Writer, in SignInParameters) {
+func easyjson28b420baEncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers1(out *jwriter.Writer, in SignInParameters) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -283,23 +151,23 @@ func easyjson28b420baEncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternal
 // MarshalJSON supports json.Marshaler interface
 func (v SignInParameters) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson28b420baEncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers3(&w, v)
+	easyjson28b420baEncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers1(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v SignInParameters) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson28b420baEncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers3(w, v)
+	easyjson28b420baEncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers1(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *SignInParameters) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson28b420baDecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers3(&r, v)
+	easyjson28b420baDecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers1(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *SignInParameters) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson28b420baDecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers3(l, v)
+	easyjson28b420baDecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgControllers1(l, v)
 }

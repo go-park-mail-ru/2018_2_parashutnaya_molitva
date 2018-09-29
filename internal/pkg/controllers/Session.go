@@ -10,22 +10,44 @@ import (
 	"net/http"
 )
 
-func GetSesson(w http.ResponseWriter, r *http.Request) {
-	b := r.Context().Value("isAuth")
-	if val, _ := b.(bool); val {
-		singletoneLogger.LogMessage("isAuth")
+
+func Session (w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "POST":
+		signIn(w,r)
+	case "GET":
+		getSesson(w,r)
 	}
-
-	w.Write([]byte("Signin Page"))
 }
 
-type signInRequest struct {
+//easyjson:json
+type responseUserGuidStruct struct {
+	UserGuid string `json:"user_guid"`
 }
 
-type SignInResponse struct {
-	Error  string               `json:"error"`
-	Result SignInResponseResult `json:"result"`
+// GetSession godoc
+// @Title Get session
+// @Summary Get current user of session
+// @ID get-session
+// @Produce  json
+// @Success 200  {object} controllers.responseUserGuidStruct
+// @Failure 401 {object} controllers.ErrorResponse
+// @Failure 500 {object} controllers.ErrorResponse
+// @Router /session [GET]
+func getSesson(w http.ResponseWriter, r *http.Request) {
+	b := r.Context().Value("isAuth").(bool)
+	if !b {
+		responseWithError(w, http.StatusUnauthorized, "Does not authorised")
+		return
+	}
+	guid := r.Context().Value("userGuid").(string)
+	if guid == "" {
+		responseWithError(w, http.StatusInternalServerError, "Can't find user")
+		return
+	}
+	responseWithOk(w, responseUserGuidStruct{guid})
 }
+
 
 type SignInResponseResult struct {
 }
@@ -44,11 +66,11 @@ func User(w http.ResponseWriter, r *http.Request) {
 // @Accept  json
 // @Produce  json
 // @Param AuthData body controllers.SignInParameters true "User auth data"
-// @Success 200
+// @Success 200 {object} controllers.responseUserGuidStruct
 // @Failure 404 {object} controllers.ErrorResponse
 // @Failure 500 {object} controllers.ErrorResponse
 // @Router /session [post]
-func SignIn(w http.ResponseWriter, r *http.Request) {
+func signIn(w http.ResponseWriter, r *http.Request) {
 	b := r.Context().Value("isAuth").(bool)
 	if b {
 		responseWithError(w, http.StatusBadRequest, "Already signed in")
@@ -81,12 +103,12 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.SetCookie(w, session.CreateAuthCookie(token, timeExpire))
-	w.WriteHeader(http.StatusOK)
+	responseWithOk(w, responseUserGuidStruct{u.Guid.Hex()})
 }
 
+//easyjson:json
 type SignInParameters struct {
 	Email    string `json:"email" example:"test@mail.ru"`
 	Password string `json:"password" example:"1234qwerty"`
 }
-
 
