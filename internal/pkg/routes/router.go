@@ -25,9 +25,7 @@ func NewRouter(h http.Handler) *Router {
 
 func (r *Router) Match(req *http.Request) (bool, error) {
 	for _, route := range r.routes {
-		if ok, err := route.Match(req); err != nil {
-			return false, err
-		} else if ok == true {
+		if route.Match(req) {
 			r.handler = route.Handler
 			return true, nil
 		}
