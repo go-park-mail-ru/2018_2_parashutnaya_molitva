@@ -80,7 +80,7 @@ func parsePathVars(path string) (string, string) {
 	s := strings.TrimSuffix(path, "/")
 	if s[len(s)-1] == '/' {
 		return "", path
-  }
+	}
 
 	urlPaths := strings.Split(s, "/")
 	if urlPaths[len(urlPaths)-1][0] == ':' {
@@ -137,7 +137,6 @@ func (p *pathMatcher) match(req *http.Request) (bool, error) {
 
 	return false, nil
 }
-
 
 func GetVar(req *http.Request) (map[string]string, bool) {
 	value, ok := req.Context().Value(contextVarKey).(map[string]string)

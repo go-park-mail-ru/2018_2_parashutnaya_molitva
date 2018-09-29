@@ -9,7 +9,7 @@ import (
 )
 
 func UploadAvatar(w http.ResponseWriter, r *http.Request) {
-	r.ParseMultipartForm(5 << 20)
+	r.ParseMultipartForm(5 << 20) // 5 MB
 	file, headers, err := r.FormFile("file")
 	if err != nil {
 		singletoneLogger.LogError(err)

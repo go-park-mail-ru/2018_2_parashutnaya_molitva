@@ -49,17 +49,18 @@ func create(guid string) (string, error) {
 
 }
 
-func updateOrAddIfNotExist(guid string) (string, error) {
+func updateOrAddIfNotExist(guid string) (string, time.Time, error) {
 	token, err := generateToken()
 	if err != nil {
-		return token, nil
+		return token, time.Time{}, nil
 	}
+	expireTime := time.Now().Add(time.Duration(authConfig.TokenExpireTime) * time.Second)
 	_, err = database.collection.UpsertId(bson.ObjectIdHex(guid),
 		bson.M{
 			"token":       token,
-			"expire_date": time.Now().Add(time.Duration(authConfig.TokenExpireTime) * time.Second),
+			"expire_date": expireTime,
 		})
-	return token, err
+	return token, expireTime, err
 }
 
 func findByGuid(guid string) (*UserAuthData, error) {

@@ -1,6 +1,7 @@
 package user
 
 import (
+	simpleErrors "errors"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2/bson"
@@ -27,16 +28,19 @@ func (u *User) ChangeAvatar(avatarName string) error {
 
 func LoginUser(email string, password string) (User, error) {
 	u, err := GetUserByEmail(email)
+	if (err != nil) && (err.Error() == "not found") {
+		return User{}, simpleErrors.New("User not found")
+	}
 	if err != nil {
 		singletoneLogger.LogError(err)
-		return User{}, err
+		return User{}, simpleErrors.New("Internal error")
 	}
 	err = checkPasswordByHash(password, u.HashPassword)
 	if err != nil {
 		singletoneLogger.LogError(err)
-		return User{}, err
+		return User{}, simpleErrors.New("Wrong password")
 	}
-	return u, err
+	return u, nil
 }
 
 func (u *User) ChangeEmail(email string) error {

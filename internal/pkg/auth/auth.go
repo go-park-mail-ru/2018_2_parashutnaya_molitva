@@ -4,15 +4,16 @@ import (
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/randomGenerator"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"github.com/pkg/errors"
+	"time"
 )
 
-func SetSession(guid string) (string, error) {
-	token, err := updateOrAddIfNotExist(guid)
+func SetSession(guid string) (string, time.Time, error) {
+	token, expireTime, err := updateOrAddIfNotExist(guid)
 	if err != nil {
 		singletoneLogger.LogError(err)
-		return token, errors.New("Couldn't set the session")
+		return token, time.Time{}, errors.New("Couldn't set the session")
 	}
-	return token, nil
+	return token, expireTime, nil
 }
 
 func CheckSession(token string) (bool, string, error) {

@@ -5,6 +5,8 @@ import (
 	"strconv"
 
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/controllers"
+	//_ "github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/docs"
+	//httpSwagger "github.com/swaggo/http-swagger"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/routes"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"github.com/pkg/errors"
@@ -23,10 +25,13 @@ func StartApp(port int) error {
 
 	singletoneLogger.LogMessage("Server starting at " + stringPort)
 	router := routes.NewRouter(http.DefaultServeMux)
-	signin := middlewareChain(controllers.SignIn, authMiddleware)
-	router.HandleFunc("/api/signin", signin).Method("GET")
+	signIn := middlewareChain(controllers.SignIn, authMiddleware)
+	router.HandleFunc("/api/session/", signIn).Method("POST")
 	router.HandleFunc("/api/signup", controllers.SignUp).Method("POST")
 	router.HandleFunc("/user/:id", controllers.User)
 	router.HandleFunc("/user/", controllers.User)
+
+	http.HandleFunc("/docks/",httpSwagger.WrapHandler)
+	 err:= http.ListenAndServe(":9090", nil)
 	return http.ListenAndServe(stringPort, router)
 }
