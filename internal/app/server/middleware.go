@@ -2,9 +2,10 @@ package server
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/auth"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/session"
-	"net/http"
 )
 
 type middleware func(h http.HandlerFunc) http.HandlerFunc

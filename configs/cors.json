@@ -1,0 +1,15 @@
+{
+    "AllowOrigins": [
+        "my.com"
+    ],
+	"AllowMethods": [
+        "GET", 
+        "POST",
+        "PUT"
+    ],
+    "AllowHeaders": [
+        "Content-Type"
+    ],
+	"MaxAge": 10,
+	"AllowCredentials": true
+}
