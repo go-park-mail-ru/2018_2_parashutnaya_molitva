@@ -24,7 +24,6 @@ type CorsData struct {
 
 func corsMiddleware(h http.HandlerFunc) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-
 		val, ok := req.Header["Origin"]
 		if ok {
 		LOOP:

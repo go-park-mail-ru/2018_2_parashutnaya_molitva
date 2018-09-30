@@ -6,7 +6,8 @@
 	"AllowMethods": [
         "GET", 
         "POST",
-        "PUT"
+        "PUT",
+        "DELETE"
     ],
     "AllowHeaders": [
         "Content-Type"
