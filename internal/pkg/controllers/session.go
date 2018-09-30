@@ -19,11 +19,6 @@ func Session(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//easyjson:json
-type responseUserGuidStruct struct {
-	UserGuid string `json:"user_guid"`
-}
-
 // GetSession godoc
 // @Title Get session
 // @Summary Get current user of session

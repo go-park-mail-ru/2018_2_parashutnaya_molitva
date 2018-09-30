@@ -19,11 +19,15 @@ type User struct {
 
 func (u *User) ChangeAvatar(avatarName string) error {
 	u.Avatar = avatarName
-	err := collection.UpdateId(bson.M{"_id": u.Guid}, u)
+	err := collection.UpdateId(u.Guid, u)
 	if err != nil {
 		singletoneLogger.LogError(err)
 		return err
 	}
+	return nil
+}
+
+func (u *User) ChangeUser() error {
 	return nil
 }
 
@@ -46,7 +50,7 @@ func LoginUser(email string, password string) (User, error) {
 
 func (u *User) ChangeEmail(email string) error {
 	u.Email = email
-	err := collection.UpdateId(bson.M{"_id": u.Guid}, u)
+	err := collection.UpdateId(u.Guid, u)
 	return err
 }
 
@@ -57,13 +61,13 @@ func (u *User) ChangePassword(password string) error {
 		return err
 	}
 	u.HashPassword = hashedPassword
-	err = collection.UpdateId(bson.M{"_id": u.Guid}, u)
+	err = collection.UpdateId(u.Guid, u)
 	return err
 }
 
 func (u *User) AddScore(score int) error {
 	u.Score += score
-	err := collection.UpdateId(bson.M{"_id": u.Guid}, u)
+	err := collection.UpdateId(u.Guid, u)
 	return err
 }
 
@@ -94,6 +98,24 @@ func CreateUser(email string, password string) (User, error) {
 	return u, nil
 }
 
+func (u *User) UpdateUser(updateUser UpdateUserStruct) error {
+	if updateUser.Avatar != nil {
+		u.Avatar = *updateUser.Avatar
+	}
+	if updateUser.Email != nil {
+		u.Email = *updateUser.Email
+	}
+	if updateUser.Password != nil {
+		hashedPassword, err :=  hashPassword(*updateUser.Avatar)
+		if err != nil {
+			return err
+		}
+		u.HashPassword = hashedPassword
+	}
+	err := collection.UpdateId(u.Guid, u)
+	return err
+}
+
 func (u *User) DeleteUser() error {
 	err := collection.RemoveId(u.Guid)
 	return err
@@ -112,7 +134,11 @@ func GetUserByEmail(email string) (User, error) {
 }
 
 func CreateIdFromString(str string) bson.ObjectId {
-	return bson.ObjectIdHex(str)
+	if !bson.IsObjectIdHex(str) {
+		return ""
+	}
+	objId :=  bson.ObjectIdHex(str)
+	return objId
 }
 
 func GetUsersCount() (int, error) {
@@ -131,4 +157,11 @@ func IsUserExisting(email string) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+//easyjson:json
+type UpdateUserStruct struct {
+	Avatar *string `json:"avatar"`
+	Email *string `json:"email"`
+	Password *string `json:"password"`
 }

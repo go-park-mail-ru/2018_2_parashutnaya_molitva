@@ -6,6 +6,7 @@ import (
 	"net/http"
 )
 
+//easyjson:json
 type ErrorResponse struct {
 	Error string `json:"error" example:"Some error happened"`
 }

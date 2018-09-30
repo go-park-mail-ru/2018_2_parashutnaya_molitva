@@ -28,10 +28,12 @@ func StartApp(port int) error {
 	singletoneLogger.LogMessage("Server starting at " + stringPort)
 	router := routes.NewRouter(http.DefaultServeMux)
 	router.HandleFuncWithMiddleware("/api/session/", controllers.Session).Method("POST", "GET")
+	router.HandleFuncWithMiddleware("/api/user/count/", controllers.GetUsersCount).Method("GET")
 	router.HandleFuncWithMiddleware("/api/user/:guid", controllers.GetUser).Method("GET")
-	//router.HandleFuncWithMiddleware("/api/user/:guid", controllers.ChangeUser).Method("PUT")
+	router.HandleFuncWithMiddleware("/api/user/:guid", controllers.UpdateUser).Method("PUT")
 	//router.HandleFuncWithMiddleware("/api/user/:guid", controllers.DeleteUser).Method("DELETE")
-	//router.HandleFuncWithMiddleware("/api/user/", controllers.SaveUser).Method("POST")
+	router.HandleFuncWithMiddleware("/api/user/", controllers.CreateUser).Method("POST")
+
 
 	// Документация
 	router.HandleFunc("/docks/*", httpSwagger.WrapHandler)

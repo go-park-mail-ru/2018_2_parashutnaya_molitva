@@ -126,3 +126,134 @@ func (v *User) UnmarshalJSON(data []byte) error {
 func (v *User) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjson9e1087fdDecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgUser(l, v)
 }
+func easyjson9e1087fdDecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgUser1(in *jlexer.Lexer, out *UpdateUserStruct) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeString()
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "avatar":
+			if in.IsNull() {
+				in.Skip()
+				out.Avatar = nil
+			} else {
+				if out.Avatar == nil {
+					out.Avatar = new(string)
+				}
+				*out.Avatar = string(in.String())
+			}
+		case "email":
+			if in.IsNull() {
+				in.Skip()
+				out.Email = nil
+			} else {
+				if out.Email == nil {
+					out.Email = new(string)
+				}
+				*out.Email = string(in.String())
+			}
+		case "password":
+			if in.IsNull() {
+				in.Skip()
+				out.Password = nil
+			} else {
+				if out.Password == nil {
+					out.Password = new(string)
+				}
+				*out.Password = string(in.String())
+			}
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson9e1087fdEncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgUser1(out *jwriter.Writer, in UpdateUserStruct) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"avatar\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		if in.Avatar == nil {
+			out.RawString("null")
+		} else {
+			out.String(string(*in.Avatar))
+		}
+	}
+	{
+		const prefix string = ",\"email\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		if in.Email == nil {
+			out.RawString("null")
+		} else {
+			out.String(string(*in.Email))
+		}
+	}
+	{
+		const prefix string = ",\"password\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		if in.Password == nil {
+			out.RawString("null")
+		} else {
+			out.String(string(*in.Password))
+		}
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v UpdateUserStruct) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson9e1087fdEncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgUser1(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v UpdateUserStruct) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson9e1087fdEncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgUser1(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *UpdateUserStruct) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson9e1087fdDecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgUser1(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *UpdateUserStruct) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson9e1087fdDecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternalPkgUser1(l, v)
+}
