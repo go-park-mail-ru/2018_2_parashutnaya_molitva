@@ -1,0 +1,17 @@
+{
+    "AllowOrigins": [
+        "http://localhost:4000",
+        "http://localhost:4001"
+    ],
+	"AllowMethods": [
+        "GET", 
+        "POST",
+        "PUT",
+        "DELETE"
+    ],
+    "AllowHeaders": [
+        "Content-Type"
+    ],
+	"MaxAge": 88500,
+	"AllowCredentials": true
+}

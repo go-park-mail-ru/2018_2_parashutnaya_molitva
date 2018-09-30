@@ -1,0 +1,6 @@
+{
+    "outdist" : "stdout",
+    "colorError" : "red",
+    "colorMsg" : "green",
+    "buffSize" : "100"
+}
