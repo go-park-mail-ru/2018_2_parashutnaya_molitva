@@ -1,3 +1,4 @@
+![greeting gif](https://user-images.githubusercontent.com/13205087/46263763-f9c49900-c51b-11e8-8051-cad563ab8789.gif)
 # 2018_2_parashutnaya_molitva
 
 ## Состав
