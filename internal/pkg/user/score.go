@@ -1,17 +1,13 @@
 package user
 
+//easyjson:json
 type UserScore struct {
-	Email string `bson:"email"`
-	Score int    `bson:"score"`
+	Email string `json:"email" bson:"email"`
+	Score int    `json:"score" bson:"score"`
 }
 
-type GetScoreParameters struct {
-	Limit  int
-	Offset int
-}
-
-func GetScores(param GetScoreParameters) ([]UserScore, error) {
+func GetScores(	limit  int, offset int) ([]UserScore, error) {
 	var result []UserScore
-	err := collection.Find(nil).Sort("-score").Skip(param.Offset).Limit(param.Limit).All(&result)
+	err := collection.Find(nil).Sort("-score").Skip(offset).Limit(limit).All(&result)
 	return result, err
 }

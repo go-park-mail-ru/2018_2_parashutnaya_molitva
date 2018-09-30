@@ -39,6 +39,7 @@ func StartApp(port int) error {
 	router.HandleFunc("/api/session/", wrapHandlerInMiddleware(controllers.Session)).Method("POST", "GET", "OPTIONS")
 	router.HandleFunc("/api/session/", wrapHandlerInMiddleware(controllers.DeleteSession)).Method("DELETE", "OPTIONS")
 	router.HandleFunc("/api/user/count/", wrapHandlerInMiddleware(controllers.GetUsersCount)).Method("GET", "OPTIONS")
+	router.HandleFunc("/api/user/score/*", wrapHandlerInMiddleware(controllers.GetUsersScore)).Method("GET", "OPTIONS")
 	router.HandleFunc("/api/user/:guid", wrapHandlerInMiddleware(controllers.GetUser)).Method("GET", "OPTIONS")
 	router.HandleFunc("/api/user/:guid", wrapHandlerInMiddleware(controllers.UpdateUser)).Method("PUT", "OPTIONS")
 	router.HandleFunc("/api/avatar/", wrapHandlerInMiddleware(controllers.UploadAvatar)).Method("POST", "OPTIONS")

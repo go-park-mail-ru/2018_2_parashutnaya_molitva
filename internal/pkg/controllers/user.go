@@ -8,6 +8,7 @@ import (
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/routes"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/user"
+	"strconv"
 )
 
 //easyjson:json
@@ -152,7 +153,6 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 // @Title Count of users
 // @Summary Get count of users in a system
 // @ID get-user-count
-// @Accept  json
 // @Produce  json
 // @Success 200 {object} controllers.responseUserGuidStruct
 // @Failure 500 {object} controllers.ErrorResponse
@@ -170,4 +170,33 @@ func GetUsersCount(w http.ResponseWriter, r *http.Request) {
 //easyjson:json
 type getUsersCountResponse struct {
 	Count int `json:"count"`
+}
+
+// GetUsersScore godoc
+// @Title getScoreOfUsers
+// @Summary Returns pairs user email: user score sorted by descendant
+// @ID get-user-score
+// @Accept  query
+// @Produce  json
+// @Param offset query int false "default: 0"
+// @Param limit query int false "default: 10"
+// @Success 200 {array} controllers.responseUserGuidStruct
+// @Failure 500 {object} controllers.ErrorResponse
+// @Router /user/score [get]
+func GetUsersScore(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query()
+	limit, _ := strconv.Atoi(query.Get("limit"))
+	offset, _ :=strconv.Atoi( query.Get("offset"))
+
+	scores, err := user.GetScores(limit, offset)
+	if err != nil {
+		responseWithError(w, http.StatusInternalServerError, "Unknown error")
+		return
+	}
+	responseWithOk(w,GetUsersScoreResponse{scores})
+}
+
+//easyjson:json
+type GetUsersScoreResponse struct {
+	Scores []user.UserScore `json:"scores"`
 }
