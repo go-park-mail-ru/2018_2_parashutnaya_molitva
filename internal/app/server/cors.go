@@ -1,10 +1,9 @@
 package server
 
 import (
-	"fmt"
 	"net/http"
-
-	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
+	"strconv"
+	"strings"
 
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/config"
 )
@@ -25,9 +24,24 @@ type CorsData struct {
 
 func corsMiddleware(h http.HandlerFunc) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
+
 		val, ok := req.Header["Origin"]
 		if ok {
-			singletoneLogger.LogMessage(fmt.Sprintf("%#v", val))
+		LOOP:
+			for _, origin := range corsData.AllowOrigins {
+				if origin == val[0] {
+					res.Header().Set("Access-Control-Allow-Origin", origin)
+					res.Header().Set("Access-Control-Allow-Credentials", strconv.FormatBool(corsData.AllowCredentials))
+					break LOOP
+				}
+			}
+		}
+
+		if req.Method == "OPTIONS" {
+			res.Header().Set("Access-Control-Allow-Methods", strings.Join(corsData.AllowMethods, ", "))
+			res.Header().Set("Access-Control-Allow-Headers", strings.Join(corsData.AllowHeaders, ", "))
+			res.Header().Set("Access-Control-Max-Age", strconv.Itoa(corsData.MaxAge))
+			return
 		}
 
 		h.ServeHTTP(res, req)
