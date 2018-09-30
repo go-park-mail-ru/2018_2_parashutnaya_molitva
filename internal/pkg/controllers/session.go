@@ -3,6 +3,7 @@ package controllers
 import (
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/auth"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/session"
@@ -15,8 +16,40 @@ func Session(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		signIn(w, r)
 	case "GET":
-		getSesson(w, r)
+		getSession(w, r)
 	}
+}
+
+// DeleteSession godoc
+// @Title Delete session
+// @Summary Delete current user session from server
+// @ID get-session
+// @Produce  json
+// @Success 200  {object} controllers.responseUserGuidStruct
+// @Failure 401 {object} controllers.ErrorResponse
+// @Failure 500 {object} controllers.ErrorResponse
+// @Router /session [DELETE]
+func DeleteSession(w http.ResponseWriter, r *http.Request) {
+	b := isAuth(r)
+	if !b {
+		responseWithError(w, http.StatusUnauthorized, "Does not authorised")
+		return
+	}
+	cookie, noCookie := r.Cookie(session.CookieName)
+	if noCookie != nil {
+		responseWithError(w, http.StatusUnauthorized, "Does not authorised")
+		return
+	}
+
+	guid := userGuid(r)
+	err := auth.DeleteSession(guid)
+	if err != nil {
+		responseWithError(w, http.StatusInternalServerError, err.Error())
+	}
+
+	cookie.Expires = time.Unix(0, 0)
+	http.SetCookie(w, cookie)
+	w.WriteHeader(http.StatusOK)
 }
 
 // GetSession godoc
@@ -28,13 +61,13 @@ func Session(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {object} controllers.ErrorResponse
 // @Failure 500 {object} controllers.ErrorResponse
 // @Router /session [GET]
-func getSesson(w http.ResponseWriter, r *http.Request) {
+func getSession(w http.ResponseWriter, r *http.Request) {
 	b := isAuth(r)
 	if !b {
 		responseWithError(w, http.StatusUnauthorized, "Does not authorised")
 		return
 	}
-	guid := r.Context().Value("userGuid").(string)
+	guid := userGuid(r)
 	if guid == "" {
 		responseWithError(w, http.StatusInternalServerError, "Can't find user")
 		return
@@ -76,6 +109,8 @@ func signIn(w http.ResponseWriter, r *http.Request) {
 		responseWithError(w, http.StatusInternalServerError, "Can't parse json")
 		return
 	}
+	singletoneLogger.LogMessage(parameters.Email)
+	singletoneLogger.LogMessage(parameters.Password)
 	u, err := user.LoginUser(parameters.Email, parameters.Password)
 	if err != nil {
 		singletoneLogger.LogError(err)

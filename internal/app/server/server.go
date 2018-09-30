@@ -36,13 +36,13 @@ func StartApp(port int) error {
 
 	singletoneLogger.LogMessage("Server starting at " + stringPort)
 	router := routes.NewRouter(http.DefaultServeMux)
-	router.HandleFunc("/api/session/", wrapHandlerInMiddleware(controllers.Session)).Method("POST", "GET")
-	router.HandleFunc("/api/user/count/", wrapHandlerInMiddleware(controllers.GetUsersCount)).Method("GET")
-	router.HandleFunc("/api/user/:guid", wrapHandlerInMiddleware(controllers.GetUser)).Method("GET")
-	router.HandleFunc("/api/user/:guid", wrapHandlerInMiddleware(controllers.UpdateUser)).Method("PUT")
-	router.HandleFunc("/api/avatar/", wrapHandlerInMiddleware(controllers.UploadAvatar)).Method("POST")
-	router.HandleFunc("/api/user/", wrapHandlerInMiddleware(controllers.CreateUser)).Method("POST")
-
+	router.HandleFunc("/api/session/", wrapHandlerInMiddleware(controllers.Session)).Method("POST", "GET", "OPTIONS")
+	router.HandleFunc("/api/session/", wrapHandlerInMiddleware(controllers.DeleteSession)).Method("DELETE", "OPTIONS")
+	router.HandleFunc("/api/user/count/", wrapHandlerInMiddleware(controllers.GetUsersCount)).Method("GET", "OPTIONS")
+	router.HandleFunc("/api/user/:guid", wrapHandlerInMiddleware(controllers.GetUser)).Method("GET", "OPTIONS")
+	router.HandleFunc("/api/user/:guid", wrapHandlerInMiddleware(controllers.UpdateUser)).Method("PUT", "OPTIONS")
+	router.HandleFunc("/api/avatar/", wrapHandlerInMiddleware(controllers.UploadAvatar)).Method("POST", "OPTIONS")
+	router.HandleFunc("/api/user/", wrapHandlerInMiddleware(controllers.CreateUser)).Method("POST", "OPTIONS")
 
 	// Документация
 	router.HandleFunc("/docks/*", httpSwagger.WrapHandler)

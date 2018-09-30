@@ -1,12 +1,13 @@
 package controllers
 
 import (
+	"io/ioutil"
+	"net/http"
+
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/db"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/routes"
-	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/user"
-	"net/http"
-	"io/ioutil"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/user"
 )
 
 //easyjson:json
@@ -78,6 +79,8 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		responseWithError(w, http.StatusInternalServerError, "Can't parse json")
 		return
 	}
+	singletoneLogger.LogMessage(parameters.Email)
+	singletoneLogger.LogMessage(parameters.Password)
 	u, err := user.CreateUser(parameters.Email, parameters.Password)
 	if err != nil {
 		singletoneLogger.LogError(err)
@@ -154,7 +157,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} controllers.responseUserGuidStruct
 // @Failure 500 {object} controllers.ErrorResponse
 // @Router /user/count [get]
-func GetUsersCount (w http.ResponseWriter, r *http.Request) {
+func GetUsersCount(w http.ResponseWriter, r *http.Request) {
 	count, err := user.GetUsersCount()
 	if err != nil {
 		singletoneLogger.LogError(err)
@@ -165,6 +168,6 @@ func GetUsersCount (w http.ResponseWriter, r *http.Request) {
 }
 
 //easyjson:json
-type getUsersCountResponse struct{
+type getUsersCountResponse struct {
 	Count int `json:"count"`
 }
