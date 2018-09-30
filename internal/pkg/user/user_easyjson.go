@@ -146,34 +146,28 @@ func easyjson9e1087fdDecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternal
 		}
 		switch key {
 		case "avatar":
-			if in.IsNull() {
-				in.Skip()
-				out.Avatar = nil
+			if m, ok := out.Avatar.(easyjson.Unmarshaler); ok {
+				m.UnmarshalEasyJSON(in)
+			} else if m, ok := out.Avatar.(json.Unmarshaler); ok {
+				_ = m.UnmarshalJSON(in.Raw())
 			} else {
-				if out.Avatar == nil {
-					out.Avatar = new(string)
-				}
-				*out.Avatar = string(in.String())
+				out.Avatar = in.Interface()
 			}
 		case "email":
-			if in.IsNull() {
-				in.Skip()
-				out.Email = nil
+			if m, ok := out.Email.(easyjson.Unmarshaler); ok {
+				m.UnmarshalEasyJSON(in)
+			} else if m, ok := out.Email.(json.Unmarshaler); ok {
+				_ = m.UnmarshalJSON(in.Raw())
 			} else {
-				if out.Email == nil {
-					out.Email = new(string)
-				}
-				*out.Email = string(in.String())
+				out.Email = in.Interface()
 			}
 		case "password":
-			if in.IsNull() {
-				in.Skip()
-				out.Password = nil
+			if m, ok := out.Password.(easyjson.Unmarshaler); ok {
+				m.UnmarshalEasyJSON(in)
+			} else if m, ok := out.Password.(json.Unmarshaler); ok {
+				_ = m.UnmarshalJSON(in.Raw())
 			} else {
-				if out.Password == nil {
-					out.Password = new(string)
-				}
-				*out.Password = string(in.String())
+				out.Password = in.Interface()
 			}
 		default:
 			in.SkipRecursive()
@@ -197,10 +191,12 @@ func easyjson9e1087fdEncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternal
 		} else {
 			out.RawString(prefix)
 		}
-		if in.Avatar == nil {
-			out.RawString("null")
+		if m, ok := in.Avatar.(easyjson.Marshaler); ok {
+			m.MarshalEasyJSON(out)
+		} else if m, ok := in.Avatar.(json.Marshaler); ok {
+			out.Raw(m.MarshalJSON())
 		} else {
-			out.String(string(*in.Avatar))
+			out.Raw(json.Marshal(in.Avatar))
 		}
 	}
 	{
@@ -211,10 +207,12 @@ func easyjson9e1087fdEncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternal
 		} else {
 			out.RawString(prefix)
 		}
-		if in.Email == nil {
-			out.RawString("null")
+		if m, ok := in.Email.(easyjson.Marshaler); ok {
+			m.MarshalEasyJSON(out)
+		} else if m, ok := in.Email.(json.Marshaler); ok {
+			out.Raw(m.MarshalJSON())
 		} else {
-			out.String(string(*in.Email))
+			out.Raw(json.Marshal(in.Email))
 		}
 	}
 	{
@@ -225,10 +223,12 @@ func easyjson9e1087fdEncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternal
 		} else {
 			out.RawString(prefix)
 		}
-		if in.Password == nil {
-			out.RawString("null")
+		if m, ok := in.Password.(easyjson.Marshaler); ok {
+			m.MarshalEasyJSON(out)
+		} else if m, ok := in.Password.(json.Marshaler); ok {
+			out.Raw(m.MarshalJSON())
 		} else {
-			out.String(string(*in.Password))
+			out.Raw(json.Marshal(in.Password))
 		}
 	}
 	out.RawByte('}')

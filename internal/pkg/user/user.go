@@ -100,13 +100,13 @@ func CreateUser(email string, password string) (User, error) {
 
 func (u *User) UpdateUser(updateUser UpdateUserStruct) error {
 	if updateUser.Avatar != nil {
-		u.Avatar = *updateUser.Avatar
+		u.Avatar = updateUser.Avatar.(string)
 	}
 	if updateUser.Email != nil {
-		u.Email = *updateUser.Email
+		u.Email = updateUser.Email.(string)
 	}
 	if updateUser.Password != nil {
-		hashedPassword, err :=  hashPassword(*updateUser.Avatar)
+		hashedPassword, err :=  hashPassword(updateUser.Password.(string))
 		if err != nil {
 			return err
 		}
@@ -161,7 +161,7 @@ func IsUserExisting(email string) (bool, error) {
 
 //easyjson:json
 type UpdateUserStruct struct {
-	Avatar *string `json:"avatar"`
-	Email *string `json:"email"`
-	Password *string `json:"password"`
+	Avatar interface{} `json:"avatar"`
+	Email interface{} `json:"email"`
+	Password interface{} `json:"password"`
 }

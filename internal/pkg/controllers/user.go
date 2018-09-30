@@ -136,10 +136,10 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		responseWithError(w, http.StatusMethodNotAllowed, "No access rights")
 		return
 	}
-
+	u.UpdateUser(updateUserData)
 	if err != nil {
 		singletoneLogger.LogError(err)
-		responseWithError(w, http.StatusBadRequest, err.Error())
+		responseWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 	responseWithOk(w, responseUserGuidStruct{u.Guid.Hex()})
@@ -153,7 +153,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 // @Produce  json
 // @Success 200 {object} controllers.responseUserGuidStruct
 // @Failure 500 {object} controllers.ErrorResponse
-// @Router /user/count/ [get]
+// @Router /user/count [get]
 func GetUsersCount (w http.ResponseWriter, r *http.Request) {
 	count, err := user.GetUsersCount()
 	if err != nil {

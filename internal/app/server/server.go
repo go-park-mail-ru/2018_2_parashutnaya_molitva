@@ -31,7 +31,7 @@ func StartApp(port int) error {
 	router.HandleFuncWithMiddleware("/api/user/count/", controllers.GetUsersCount).Method("GET")
 	router.HandleFuncWithMiddleware("/api/user/:guid", controllers.GetUser).Method("GET")
 	router.HandleFuncWithMiddleware("/api/user/:guid", controllers.UpdateUser).Method("PUT")
-	//router.HandleFuncWithMiddleware("/api/user/:guid", controllers.DeleteUser).Method("DELETE")
+	router.HandleFuncWithMiddleware("/api/avatar/", controllers.UploadAvatar).Method("POST")
 	router.HandleFuncWithMiddleware("/api/user/", controllers.CreateUser).Method("POST")
 
 

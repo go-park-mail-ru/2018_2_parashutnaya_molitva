@@ -1,9 +1,18 @@
-basePath: /api/v1
+basePath: /api/
 definitions:
+  controllers.CreateUserParameters:
+    properties:
+      email:
+        example: test@mail.ru
+        type: string
+      password:
+        example: 1234qwerty
+        type: string
+    type: object
   controllers.ErrorResponse:
     properties:
       error:
-        example: Already signed in
+        example: Some error happened
         type: string
     type: object
   controllers.SignInParameters:
@@ -15,10 +24,24 @@ definitions:
         example: 1234qwerty
         type: string
     type: object
+  controllers.responseUploadAvatar:
+    properties:
+      avatar:
+        type: string
+    type: object
   controllers.responseUserGuidStruct:
     properties:
       user_guid:
         type: string
+    type: object
+  user.UpdateUserStruct:
+    properties:
+      avatar:
+        type: object
+      email:
+        type: object
+      password:
+        type: object
     type: object
   user.User:
     properties:
@@ -31,7 +54,7 @@ definitions:
       score:
         type: integer
     type: object
-host: localhost:8080
+host: localhost:3334
 info:
   contact:
     email: Ksenobait_09@mail.ru
@@ -44,6 +67,36 @@ info:
   title: Kekmate API
   version: "1.0"
 paths:
+  /avatar:
+    post:
+      consumes:
+      - multipart/form-data
+      operationId: post-avatar
+      parameters:
+      - description: Avatar file
+        in: formData
+        name: avatar
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.responseUploadAvatar'
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+      summary: upload avatar and returns name of an avatar
   /session:
     get:
       operationId: get-session
@@ -97,6 +150,43 @@ paths:
             $ref: '#/definitions/controllers.ErrorResponse'
             type: object
       summary: Sign in with your account with email and password, set session cookie
+  /user:
+    post:
+      consumes:
+      - application/json
+      operationId: post-user
+      parameters:
+      - description: User id
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.CreateUserParameters'
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.responseUserGuidStruct'
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+      summary: Sign up with email and password
   /user/{guid}:
     get:
       consumes:
@@ -107,7 +197,7 @@ paths:
         in: query
         name: guid
         required: true
-        type: controllers.GetUserParameters
+        type: string
       produces:
       - application/json
       responses:
@@ -132,6 +222,61 @@ paths:
             $ref: '#/definitions/controllers.ErrorResponse'
             type: object
       summary: Get user data by global user id
+    put:
+      consumes:
+      - application/json
+      operationId: put-user
+      parameters:
+      - description: updating data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/user.UpdateUserStruct'
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.responseUserGuidStruct'
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+      summary: Update current user with data
+  /user/count:
+    get:
+      consumes:
+      - application/json
+      operationId: get-user-count
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.responseUserGuidStruct'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+      summary: Get count of users in a system
 securityDefinitions:
   ApiKeyAuth:
     in: header
