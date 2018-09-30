@@ -14,6 +14,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+type ServerData struct {
+	port int
+}
+
 var (
 	errNoPort = errors.New("Port wasn't passed")
 )
@@ -25,14 +29,19 @@ func StartApp(port int) error {
 
 	stringPort := ":" + strconv.Itoa(port)
 
+	err := configReader.Read(confifFile, &corsData)
+	if err != nil {
+		singletoneLogger.LogError(err)
+	}
+
 	singletoneLogger.LogMessage("Server starting at " + stringPort)
 	router := routes.NewRouter(http.DefaultServeMux)
-	router.HandleFuncWithMiddleware("/api/session/", controllers.Session).Method("POST", "GET")
-	router.HandleFuncWithMiddleware("/api/user/count/", controllers.GetUsersCount).Method("GET")
-	router.HandleFuncWithMiddleware("/api/user/:guid", controllers.GetUser).Method("GET")
-	router.HandleFuncWithMiddleware("/api/user/:guid", controllers.UpdateUser).Method("PUT")
-	router.HandleFuncWithMiddleware("/api/avatar/", controllers.UploadAvatar).Method("POST")
-	router.HandleFuncWithMiddleware("/api/user/", controllers.CreateUser).Method("POST")
+	router.HandleFunc("/api/session/", wrapHandlerInMiddleware(controllers.Session)).Method("POST", "GET")
+	router.HandleFunc("/api/user/count/", wrapHandlerInMiddleware(controllers.GetUsersCount)).Method("GET")
+	router.HandleFunc("/api/user/:guid", wrapHandlerInMiddleware(controllers.GetUser)).Method("GET")
+	router.HandleFunc("/api/user/:guid", wrapHandlerInMiddleware(controllers.UpdateUser)).Method("PUT")
+	router.HandleFunc("/api/avatar/", wrapHandlerInMiddleware(controllers.UploadAvatar)).Method("POST")
+	router.HandleFunc("/api/user/", wrapHandlerInMiddleware(controllers.CreateUser)).Method("POST")
 
 
 	// Документация

@@ -1,13 +1,12 @@
-package routes
+package server
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/auth"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/session"
-	"net/http"
 )
-
-type middleware func(h http.HandlerFunc) http.HandlerFunc
 
 func authMiddleware(h http.HandlerFunc) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
@@ -23,10 +22,4 @@ func authMiddleware(h http.HandlerFunc) http.HandlerFunc {
 		}
 		h.ServeHTTP(res, req.WithContext(ctx))
 	}
-}
-func middlewareChain(h http.HandlerFunc, middlewares ...middleware) http.HandlerFunc {
-	for _, m := range middlewares {
-		h = m(h)
-	}
-	return h
 }
