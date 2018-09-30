@@ -6,15 +6,24 @@ import (
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"io"
 	"mime/multipart"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
 var StoragePath string
+var StorageHandler http.Handler
+
+//var StorageHandleFunc http.HandlerFunc
 
 func init() {
 	StoragePath = filepath.Join(config.ProjectPath(), "storage")
+	StorageHandler = http.StripPrefix("/storage/", http.FileServer(http.Dir(StoragePath)))
+}
+
+func StorageHandleFunc(w http.ResponseWriter, r *http.Request) {
+	StorageHandler.ServeHTTP(w, r)
 }
 
 func UploadFile(fileFromRequest multipart.File, fileName string) error {

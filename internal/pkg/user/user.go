@@ -101,7 +101,7 @@ func (u *User) DeleteUser() error {
 
 func GetUserByGuid(guid string) (User, error) {
 	user := User{}
-	err := collection.FindId(bson.M{"_id": CreateIdFromString(guid)}).One(&user)
+	err := collection.FindId(CreateIdFromString(guid)).One(&user)
 	return user, err
 }
 

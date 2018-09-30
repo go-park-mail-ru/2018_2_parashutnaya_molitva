@@ -7,7 +7,6 @@ import (
 	"net/http"
 )
 
-
 func GenerateMessageJSON(responseMessage json.Marshaler) []byte {
 	responseMessageJSON, err := responseMessage.MarshalJSON()
 	if err != nil {

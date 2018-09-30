@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
+
 	"github.com/pkg/errors"
 )
 
@@ -25,9 +27,7 @@ func NewRouter(h http.Handler) *Router {
 
 func (r *Router) Match(req *http.Request) (bool, error) {
 	for _, route := range r.routes {
-		if ok, err := route.Match(req); err != nil {
-			return false, err
-		} else if ok == true {
+		if route.Match(req) {
 			r.handler = route.Handler
 			return true, nil
 		}
@@ -57,9 +57,18 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	r.handler.ServeHTTP(w, req)
 }
 
+func (r *Router) HandleFuncWithMiddleware(path string, handlerFunc http.HandlerFunc) *Route {
+	handlerFunc = middlewareChain(handlerFunc, authMiddleware)
+	return r.HandleFunc(path, handlerFunc)
+}
+
 func (r *Router) HandleFunc(path string, handlerFunc http.HandlerFunc) *Route {
+	return r.Handle(path, handlerFunc)
+}
+
+func (r *Router) Handle(path string, handlerFunc http.Handler) *Route {
 	if r.routes == nil {
-		log.Printf(errRouterNotCreated.Error())
+		singletoneLogger.LogError(errRouterNotCreated)
 		return nil
 	}
 	route := &Route{
