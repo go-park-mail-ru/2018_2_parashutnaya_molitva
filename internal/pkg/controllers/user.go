@@ -186,14 +186,14 @@ type getUsersCountResponse struct {
 func GetUsersScore(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	limit, _ := strconv.Atoi(query.Get("limit"))
-	offset, _ :=strconv.Atoi( query.Get("offset"))
+	offset, _ := strconv.Atoi(query.Get("offset"))
 
 	scores, err := user.GetScores(limit, offset)
 	if err != nil {
 		responseWithError(w, http.StatusInternalServerError, "Unknown error")
 		return
 	}
-	responseWithOk(w,GetUsersScoreResponse{scores})
+	responseWithOk(w, GetUsersScoreResponse{scores})
 }
 
 //easyjson:json

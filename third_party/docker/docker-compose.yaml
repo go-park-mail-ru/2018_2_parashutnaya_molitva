@@ -1,26 +1,48 @@
 version: '3'
-
+# НУЖНО НАСТРОИТЬ СЕРВЕР, ПОДКЛЮЧИТЬ ЕГО К БАЗАМ
 services:
   auth-mongo:
-    container_name: docker-auth-mongo
+    container_name: kekmate-auth-mongo
     restart: always
     build:
       context: .
-      dockerfile: ./Dockerfile.mongo
+      dockerfile: ./mongo/Dockerfile.mongo
     volumes:
-    - ./db-auth:/data/db
+    - /data/db/main:/data/db
+    environment:
+    - AUTH=yes
+    - MONGODB_ADMIN_USER=admin
+    - MONGODB_ADMIN_PASS=admin123
+    - MONGODB_APPLICATION_DATABASE=sample
+    - MONGODB_APPLICATION_USER=aashrey
+    - MONGODB_APPLICATION_PASS=admin123
     ports:
     - '27017:27017'
   main-mongo:
-    container_name: docker-main-mongo
+    container_name: kekmate-main-mongo
     restart: always
+    environment:
+    - AUTH=yes
+    - MONGODB_ADMIN_USER=admin
+    - MONGODB_ADMIN_PASS=admin123
+    - MONGODB_APPLICATION_DATABASE=sample
+    - MONGODB_APPLICATION_USER=aashrey
+    - MONGODB_APPLICATION_PASS=admin123
     build:
       context: .
-      dockerfile: ./Dockerfile.mongo
+      dockerfile: ./mongo/Dockerfile.mongo
     volumes:
-    - ./db-main:/data/db
+    - /data/db/main:/data/db
     ports:
     - '27018:27017'
+  api-server:
+    container_name: kekmate-api-golang
+    restart: always
+    build:
+      context: ./../../.
+      dockerfile: ./Dockerfile.go
+      ports:
+      - ''
 
 
 #    networks:

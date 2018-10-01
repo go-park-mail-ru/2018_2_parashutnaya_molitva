@@ -106,7 +106,7 @@ func (u *User) UpdateUser(updateUser UpdateUserStruct) error {
 		u.Email = updateUser.Email.(string)
 	}
 	if updateUser.Password != nil {
-		hashedPassword, err :=  hashPassword(updateUser.Password.(string))
+		hashedPassword, err := hashPassword(updateUser.Password.(string))
 		if err != nil {
 			return err
 		}
@@ -137,7 +137,7 @@ func CreateIdFromString(str string) bson.ObjectId {
 	if !bson.IsObjectIdHex(str) {
 		return ""
 	}
-	objId :=  bson.ObjectIdHex(str)
+	objId := bson.ObjectIdHex(str)
 	return objId
 }
 
@@ -161,7 +161,7 @@ func IsUserExisting(email string) (bool, error) {
 
 //easyjson:json
 type UpdateUserStruct struct {
-	Avatar interface{} `json:"avatar"`
-	Email interface{} `json:"email"`
+	Avatar   interface{} `json:"avatar"`
+	Email    interface{} `json:"email"`
 	Password interface{} `json:"password"`
 }
