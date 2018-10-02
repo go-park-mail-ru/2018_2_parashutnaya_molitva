@@ -14,8 +14,9 @@ var (
 )
 
 type Router struct {
-	routes  []*Route
-	handler http.Handler
+	routes      []*Route
+	handler     http.Handler
+	middlewares []Middleware
 }
 
 func NewRouter(h http.Handler) *Router {
@@ -34,6 +35,10 @@ func (r *Router) Match(req *http.Request) (bool, error) {
 	}
 
 	return false, nil
+}
+
+func (r *Router) Use(middleware Middleware) {
+	r.middlewares = append(r.middlewares, middleware)
 }
 
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -61,15 +66,18 @@ func (r *Router) HandleFunc(path string, handlerFunc http.HandlerFunc) *Route {
 	return r.Handle(path, handlerFunc)
 }
 
-func (r *Router) Handle(path string, handlerFunc http.Handler) *Route {
+func (r *Router) Handle(path string, handler http.Handler) *Route {
 	if r.routes == nil {
 		singletoneLogger.LogError(errRouterNotCreated)
 		return nil
 	}
+
+	middlewaredHandler := middlewareChain(handler, r.middlewares...)
 	route := &Route{
-		Handler:  handlerFunc,
+		Handler:  middlewaredHandler,
 		PathName: path,
 	}
+
 	r.routes = append(r.routes, route)
 	return route.path(path)
 }

@@ -8,8 +8,8 @@ import (
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/session"
 )
 
-func authMiddleware(h http.HandlerFunc) http.HandlerFunc {
-	return func(res http.ResponseWriter, req *http.Request) {
+func authMiddleware(h http.Handler) http.Handler {
+	var mw http.HandlerFunc = func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		sessionCookie, errNoCookie := req.Cookie(session.CookieName)
 		if errNoCookie != nil {
@@ -22,4 +22,6 @@ func authMiddleware(h http.HandlerFunc) http.HandlerFunc {
 		}
 		h.ServeHTTP(res, req.WithContext(ctx))
 	}
+
+	return mw
 }
