@@ -4,11 +4,12 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"strconv"
+
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/db"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/routes"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/user"
-	"strconv"
 )
 
 //easyjson:json
@@ -75,13 +76,20 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	parameters := CreateUserParameters{}
 	err = parameters.UnmarshalJSON(body)
+
 	if err != nil {
 		singletoneLogger.LogError(err)
 		responseWithError(w, http.StatusInternalServerError, "Can't parse json")
 		return
 	}
-	singletoneLogger.LogMessage(parameters.Email)
-	singletoneLogger.LogMessage(parameters.Password)
+
+	field, err := parameters.Validate()
+	if err != nil {
+		singletoneLogger.LogError(err)
+		responseWithFormError(w, http.StatusBadRequest, err.Error(), field)
+		return
+	}
+
 	u, err := user.CreateUser(parameters.Email, parameters.Password)
 	if err != nil {
 		singletoneLogger.LogError(err)
@@ -95,6 +103,20 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 type CreateUserParameters struct {
 	Email    string `json:"email" example:"test@mail.ru"`
 	Password string `json:"password" example:"1234qwerty"`
+}
+
+func (c *CreateUserParameters) Validate() (string, error) {
+	err := user.ValidateEmail(c.Email)
+	if err != nil {
+		return "email", err
+	}
+
+	err = user.ValidatePassword(c.Password)
+	if err != nil {
+		return "password", err
+	}
+
+	return "", nil
 }
 
 // UpdateUser godoc
@@ -129,6 +151,16 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		responseWithError(w, http.StatusInternalServerError, "Can't parse json")
 		return
 	}
+
+	field, err := updateUserData.Validate()
+	if err != nil && field != "" {
+		responseWithFormError(w, http.StatusBadRequest, err.Error(), field)
+		return
+	} else if err != nil {
+		responseWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	pathVariables, ok := routes.GetVar(r)
 	if !ok {
 		responseWithError(w, http.StatusBadRequest, "Bad query")
@@ -186,14 +218,14 @@ type getUsersCountResponse struct {
 func GetUsersScore(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	limit, _ := strconv.Atoi(query.Get("limit"))
-	offset, _ :=strconv.Atoi( query.Get("offset"))
+	offset, _ := strconv.Atoi(query.Get("offset"))
 
 	scores, err := user.GetScores(limit, offset)
 	if err != nil {
 		responseWithError(w, http.StatusInternalServerError, "Unknown error")
 		return
 	}
-	responseWithOk(w,GetUsersScoreResponse{scores})
+	responseWithOk(w, GetUsersScoreResponse{scores})
 }
 
 //easyjson:json
