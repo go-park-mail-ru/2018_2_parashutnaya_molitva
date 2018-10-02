@@ -9,10 +9,6 @@ import (
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 )
 
-type sizer interface {
-	Size() int64
-}
-
 const (
 	MB = 1 << 20
 )

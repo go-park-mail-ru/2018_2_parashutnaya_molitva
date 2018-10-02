@@ -23,12 +23,12 @@ func Session(w http.ResponseWriter, r *http.Request) {
 // DeleteSession godoc
 // @Title Delete session
 // @Summary Delete current user session from server
-// @ID get-session
+// @ID delete-session
 // @Produce  json
-// @Success 200  {object} controllers.responseUserGuidStruct
+// @Success 200 {object} controllers.responseUserGuidStruct
 // @Failure 401 {object} controllers.ErrorResponse
 // @Failure 500 {object} controllers.ErrorResponse
-// @Router /session [DELETE]
+// @Router /session [delete]
 func DeleteSession(w http.ResponseWriter, r *http.Request) {
 	b := isAuth(r)
 	if !b {
