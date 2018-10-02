@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2"
 	"sync"
+	"time"
 )
 
 var (
@@ -18,7 +19,14 @@ var (
 
 func GetInstance() *mgo.Database {
 	once.Do(func() {
-		sess, err := mgo.Dial(fmt.Sprintf("mongodb://%s:%s", dbConfig.MongoHost, dbConfig.MongoPort))
+		info := &mgo.DialInfo{
+			Addrs:    []string{fmt.Sprintf("%s:%s", dbConfig.MongoHost, dbConfig.MongoPort)},
+			Timeout:  30 * time.Second,
+			Database: "main",
+			Username: dbConfig.MongoUser,
+			Password: dbConfig.MongoPassword,
+		}
+		sess, err := mgo.DialWithInfo(info)
 		if err != nil {
 			singletoneLogger.LogError(errors.WithStack(err))
 		}

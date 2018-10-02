@@ -1,4 +1,6 @@
 {
   "MongoHost": "localhost",
-  "MongoPort": "27018"
+  "MongoPort": "27018",
+  "MongoUser": "user",
+  "MongoPassword": "user"
 }
