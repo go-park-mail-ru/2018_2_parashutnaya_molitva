@@ -1,0 +1,8 @@
+{
+  "MongoHost": "localhost",
+  "MongoPort": "27017",
+  "TokenExpireTime": 14000,
+  "TokenLength": 32,
+  "MongoUser": "user",
+  "MongoPassword": "user"
+}
