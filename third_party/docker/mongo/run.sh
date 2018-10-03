@@ -15,7 +15,7 @@ if [ ! -f /data/db/.mongodb_password_set ]; then
 fi
 
 if [ ! -f /data/db/.mongodb_init_database ]; then
-    /init_database_$MONGODB_APPLICATION_DATABASE.sh
+    /init_database_"$MONGODB_APPLICATION_DATABASE".sh
 fi
 
 fg
