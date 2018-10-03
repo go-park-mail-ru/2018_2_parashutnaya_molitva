@@ -9,6 +9,8 @@ const (
 type dbConfigData struct {
 	MongoHost string
 	MongoPort string
+	MongoUser string
+	MongoPassword string
 }
 
 func init() {

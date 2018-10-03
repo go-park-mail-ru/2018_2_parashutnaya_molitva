@@ -9,6 +9,15 @@ definitions:
         example: 1234qwerty
         type: string
     type: object
+  controllers.ErrorFormResponse:
+    properties:
+      error:
+        example: Some error happened
+        type: string
+      field:
+        example: email
+        type: string
+    type: object
   controllers.ErrorResponse:
     properties:
       error:
@@ -54,7 +63,7 @@ definitions:
       score:
         type: integer
     type: object
-host: localhost:3334
+host: kekmate.tech
 info:
   contact:
     email: Ksenobait_09@mail.ru
@@ -96,8 +105,29 @@ paths:
           schema:
             $ref: '#/definitions/controllers.ErrorResponse'
             type: object
-      summary: upload avatar and returns name of an avatar
+      summary: Upload avatar and returns name of an avatar
   /session:
+    delete:
+      operationId: delete-session
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.responseUserGuidStruct'
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+      summary: Delete current user session from server
     get:
       operationId: get-session
       produces:
@@ -174,7 +204,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/controllers.ErrorResponse'
+            $ref: '#/definitions/controllers.ErrorFormResponse'
             type: object
         "404":
           description: Not Found
@@ -245,7 +275,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/controllers.ErrorResponse'
+            $ref: '#/definitions/controllers.ErrorFormResponse'
             type: object
         "404":
           description: Not Found
@@ -260,8 +290,6 @@ paths:
       summary: Update current user with data
   /user/count:
     get:
-      consumes:
-      - application/json
       operationId: get-user-count
       produces:
       - application/json
@@ -277,40 +305,31 @@ paths:
             $ref: '#/definitions/controllers.ErrorResponse'
             type: object
       summary: Get count of users in a system
-securityDefinitions:
-  ApiKeyAuth:
-    in: header
-    name: Authorization
-    type: apiKey
-  BasicAuth:
-    type: basic
-  OAuth2AccessCode:
-    authorizationUrl: https://example.com/oauth/authorize
-    flow: accessCode
-    scopes:
-      admin: ' Grants read and write access to administrative information'
-    tokenUrl: https://example.com/oauth/token
-    type: oauth2
-  OAuth2Application:
-    flow: application
-    scopes:
-      admin: ' Grants read and write access to administrative information'
-      write: ' Grants write access'
-    tokenUrl: https://example.com/oauth/token
-    type: oauth2
-  OAuth2Implicit:
-    authorizationUrl: https://example.com/oauth/authorize
-    flow: implicit
-    scopes:
-      admin: ' Grants read and write access to administrative information'
-      write: ' Grants write access'
-    type: oauth2
-  OAuth2Password:
-    flow: password
-    scopes:
-      admin: ' Grants read and write access to administrative information'
-      read: ' Grants read access'
-      write: ' Grants write access'
-    tokenUrl: https://example.com/oauth/token
-    type: oauth2
+  /user/score:
+    get:
+      operationId: get-user-score
+      parameters:
+      - description: 'default: 0'
+        in: query
+        name: offset
+        type: integer
+      - description: 'default: 10'
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/controllers.responseUserGuidStruct'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+      summary: 'Returns pairs user email: user score sorted by descendant'
 swagger: "2.0"

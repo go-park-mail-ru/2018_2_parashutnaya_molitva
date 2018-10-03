@@ -22,8 +22,8 @@ type CorsData struct {
 	AllowCredentials bool
 }
 
-func corsMiddleware(h http.HandlerFunc) http.HandlerFunc {
-	return func(res http.ResponseWriter, req *http.Request) {
+func corsMiddleware(h http.Handler) http.Handler {
+	var mw http.HandlerFunc = func(res http.ResponseWriter, req *http.Request) {
 		val, ok := req.Header["Origin"]
 		if ok {
 		LOOP:
@@ -45,4 +45,6 @@ func corsMiddleware(h http.HandlerFunc) http.HandlerFunc {
 
 		h.ServeHTTP(res, req)
 	}
+
+	return mw
 }

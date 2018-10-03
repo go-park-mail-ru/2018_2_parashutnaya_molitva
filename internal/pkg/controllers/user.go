@@ -4,11 +4,12 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"strconv"
+
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/db"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/routes"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/user"
-	"strconv"
 )
 
 //easyjson:json
@@ -57,6 +58,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 // @Param data body controllers.CreateUserParameters true "User id"
 // @Success 200 {object} controllers.responseUserGuidStruct
 // @Failure 400 {object} controllers.ErrorResponse
+// @Failure 400 {object} controllers.ErrorFormResponse
 // @Failure 404 {object} controllers.ErrorResponse
 // @Failure 500 {object} controllers.ErrorResponse
 // @Router /user [post]
@@ -75,13 +77,20 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	parameters := CreateUserParameters{}
 	err = parameters.UnmarshalJSON(body)
+
 	if err != nil {
 		singletoneLogger.LogError(err)
 		responseWithError(w, http.StatusInternalServerError, "Can't parse json")
 		return
 	}
-	singletoneLogger.LogMessage(parameters.Email)
-	singletoneLogger.LogMessage(parameters.Password)
+
+	field, err := parameters.Validate()
+	if err != nil {
+		singletoneLogger.LogError(err)
+		responseWithFormError(w, http.StatusBadRequest, err.Error(), field)
+		return
+	}
+
 	u, err := user.CreateUser(parameters.Email, parameters.Password)
 	if err != nil {
 		singletoneLogger.LogError(err)
@@ -97,6 +106,20 @@ type CreateUserParameters struct {
 	Password string `json:"password" example:"1234qwerty"`
 }
 
+func (c *CreateUserParameters) Validate() (string, error) {
+	err := user.ValidateEmail(c.Email)
+	if err != nil {
+		return "email", err
+	}
+
+	err = user.ValidatePassword(c.Password)
+	if err != nil {
+		return "password", err
+	}
+
+	return "", nil
+}
+
 // UpdateUser godoc
 // @Title Update user
 // @Summary Update current user with data
@@ -106,6 +129,7 @@ type CreateUserParameters struct {
 // @Param data body user.UpdateUserStruct true "updating data"
 // @Success 200 {object} controllers.responseUserGuidStruct
 // @Failure 400 {object} controllers.ErrorResponse
+// @Failure 400 {object} controllers.ErrorFormResponse
 // @Failure 404 {object} controllers.ErrorResponse
 // @Failure 500 {object} controllers.ErrorResponse
 // @Router /user/{guid} [put]
@@ -129,6 +153,16 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		responseWithError(w, http.StatusInternalServerError, "Can't parse json")
 		return
 	}
+
+	field, err := updateUserData.Validate()
+	if err != nil && field != "" {
+		responseWithFormError(w, http.StatusBadRequest, err.Error(), field)
+		return
+	} else if err != nil {
+		responseWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	pathVariables, ok := routes.GetVar(r)
 	if !ok {
 		responseWithError(w, http.StatusBadRequest, "Bad query")
@@ -176,7 +210,6 @@ type getUsersCountResponse struct {
 // @Title getScoreOfUsers
 // @Summary Returns pairs user email: user score sorted by descendant
 // @ID get-user-score
-// @Accept  query
 // @Produce  json
 // @Param offset query int false "default: 0"
 // @Param limit query int false "default: 10"
@@ -186,14 +219,14 @@ type getUsersCountResponse struct {
 func GetUsersScore(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	limit, _ := strconv.Atoi(query.Get("limit"))
-	offset, _ :=strconv.Atoi( query.Get("offset"))
+	offset, _ := strconv.Atoi(query.Get("offset"))
 
 	scores, err := user.GetScores(limit, offset)
 	if err != nil {
 		responseWithError(w, http.StatusInternalServerError, "Unknown error")
 		return
 	}
-	responseWithOk(w,GetUsersScoreResponse{scores})
+	responseWithOk(w, GetUsersScoreResponse{scores})
 }
 
 //easyjson:json

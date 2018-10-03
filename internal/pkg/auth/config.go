@@ -6,6 +6,7 @@ import (
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2"
+	"time"
 )
 
 const (
@@ -17,6 +18,8 @@ type authConfigData struct {
 	MongoPort       string
 	TokenExpireTime int
 	TokenLength     int
+	MongoUser	string
+	MongoPassword string
 }
 
 var (
@@ -29,7 +32,14 @@ func init() {
 	if err != nil {
 		singletoneLogger.LogError(err)
 	}
-	sess, err := mgo.Dial(fmt.Sprintf("mongodb://%s:%s", authConfig.MongoHost, authConfig.MongoPort))
+	info := &mgo.DialInfo{
+		Addrs:    []string{fmt.Sprintf("%s:%s", authConfig.MongoHost, authConfig.MongoPort)},
+		Timeout:  30 * time.Second,
+		Database: "auth",
+		Username: authConfig.MongoUser,
+		Password: authConfig.MongoPassword,
+	}
+	sess, err := mgo.DialWithInfo(info)
 	if err != nil {
 		singletoneLogger.LogError(errors.WithStack(err))
 	}

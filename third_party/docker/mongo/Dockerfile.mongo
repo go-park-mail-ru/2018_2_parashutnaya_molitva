@@ -1,0 +1,14 @@
+FROM mongo:4.0
+
+ADD run.sh /run.sh
+ADD set_mongodb_password.sh /set_mongodb_password.sh
+ADD init_database_main.sh /init_database_main.sh
+ADD init_database_auth.sh /init_database_auth.sh
+
+RUN chmod +x /run.sh
+RUN chmod +x /set_mongodb_password.sh
+RUN chmod +x /init_database_main.sh
+RUN chmod +x  /init_database_auth.sh
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["/run.sh"]
