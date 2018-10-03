@@ -48,7 +48,7 @@ func StartApp(port int) error {
 	router.HandleFunc("/api/user/", controllers.CreateUser).Method("POST", "OPTIONS")
 
 	// Документация
-	router.HandleFunc("/docks/*", httpSwagger.WrapHandler)
+	router.HandleFunc("/docs/*", httpSwagger.WrapHandler)
 
 	// Статика
 	router.Handle("/storage/*", fileStorage.StorageHandler)

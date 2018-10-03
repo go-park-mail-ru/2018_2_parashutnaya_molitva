@@ -18,8 +18,8 @@ var (
 )
 
 // UploadAvatar godoc
-// @Title upload avatar
-// @Summary upload avatar and returns name of an avatar
+// @Title Upload avatar
+// @Summary Upload avatar and returns name of an avatar
 // @ID post-avatar
 // @Accept  multipart/form-data
 // @Produce  json

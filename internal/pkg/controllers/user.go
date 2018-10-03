@@ -58,6 +58,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 // @Param data body controllers.CreateUserParameters true "User id"
 // @Success 200 {object} controllers.responseUserGuidStruct
 // @Failure 400 {object} controllers.ErrorResponse
+// @Failure 400 {object} controllers.ErrorFormResponse
 // @Failure 404 {object} controllers.ErrorResponse
 // @Failure 500 {object} controllers.ErrorResponse
 // @Router /user [post]
@@ -128,6 +129,7 @@ func (c *CreateUserParameters) Validate() (string, error) {
 // @Param data body user.UpdateUserStruct true "updating data"
 // @Success 200 {object} controllers.responseUserGuidStruct
 // @Failure 400 {object} controllers.ErrorResponse
+// @Failure 400 {object} controllers.ErrorFormResponse
 // @Failure 404 {object} controllers.ErrorResponse
 // @Failure 500 {object} controllers.ErrorResponse
 // @Router /user/{guid} [put]
@@ -208,7 +210,6 @@ type getUsersCountResponse struct {
 // @Title getScoreOfUsers
 // @Summary Returns pairs user email: user score sorted by descendant
 // @ID get-user-score
-// @Accept  query
 // @Produce  json
 // @Param offset query int false "default: 0"
 // @Param limit query int false "default: 10"

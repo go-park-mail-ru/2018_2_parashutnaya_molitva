@@ -75,9 +75,6 @@ func getSession(w http.ResponseWriter, r *http.Request) {
 	responseWithOk(w, responseUserGuidStruct{guid})
 }
 
-type SignInResponseResult struct {
-}
-
 // SignIn godoc
 // @Title Sign in
 // @Summary Sign in with your account with email and password, set session cookie

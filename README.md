@@ -12,7 +12,7 @@
 ### Документация
 Сгенерировать через команду `swag init -g internal/app/server/api.go`, где swag - swaggo пакет Golang
 
-Искать на роуте  /docks/index.html
+Искать на роуте  /docs/index.html
 
 
 
