@@ -1,0 +1,335 @@
+basePath: /api/
+definitions:
+  controllers.CreateUserParameters:
+    properties:
+      email:
+        example: test@mail.ru
+        type: string
+      password:
+        example: 1234qwerty
+        type: string
+    type: object
+  controllers.ErrorFormResponse:
+    properties:
+      error:
+        example: Some error happened
+        type: string
+      field:
+        example: email
+        type: string
+    type: object
+  controllers.ErrorResponse:
+    properties:
+      error:
+        example: Some error happened
+        type: string
+    type: object
+  controllers.SignInParameters:
+    properties:
+      email:
+        example: test@mail.ru
+        type: string
+      password:
+        example: 1234qwerty
+        type: string
+    type: object
+  controllers.responseUploadAvatar:
+    properties:
+      avatar:
+        type: string
+    type: object
+  controllers.responseUserGuidStruct:
+    properties:
+      user_guid:
+        type: string
+    type: object
+  user.UpdateUserStruct:
+    properties:
+      avatar:
+        type: object
+      email:
+        type: object
+      password:
+        type: object
+    type: object
+  user.User:
+    properties:
+      avatar:
+        type: string
+      email:
+        type: string
+      guid:
+        type: string
+      score:
+        type: integer
+    type: object
+host: kekmate.tech
+info:
+  contact:
+    email: Ksenobait_09@mail.ru
+    name: API Support
+  description: This is a api for game called kekmate.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Kekmate API
+  version: "1.0"
+paths:
+  /avatar:
+    post:
+      consumes:
+      - multipart/form-data
+      operationId: post-avatar
+      parameters:
+      - description: Avatar file
+        in: formData
+        name: avatar
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.responseUploadAvatar'
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+      summary: Upload avatar and returns name of an avatar
+  /session:
+    delete:
+      operationId: delete-session
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.responseUserGuidStruct'
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+      summary: Delete current user session from server
+    get:
+      operationId: get-session
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.responseUserGuidStruct'
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+      summary: Get current user of session
+    post:
+      consumes:
+      - application/json
+      operationId: post-session
+      parameters:
+      - description: User auth data
+        in: body
+        name: AuthData
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.SignInParameters'
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.responseUserGuidStruct'
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+      summary: Sign in with your account with email and password, set session cookie
+  /user:
+    post:
+      consumes:
+      - application/json
+      operationId: post-user
+      parameters:
+      - description: User id
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.CreateUserParameters'
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.responseUserGuidStruct'
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorFormResponse'
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+      summary: Sign up with email and password
+  /user/{guid}:
+    get:
+      consumes:
+      - application/json
+      operationId: get-user
+      parameters:
+      - description: User id
+        in: query
+        name: guid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.User'
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+      summary: Get user data by global user id
+    put:
+      consumes:
+      - application/json
+      operationId: put-user
+      parameters:
+      - description: updating data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/user.UpdateUserStruct'
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.responseUserGuidStruct'
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.ErrorFormResponse'
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+      summary: Update current user with data
+  /user/count:
+    get:
+      operationId: get-user-count
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.responseUserGuidStruct'
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+      summary: Get count of users in a system
+  /user/score:
+    get:
+      operationId: get-user-score
+      parameters:
+      - description: 'default: 0'
+        in: query
+        name: offset
+        type: integer
+      - description: 'default: 10'
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/controllers.responseUserGuidStruct'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.ErrorResponse'
+            type: object
+      summary: 'Returns pairs user email: user score sorted by descendant'
+swagger: "2.0"
