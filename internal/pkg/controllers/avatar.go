@@ -1,12 +1,11 @@
 package controllers
 
 import (
-	"errors"
-	"net/http"
-	"path/filepath"
-
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/fileStorage"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
+	simpleErrors "errors"
+	"net/http"
+	"path/filepath"
 )
 
 const (
@@ -14,7 +13,7 @@ const (
 )
 
 var (
-	errUploadSize = errors.New("Uploaded file more than 5 mb")
+	errUploadSize = simpleErrors.New("Uploaded file more than 5 mb")
 )
 
 // UploadAvatar godoc
@@ -31,7 +30,6 @@ var (
 func UploadAvatar(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(5 * MB) // 5 MB
 	singletoneLogger.LogError(err)
-
 	file, headers, err := r.FormFile("avatar")
 	if err != nil {
 		singletoneLogger.LogError(err)
