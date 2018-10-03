@@ -1,3 +1,4 @@
+![greeting gif](https://user-images.githubusercontent.com/13205087/46263763-f9c49900-c51b-11e8-8051-cad563ab8789.gif)
 # 2018_2_parashutnaya_molitva
 
 ## Состав
@@ -11,7 +12,7 @@
 ### Документация
 Сгенерировать через команду `swag init -g internal/app/server/api.go`, где swag - swaggo пакет Golang
 
-Искать на роуте  /docks/index.html
+Искать на роуте  /docs/index.html
 
 
 

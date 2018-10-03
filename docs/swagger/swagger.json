@@ -14,7 +14,7 @@
         },
         "version": "1.0"
     },
-    "host": "localhost:3334",
+    "host": "kekmate.tech",
     "basePath": "/api/",
     "paths": {
         "/avatar": {
@@ -25,7 +25,7 @@
                 "produces": [
                     "application/json"
                 ],
-                "summary": "upload avatar and returns name of an avatar",
+                "summary": "Upload avatar and returns name of an avatar",
                 "operationId": "post-avatar",
                 "parameters": [
                     {
@@ -136,6 +136,36 @@
                         }
                     }
                 }
+            },
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete current user session from server",
+                "operationId": "delete-session",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/definitions/controllers.responseUserGuidStruct"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/definitions/controllers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/definitions/controllers.ErrorResponse"
+                        }
+                    }
+                }
             }
         },
         "/user": {
@@ -172,7 +202,7 @@
                         "description": "Bad Request",
                         "schema": {
                             "type": "object",
-                            "$ref": "#/definitions/controllers.ErrorResponse"
+                            "$ref": "#/definitions/controllers.ErrorFormResponse"
                         }
                     },
                     "404": {
@@ -194,9 +224,6 @@
         },
         "/user/count": {
             "get": {
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -208,6 +235,47 @@
                         "schema": {
                             "type": "object",
                             "$ref": "#/definitions/controllers.responseUserGuidStruct"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/definitions/controllers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/score": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns pairs user email: user score sorted by descendant",
+                "operationId": "get-user-score",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "default: 0",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "default: 10",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/controllers.responseUserGuidStruct"
+                            }
                         }
                     },
                     "500": {
@@ -303,7 +371,7 @@
                         "description": "Bad Request",
                         "schema": {
                             "type": "object",
-                            "$ref": "#/definitions/controllers.ErrorResponse"
+                            "$ref": "#/definitions/controllers.ErrorFormResponse"
                         }
                     },
                     "404": {
@@ -335,6 +403,19 @@
                 "password": {
                     "type": "string",
                     "example": "1234qwerty"
+                }
+            }
+        },
+        "controllers.ErrorFormResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "Some error happened"
+                },
+                "field": {
+                    "type": "string",
+                    "example": "email"
                 }
             }
         },
@@ -405,53 +486,6 @@
                 "score": {
                     "type": "integer"
                 }
-            }
-        }
-    },
-    "securityDefinitions": {
-        "ApiKeyAuth": {
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header"
-        },
-        "BasicAuth": {
-            "type": "basic"
-        },
-        "OAuth2AccessCode": {
-            "type": "oauth2",
-            "flow": "accessCode",
-            "authorizationUrl": "https://example.com/oauth/authorize",
-            "tokenUrl": "https://example.com/oauth/token",
-            "scopes": {
-                "admin": " Grants read and write access to administrative information"
-            }
-        },
-        "OAuth2Application": {
-            "type": "oauth2",
-            "flow": "application",
-            "tokenUrl": "https://example.com/oauth/token",
-            "scopes": {
-                "admin": " Grants read and write access to administrative information",
-                "write": " Grants write access"
-            }
-        },
-        "OAuth2Implicit": {
-            "type": "oauth2",
-            "flow": "implicit",
-            "authorizationUrl": "https://example.com/oauth/authorize",
-            "scopes": {
-                "admin": " Grants read and write access to administrative information",
-                "write": " Grants write access"
-            }
-        },
-        "OAuth2Password": {
-            "type": "oauth2",
-            "flow": "password",
-            "tokenUrl": "https://example.com/oauth/token",
-            "scopes": {
-                "admin": " Grants read and write access to administrative information",
-                "read": " Grants read access",
-                "write": " Grants write access"
             }
         }
     }

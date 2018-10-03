@@ -2,6 +2,7 @@ package user
 
 import (
 	simpleErrors "errors"
+
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2/bson"
@@ -56,6 +57,7 @@ func (u *User) ChangeEmail(email string) error {
 
 func (u *User) ChangePassword(password string) error {
 	hashedPassword, err := hashPassword(password)
+
 	if err != nil {
 		singletoneLogger.LogError(err)
 		return err
@@ -80,6 +82,7 @@ func CreateUser(email string, password string) (User, error) {
 	if isExisting {
 		return User{}, errors.New("User already exists")
 	}
+
 	hashedPassword, err := hashPassword(password)
 	if err != nil {
 		singletoneLogger.LogError(err)
@@ -159,9 +162,44 @@ func IsUserExisting(email string) (bool, error) {
 	return true, nil
 }
 
+var (
+	errTypeCastEmail   = errors.New("Can't cast Email interface{} to string")
+	errTypeCastPasswod = errors.New("Can't cast Password interface{} to string")
+)
+
 //easyjson:json
 type UpdateUserStruct struct {
 	Avatar   interface{} `json:"avatar"`
 	Email    interface{} `json:"email"`
 	Password interface{} `json:"password"`
+}
+
+func (u *UpdateUserStruct) Validate() (string, error) {
+
+	if u.Email != nil {
+		email, ok := u.Email.(string)
+		if !ok {
+			singletoneLogger.LogError(errTypeCastEmail)
+			return "", errTypeCastEmail
+		}
+
+		if err := ValidateEmail(email); err != nil {
+			return "email", err
+		}
+	}
+
+	if u.Password != nil {
+		password, ok := u.Password.(string)
+		if !ok {
+			singletoneLogger.LogError(errTypeCastPasswod)
+			return "", errTypeCastPasswod
+		}
+
+		if err := ValidatePassword(password); err != nil {
+			return "password", err
+		}
+	}
+
+	return "", nil
+
 }

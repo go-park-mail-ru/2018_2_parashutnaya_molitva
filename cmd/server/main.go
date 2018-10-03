@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	portFlag = flag.Int("port", -1, "Порт на котором запуститься сервер")
+	portFlag = flag.Int("port", -1, "Порт на котором запустится сервер")
 )
 
 func main() {
