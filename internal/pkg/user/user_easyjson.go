@@ -153,14 +153,6 @@ func easyjson9e1087fdDecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternal
 			} else {
 				out.Avatar = in.Interface()
 			}
-		case "email":
-			if m, ok := out.Email.(easyjson.Unmarshaler); ok {
-				m.UnmarshalEasyJSON(in)
-			} else if m, ok := out.Email.(json.Unmarshaler); ok {
-				_ = m.UnmarshalJSON(in.Raw())
-			} else {
-				out.Email = in.Interface()
-			}
 		case "password":
 			if m, ok := out.Password.(easyjson.Unmarshaler); ok {
 				m.UnmarshalEasyJSON(in)
@@ -197,22 +189,6 @@ func easyjson9e1087fdEncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternal
 			out.Raw(m.MarshalJSON())
 		} else {
 			out.Raw(json.Marshal(in.Avatar))
-		}
-	}
-	{
-		const prefix string = ",\"email\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		if m, ok := in.Email.(easyjson.Marshaler); ok {
-			m.MarshalEasyJSON(out)
-		} else if m, ok := in.Email.(json.Marshaler); ok {
-			out.Raw(m.MarshalJSON())
-		} else {
-			out.Raw(json.Marshal(in.Email))
 		}
 	}
 	{
