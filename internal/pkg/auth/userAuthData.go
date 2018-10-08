@@ -1,10 +1,12 @@
 package auth
 
 import (
+	"time"
+
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/config"
 	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"time"
 )
 
 type Status int
@@ -19,7 +21,7 @@ const (
 )
 
 type authDatabase struct {
-	authConfig *authConfigData
+	authConfig *config.AuthConfig
 	collection *mgo.Collection
 	session    *mgo.Session
 }

@@ -7,6 +7,7 @@ import (
 	_ "github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/docs"
 	httpSwagger "github.com/swaggo/http-swagger"
 
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/config"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/controllers"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/fileStorage"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/routes"
@@ -20,6 +21,7 @@ type ServerData struct {
 
 var (
 	errNoPort = errors.New("Port wasn't passed")
+	corsData  config.CorsConfig
 )
 
 func StartApp(port int) error {
@@ -27,12 +29,12 @@ func StartApp(port int) error {
 		return errNoPort
 	}
 
-	stringPort := ":" + strconv.Itoa(port)
-
-	err := configReader.Read(confifFile, &corsData)
+	err := config.GetConfig("cors", &corsData)
 	if err != nil {
 		singletoneLogger.LogError(err)
 	}
+
+	stringPort := ":" + strconv.Itoa(port)
 
 	singletoneLogger.LogMessage("Server starting at " + stringPort)
 	router := routes.NewRouter(http.DefaultServeMux)

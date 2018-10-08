@@ -2,33 +2,20 @@ package auth
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/config"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2"
-	"time"
 )
-
-const (
-	configFilename = "auth.json"
-)
-
-type authConfigData struct {
-	MongoHost       string
-	MongoPort       string
-	TokenExpireTime int
-	TokenLength     int
-	MongoUser	string
-	MongoPassword string
-}
 
 var (
-	jsonConfigReader = config.JsonConfigReader{}
-	authConfig       authConfigData
+	authConfig = &config.AuthConfig{}
 )
 
 func init() {
-	err := jsonConfigReader.Read(configFilename, &authConfig)
+	err := config.GetConfig("auth", authConfig)
 	if err != nil {
 		singletoneLogger.LogError(err)
 	}

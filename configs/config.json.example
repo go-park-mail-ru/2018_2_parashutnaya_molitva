@@ -1,0 +1,43 @@
+{
+    "auth" : {
+        "MongoHost": "localhost",
+        "MongoPort": "27017",
+        "TokenExpireTime": 14000,
+        "TokenLength": 32,
+        "MongoUser": "user",
+        "MongoPassword": "user",
+        "Test": true
+    },
+    "cors" : {
+        "AllowOrigins": [
+            "http://localhost:4000",
+        ],
+        "AllowMethods": [
+            "GET", 
+            "POST",
+            "PUT",
+            "DELETE"
+        ],
+        "AllowHeaders": [
+            "Content-Type",
+            "X-CSRF-Token"
+        ],
+        "ExposeHeaders": [
+            "X-CSRF-Token"
+        ],
+        "MaxAge": 88500,
+        "AllowCredentials": true
+    }, 
+    "db" : {
+        "MongoHost": "localhost",
+        "MongoPort": "27018",
+        "MongoUser": "user",
+        "MongoPassword": "user"
+    },
+    "logger" : {
+        "outdist" : "stdout",
+        "colorError" : "red",
+        "colorMsg" : "green",
+        "buffSize" : "100"
+    }
+}

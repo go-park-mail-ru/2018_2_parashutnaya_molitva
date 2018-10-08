@@ -19,20 +19,6 @@ func init() {
 	}
 }
 
-var jsonConfigReader = config.JsonConfigReader{}
-
-const configFilename = "logger.json"
-
-// для чтения из конфига. Имя переменной совпадает с именем в конфиге
-type loggerConfig struct {
-	OutDist    string // возможные варианты: file, stdout
-	Filename   string // название файла, если указан file
-	ColorError string // цвет ошибки
-	ColorMsg   string // цвет сообщения
-	BuffSize   string // максимальный размер каналов
-
-}
-
 // loggerData - структура, которая предоставляет данные для инициализации логгера.
 type loggerData struct {
 	Out      io.Writer                               // writer для логов
@@ -46,15 +32,10 @@ var (
 	colorFunc         map[string]func(s string, a ...interface{}) string // мап для определения функции по имени
 )
 
-// ReadFromConfig - дефолтный Reader, который читает JsonConfigReader из logger.json
-func (l *loggerData) ReadFromConfig() error {
-	return l.ReadConfigSpec(configFilename, jsonConfigReader)
-}
-
 // ReadConfigSpec - чтение конфига из определенного файла
-func (l *loggerData) ReadConfigSpec(filename string, configReader config.ConfigReader) error {
-	var dst loggerConfig
-	err := configReader.Read(filename, &dst)
+func (l *loggerData) ReadConfig() error {
+	dst := &config.LoggerConfig{}
+	err := config.GetConfig("logger", dst)
 	if err != nil {
 		return err
 	}

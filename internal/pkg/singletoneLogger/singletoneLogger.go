@@ -4,16 +4,11 @@
 package singletoneLogger
 
 import (
-	"github.com/pkg/errors"
 	"log"
 	"sync"
-)
 
-func init() {
-	once.Do(func() {
-		instance = initLogger()
-	})
-}
+	"github.com/pkg/errors"
+)
 
 var (
 	data     = NewLoggerData()
@@ -41,7 +36,7 @@ func (singletonLogger *singletonLogger) startLogging() {
 }
 
 func initLogger() *singletonLogger {
-	err := data.ReadFromConfig()
+	err := data.ReadConfig()
 
 	if err != nil {
 		err = errors.Wrap(err, "While reading config")
@@ -60,10 +55,16 @@ func initLogger() *singletonLogger {
 
 // LogError - пишет в writer отдельным цветом
 func LogError(err error) {
+	once.Do(func() {
+		instance = initLogger()
+	})
 	instance.errorChan <- err
 }
 
 // LogMessage - пишет в writer отдельным цветом
 func LogMessage(message string) {
+	once.Do(func() {
+		instance = initLogger()
+	})
 	instance.messageChan <- message
 }

@@ -4,23 +4,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-
-	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/config"
 )
-
-var (
-	configReader = config.JsonConfigReader{}
-	confifFile   = "cors.json"
-	corsData     CorsData
-)
-
-type CorsData struct {
-	AllowOrigins     []string
-	AllowMethods     []string
-	AllowHeaders     []string
-	MaxAge           int
-	AllowCredentials bool
-}
 
 func corsMiddleware(h http.Handler) http.Handler {
 	var mw http.HandlerFunc = func(res http.ResponseWriter, req *http.Request) {
