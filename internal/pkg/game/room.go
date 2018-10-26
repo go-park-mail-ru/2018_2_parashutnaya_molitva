@@ -1,13 +1,21 @@
 package game
 
 import (
+	"fmt"
 	"log"
+	"sync"
 	"time"
 
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	uuid "github.com/google/uuid"
+	"github.com/pkg/errors"
 )
 
 const maxPlayers = 2
+
+var (
+	errRoomIsFull = errors.New("Room is full")
+)
 
 type RoomParameters struct {
 	GameDuration time.Duration
@@ -17,14 +25,17 @@ type Room struct {
 	game      *Game
 	gameLogic GameLogic
 
-	ID            string
-	players       []*Player
-	parameters    RoomParameters
-	register      chan *Player
-	isFullChan    chan struct{}
-	isDoneChan    chan struct{}
-	broadcastsIn  [maxPlayers]chan *Message
-	broadcastsOut [maxPlayers]chan *Message
+	ID string
+
+	sync.RWMutex
+	availableSlots int
+	players        []*Player
+	parameters     RoomParameters
+	register       chan *Player
+	isFullChan     chan struct{}
+	isDoneChan     chan struct{}
+	broadcastsIn   [maxPlayers]chan *Message
+	broadcastsOut  [maxPlayers]chan *Message
 }
 
 func createRoomID() string {
@@ -48,13 +59,28 @@ func NewRoom(g *Game, params RoomParameters) *Room {
 			make(chan *Message),
 			make(chan *Message),
 		},
+		availableSlots: maxPlayers,
 	}
 
 	go r.listen()
 	return r
 }
 
+func (r *Room) TakeSlot() {
+	r.Lock()
+	r.availableSlots--
+	r.Unlock()
+}
+
 func (r *Room) IsFull() bool {
+	r.RLock()
+	defer r.RUnlock()
+	return r.availableSlots == 0
+}
+
+func (r *Room) isAllPlayersCreated() bool {
+	r.RLock()
+	defer r.RUnlock()
 	return len(r.players) == maxPlayers
 }
 
@@ -63,6 +89,10 @@ func (r *Room) AddPlayer(player *Player) {
 }
 
 func (r *Room) startGame() {
+
+	singletoneLogger.LogMessage(fmt.Sprintf("RoomID: %v, is starting game with:\nPlayer1: %v\nPlayer2",
+		r.ID, r.players[0].playerData, r.players[1].playerData))
+
 	for idx, p := range r.players {
 		p.Start(r.broadcastsIn[idx], r.broadcastsOut[idx])
 	}
@@ -98,10 +128,11 @@ LOOP:
 	for {
 		select {
 		case p := <-r.register:
-			if len(r.players) >= maxPlayers {
+			if r.isAllPlayersCreated() {
 				r.isFullChan <- struct{}{}
 			} else {
 				r.players = append(r.players, p)
+				singletoneLogger.LogMessage(fmt.Sprintf("RoomID %v: Player was added: %v", p.playerData.Name))
 			}
 		case <-r.isFullChan:
 			go r.startGame()
