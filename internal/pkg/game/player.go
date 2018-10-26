@@ -38,7 +38,7 @@ func (p *Player) write(in <-chan *Message) {
 }
 
 func (p *Player) Start(out chan<- *Message, in <-chan *Message) {
-	singletoneLogger.LogMessage(fmt.Sprintf("Start listen player: ", p.playerData.Name))
+	singletoneLogger.LogMessage(fmt.Sprintf("Start listen player: %v", p.playerData.Name))
 	go p.read(out)
 	go p.write(in)
 }

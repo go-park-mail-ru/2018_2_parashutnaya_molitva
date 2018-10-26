@@ -8,16 +8,28 @@ import (
 )
 
 const (
-	TurnMsg = "turn"
+	TurnMsg  = "turn"
+	ErrorMsg = "error"
 )
 
 var (
-	errDataIsEmpty = errors.New("Data is empty")
+	errDataIsEmpty              = errors.New("Data is empty")
+	errImpossibleUnmarshalToMsg = errors.New("Impossible unmarshal to Message")
 )
 
 type Message struct {
 	msgType string
 	data    json.RawMessage
+}
+
+func UnmarshalToMessage(data []byte) (*Message, error) {
+	msg := &Message{}
+	err := json.Unmarshal(data, msg)
+	if err != nil {
+		return nil, errImpossibleUnmarshalToMsg
+	}
+
+	return msg, nil
 }
 
 func (m *Message) ToUnmarshalData(v interface{}) error {
@@ -28,4 +40,11 @@ func (m *Message) ToUnmarshalData(v interface{}) error {
 	}
 
 	return json.Unmarshal(data, v)
+}
+
+func NewMessage(msgType string, data []byte) *Message {
+	return &Message{
+		msgType: msgType,
+		data:    json.RawMessage(data),
+	}
 }
