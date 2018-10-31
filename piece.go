@@ -1,9 +1,9 @@
 package chess
 
 type Piece struct {
-	pieceType  PieceType
-	color PieceColor
-	isMoved bool
+	pieceType PieceType
+	color     PieceColor
+	isMoved   bool
 	PieceInterface
 }
 

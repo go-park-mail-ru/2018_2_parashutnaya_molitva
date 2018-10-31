@@ -15,9 +15,9 @@ func (p *Queen) ShortName() rune {
 func NewQueen(color PieceColor) *Queen {
 	return &Queen{
 		Piece{
-			pieceType:QueenType,
-			color:color,
-			isMoved:false,
+			pieceType: QueenType,
+			color:     color,
+			isMoved:   false,
 		},
 	}
 }

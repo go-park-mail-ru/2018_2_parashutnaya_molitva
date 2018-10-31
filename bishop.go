@@ -15,9 +15,9 @@ func (p *Bishop) ShortName() rune {
 func NewBishop(color PieceColor) *Bishop {
 	return &Bishop{
 		Piece{
-			pieceType:BishopType,
-			color:color,
-			isMoved:false,
+			pieceType: BishopType,
+			color:     color,
+			isMoved:   false,
 		},
 	}
 }

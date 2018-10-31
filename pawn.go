@@ -15,9 +15,9 @@ func (p *Pawn) ShortName() rune {
 func NewPawn(color PieceColor) *Pawn {
 	return &Pawn{
 		Piece{
-			pieceType:PawnType,
-			color:color,
-			isMoved:false,
+			pieceType: PawnType,
+			color:     color,
+			isMoved:   false,
 		},
 	}
 }

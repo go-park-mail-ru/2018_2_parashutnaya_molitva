@@ -15,9 +15,9 @@ func (n *Knight) ShortName() rune {
 func NewKnight(color PieceColor) *Knight {
 	return &Knight{
 		Piece{
-			pieceType:KnightType,
-			color:color,
-			isMoved:false,
+			pieceType: KnightType,
+			color:     color,
+			isMoved:   false,
 		},
 	}
 }

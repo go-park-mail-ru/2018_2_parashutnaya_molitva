@@ -11,9 +11,9 @@ func (p *Empty) ShortName() rune {
 func NewEmpty() *Empty {
 	return &Empty{
 		Piece{
-			pieceType:EmptyType,
-			color:NONE,
-			isMoved:false,
+			pieceType: EmptyType,
+			color:     NONE,
+			isMoved:   false,
 		},
 	}
 }
