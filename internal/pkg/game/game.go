@@ -12,9 +12,12 @@ import (
 )
 
 var (
-	errNoRoom             = errors.New("No Room")
-	errUnexpectedClose    = errors.New("Unexpected Close")
-	errInitMsgWaitTooLong = errors.New("Waiting Init Message too long")
+	errNoRoom               = errors.New("No Room")
+	errUnexpectedClose      = errors.New("Unexpected Close")
+	errInitMsgWaitTooLong   = errors.New("Waiting Init Message too long")
+	errInvalidMsgTypeInit   = errors.New("Invalid type: wating for Init")
+	errInvalidMsgInitFormat = errors.New("Invalid init message format")
+	errInavlidMsgFormat     = errors.New("Invalid message format")
 )
 
 type Game struct {
@@ -22,10 +25,6 @@ type Game struct {
 	rooms      map[string]*Room
 	closeRoom  chan string
 	createRoom chan *Room
-}
-
-type InitMessage struct {
-	RoomId string `json:"roomid"`
 }
 
 func NewGame() *Game {
@@ -66,59 +65,85 @@ func (g *Game) InitRoom(roomParameters RoomParameters) string {
 	return r.ID
 }
 
-func (g *Game) readInitMessage(conn *websocket.Conn) (*InitMessage, error) {
+func (g *Game) readInitMessage(done chan struct{}, conn *websocket.Conn) chan *InitMessage {
 	chanMessage := make(chan *InitMessage)
-	closeErrMessage := make(chan error)
-	t := time.NewTimer(time.Second * time.Duration(gameConfig.initMessageDeadline)).C
 	go func() {
 		for {
+
+			select {
+			case <-done:
+				return
+			default:
+			}
+
 			_, rawMsg, err := conn.ReadMessage()
 			if websocket.IsUnexpectedCloseError(err) {
-				closeErrMessage <- err
+				conn.Close()
+				singletoneLogger.LogError(err)
+				return
 			}
+
+			if rawMsg == nil {
+				continue
+			}
+
+			singletoneLogger.LogMessage(string(rawMsg))
+
 			msg, err := UnmarshalToMessage(rawMsg)
 			if err != nil {
-				singletoneLogger.LogError(err)
+				sendError(conn, errInavlidMsgFormat.Error())
+				continue
+			}
+			singletoneLogger.LogMessage(fmt.Sprintf("%#v", msg))
+			if msg.MsgType != InitMsg {
+				sendError(conn, errInvalidMsgTypeInit.Error())
+				// singletoneLogger.LogError(errInvalidMsgTypeInit)
 				continue
 			}
 
 			initMsg := &InitMessage{}
 			err = msg.ToUnmarshalData(initMsg)
 			if err != nil {
-				singletoneLogger.LogError(err)
+				sendError(conn, errInvalidMsgInitFormat.Error())
 				continue
 			}
+
 			chanMessage <- initMsg
+			return
 		}
 	}()
 
+	return chanMessage
+}
+
+func (g *Game) initConnection(name string, score int, conn *websocket.Conn) {
+	done := make(chan struct{})
+	t := time.NewTimer(time.Second * time.Duration(gameConfig.InitMessageDeadline)).C
+
 	select {
-	case initMessage := <-chanMessage:
-		return initMessage, nil
-	case err := <-closeErrMessage:
-		return nil, err
+	case initMessage := <-g.readInitMessage(done, conn):
+		close(done)
+		g.mx.RLock()
+		room, exist := g.rooms[initMessage.RoomId]
+		g.mx.RUnlock()
+
+		if !exist {
+			singletoneLogger.LogError(errNoRoom)
+			return
+		}
+
+		room.AddPlayer(NewPlayer(name, score, conn))
+		singletoneLogger.LogMessage(fmt.Sprintf("Successfully init msg was read: %v", initMessage))
 	case <-t:
-		return nil, errInitMsgWaitTooLong
+		close(done)
+		sendError(conn, errInitMsgWaitTooLong.Error())
+		singletoneLogger.LogError(errInitMsgWaitTooLong)
+		conn.Close()
 	}
 }
 
-func (g *Game) InitConnection(name string, score int, conn *websocket.Conn) error {
-	initMessage, err := g.readInitMessage(conn)
-	if err != nil {
-		return err
-	}
-
-	singletoneLogger.LogMessage(fmt.Sprintf("Successfully init msg was read: %v", initMessage))
-
-	g.mx.RLock()
-	room, exist := g.rooms[initMessage.RoomId]
-	g.mx.RUnlock()
-	if !exist {
-		return errNoRoom
-	}
-
-	room.AddPlayer(NewPlayer(name, score, conn))
-	return nil
+func (g *Game) InitConnection(name string, score int, conn *websocket.Conn) {
+	go g.initConnection(name, score, conn)
 }
 
 func (g *Game) CloseRoom(roomID string) {
@@ -144,7 +169,7 @@ func (g *Game) printGameState() {
 	for id, r := range g.rooms {
 		g.mx.RUnlock()
 		singletoneLogger.LogMessage(fmt.Sprintf("RoomId: %v", id))
-		singletoneLogger.LogMessage(fmt.Sprintf("RoomParametrs: %#v", r.parameters.GameDuration.String()))
+		singletoneLogger.LogMessage(fmt.Sprintf("RoomParametrs: %#v", r.parameters.Duration))
 		singletoneLogger.LogMessage("------------")
 		g.mx.RLock()
 	}

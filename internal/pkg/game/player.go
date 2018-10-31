@@ -27,6 +27,13 @@ func NewPlayer(name string, score int, conn *websocket.Conn) *Player {
 	}
 }
 
+func (p *Player) Send(msg *Message) {
+	err := p.conn.WriteJSON(msg)
+	if err != nil {
+		singletoneLogger.LogError(err)
+	}
+}
+
 // Читает сообщения из соединения и записывает в канал
 func (p *Player) read(out chan<- *Message) {
 

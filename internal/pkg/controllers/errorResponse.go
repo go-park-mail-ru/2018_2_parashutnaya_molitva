@@ -7,6 +7,13 @@ import (
 	"github.com/pkg/errors"
 )
 
+var (
+	errNoAuth           = "Does not authorised"
+	errNoUser           = "Can't find user"
+	errParseRequestBody = "Can't parse request body"
+	errParseJSON        = "Can't parse json"
+)
+
 //easyjson:json
 type ErrorResponse struct {
 	Error string `json:"error" example:"Some error happened"`
