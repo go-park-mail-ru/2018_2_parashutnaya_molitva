@@ -10,6 +10,8 @@ import (
 const (
 	TurnMsg  = "turn"
 	ErrorMsg = "error"
+	InitMsg  = "init"
+	InfoMsg  = "info"
 )
 
 var (
@@ -17,9 +19,21 @@ var (
 	errImpossibleUnmarshalToMsg = errors.New("Impossible unmarshal to Message")
 )
 
+type InitMessage struct {
+	RoomId string `json:"roomid"`
+}
+
+type ErrorMessage struct {
+	Error string `json:"error"`
+}
+
+type InfoMessage struct {
+	Info string `json:"info"`
+}
+
 type Message struct {
-	msgType string
-	data    json.RawMessage
+	MsgType string
+	Data    json.RawMessage
 }
 
 func UnmarshalToMessage(data []byte) (*Message, error) {
@@ -32,9 +46,18 @@ func UnmarshalToMessage(data []byte) (*Message, error) {
 	return msg, nil
 }
 
+func MarshalToMessage(msgType string, v interface{}) (*Message, error) {
+	data, err := json.Marshal(v)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewMessage(msgType, data), nil
+}
+
 func (m *Message) ToUnmarshalData(v interface{}) error {
 	// Не возвращает ошибку
-	data, _ := m.data.MarshalJSON()
+	data, _ := m.Data.MarshalJSON()
 	if reflect.DeepEqual(data, []byte("null")) {
 		return errDataIsEmpty
 	}
@@ -44,7 +67,7 @@ func (m *Message) ToUnmarshalData(v interface{}) error {
 
 func NewMessage(msgType string, data []byte) *Message {
 	return &Message{
-		msgType: msgType,
-		data:    json.RawMessage(data),
+		MsgType: msgType,
+		Data:    json.RawMessage(data),
 	}
 }

@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/controllers"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/fileStorage"
+	g "github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/game"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/routes"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"github.com/pkg/errors"
@@ -46,6 +47,9 @@ func StartApp(port int) error {
 	router.HandleFunc("/api/user/:guid", controllers.UpdateUser).Method("PUT", "OPTIONS")
 	router.HandleFunc("/api/avatar/", controllers.UploadAvatar).Method("POST", "OPTIONS")
 	router.HandleFunc("/api/user/", controllers.CreateUser).Method("POST", "OPTIONS")
+
+	game := g.NewGame()
+	router.Handle("/game/", &controllers.FindRoom{game}).Method("POST", "OPTIONS")
 
 	// Документация
 	router.HandleFunc("/docs/*", httpSwagger.WrapHandler)

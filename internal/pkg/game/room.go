@@ -1,10 +1,10 @@
 package game
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"sync"
-	"time"
 
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	uuid "github.com/google/uuid"
@@ -14,11 +14,40 @@ import (
 const maxPlayers = 2
 
 var (
-	errRoomIsFull = errors.New("Room is full")
+	errRoomIsFull          = errors.New("Room is full")
+	errInvalidGameDuration = errors.New("Invalid game duration")
 )
 
+//easyjson:json
 type RoomParameters struct {
-	GameDuration time.Duration
+	Duration int `json:"duration" example:"60"`
+}
+
+func (r *RoomParameters) UnmarshalJSON(data []byte) error {
+	return json.Unmarshal(data, r)
+}
+
+func (r *RoomParameters) MarshalJSON() ([]byte, error) {
+	data, err := json.Marshal(r)
+	return data, err
+}
+
+func (r *RoomParameters) Validate() (string, error) {
+	if err := ValidateDuration(r.Duration); err != nil {
+		return "duration", err
+	}
+
+	return "", nil
+}
+
+func ValidateDuration(duration int) error {
+	for _, d := range gameConfig.ValidGameDuration {
+		if d == duration {
+			return nil
+		}
+	}
+
+	return errInvalidGameDuration
 }
 
 type Room struct {
@@ -97,10 +126,14 @@ func (r *Room) startGame() {
 		p.Start(r.broadcastsIn[idx], r.broadcastsOut[idx])
 	}
 
+	gameIsStartedMsg, _ := MarshalToMessage(InfoMsg, &InfoMessage{"Game is started"})
+	for _, out := range r.broadcastsOut {
+		out <- gameIsStartedMsg
+	}
 	for {
 		select {
 		case firstMsg := <-r.broadcastsIn[0]:
-			if firstMsg.msgType == TurnMsg {
+			if firstMsg.MsgType == TurnMsg {
 				turn := &Turn{}
 				err := firstMsg.ToUnmarshalData(turn)
 				if err != nil {
@@ -110,7 +143,7 @@ func (r *Room) startGame() {
 				r.gameLogic.FirstPlayerTurn(*turn)
 			}
 		case secondMsg := <-r.broadcastsIn[1]:
-			if secondMsg.msgType == TurnMsg {
+			if secondMsg.MsgType == TurnMsg {
 				turn := &Turn{}
 				err := secondMsg.ToUnmarshalData(turn)
 				if err != nil {
@@ -133,6 +166,9 @@ LOOP:
 			} else {
 				r.players = append(r.players, p)
 				singletoneLogger.LogMessage(fmt.Sprintf("RoomID %v: Player was added: %v", p.playerData.Name))
+
+				msg, _ := MarshalToMessage(InfoMsg, &InfoMessage{"Added to room"})
+				p.Send(msg)
 			}
 		case <-r.isFullChan:
 			go r.startGame()

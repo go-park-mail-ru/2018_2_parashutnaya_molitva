@@ -8,7 +8,8 @@ import (
 const configFileName = "game.json"
 
 type GameConfig struct {
-	initMessageDeadline int
+	InitMessageDeadline int
+	ValidGameDuration   []int
 }
 
 var (
@@ -17,6 +18,7 @@ var (
 )
 
 func init() {
+	singletoneLogger.LogMessage("INIT")
 	err := jsonConfigReader.Read(configFileName, gameConfig)
 	if err != nil {
 		singletoneLogger.LogError(err)

@@ -20,9 +20,6 @@ func TestGameInitRoomCreatedSameParamsTwo(t *testing.T) {
 		TestCaseInitRoom{
 			params: g.RoomParameters{time.Duration(1)},
 		},
-		TestCaseInitRoom{
-			params: g.RoomParameters{time.Duration(1)},
-		},
 	}
 	game := g.NewGame()
 	fID := game.InitRoom(tests[0].params)
