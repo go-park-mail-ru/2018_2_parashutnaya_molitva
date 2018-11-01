@@ -130,3 +130,13 @@ func (b *Board) AvailableMoves() map[string]*Board {
 
 	return availableMoves
 }
+
+func (b *Board) RemoveEnPassant() {
+	for i := 0; i < 8; i++ {
+		for j := 0; j < 8; j++ {
+			if (b.PieceAt(Coord{i, j}).Type() == EnPassantType) {
+				b.SetPieceAt(Coord{i, j}, NewPiece(EmptyType, NONE))
+			}
+		}
+	}
+}
