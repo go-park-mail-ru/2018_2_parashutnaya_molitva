@@ -116,6 +116,13 @@ func (b *Board) AvailableMovesAtPos(pos Coord) map[string]*Board {
 				availableMoves[key] = val
 			}
 		}
+	case BishopType:
+		{
+			bishopAvailableMoves := BishopMoves(b, pos)
+			for key, val := range bishopAvailableMoves {
+				availableMoves[key] = val
+			}
+		}
 	default:
 		{
 			return availableMoves

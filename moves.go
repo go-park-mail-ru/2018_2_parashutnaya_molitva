@@ -106,3 +106,42 @@ func KnightMoves(b *Board, pos Coord) map[string]*Board {
 
 	return availableMoves
 }
+
+func BishopMoves(b *Board, pos Coord) map[string]*Board {
+	availableMoves := make(map[string]*Board)
+
+	bishop := b.PieceAt(pos)
+
+	steps := make([]Coord, 0, 16)
+
+	rMultipliers := []int{1, 1, -1, -1}
+	cMultipliers := []int{1, -1, 1, -1}
+	for i := 0; i < len(rMultipliers); i++ {
+		for j := 1; j < 8; j++ {
+			step := Coord{j * rMultipliers[i], j * cMultipliers[i]}
+			stepAbsolute := step.add(&pos)
+			if b.PieceAt(stepAbsolute).Type() == EmptyType ||
+				b.PieceAt(stepAbsolute).Type() == EnPassantType {
+				steps = append(steps, stepAbsolute)
+				continue
+			}
+			if b.PieceAt(stepAbsolute).Color() == bishop.Color() ||
+				b.PieceAt(stepAbsolute).Type() == NoneType {
+				break
+			}
+			if b.PieceAt(stepAbsolute).Color() != bishop.Color() {
+				steps = append(steps, stepAbsolute)
+				break
+			}
+		}
+	}
+
+	for i := 0; i < len(steps); i++ {
+		moveBoard := b.Copy()
+		moveBoard.MovePiece(pos, steps[i])
+		moveBoard.RemoveEnPassant()
+		availableMoves[CoordsToUci(pos, steps[i])] = moveBoard
+	}
+
+	return availableMoves
+}
