@@ -183,3 +183,19 @@ func RookMoves(b *Board, pos Coord) map[string]*Board {
 
 	return availableMoves
 }
+
+func QueenMoves(b *Board, pos Coord) map[string]*Board {
+	availableMoves := make(map[string]*Board)
+
+	rookAvailableMoves := RookMoves(b, pos)
+	for key, val := range rookAvailableMoves {
+		availableMoves[key] = val
+	}
+
+	bishopAvailableMoves := BishopMoves(b, pos)
+	for key, val := range bishopAvailableMoves {
+		availableMoves[key] = val
+	}
+
+	return availableMoves
+}
