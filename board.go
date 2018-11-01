@@ -123,6 +123,13 @@ func (b *Board) AvailableMovesAtPos(pos Coord) map[string]*Board {
 				availableMoves[key] = val
 			}
 		}
+	case RookType:
+		{
+			rookAvailableMoves := RookMoves(b, pos)
+			for key, val := range rookAvailableMoves {
+				availableMoves[key] = val
+			}
+		}
 	default:
 		{
 			return availableMoves

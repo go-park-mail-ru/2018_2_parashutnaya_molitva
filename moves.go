@@ -145,3 +145,41 @@ func BishopMoves(b *Board, pos Coord) map[string]*Board {
 
 	return availableMoves
 }
+
+func RookMoves(b *Board, pos Coord) map[string]*Board {
+	availableMoves := make(map[string]*Board)
+	rook := b.PieceAt(pos)
+
+	steps := make([]Coord, 0, 16)
+
+	rMultipliers := []int{1, 0, -1, 0}
+	cMultipliers := []int{0, 1, 0, -1}
+	for i := 0; i < len(rMultipliers); i++ {
+		for j := 1; j < 8; j++ {
+			step := Coord{j * rMultipliers[i], j * cMultipliers[i]}
+			stepAbsolute := step.add(&pos)
+			if b.PieceAt(stepAbsolute).Type() == EmptyType ||
+				b.PieceAt(stepAbsolute).Type() == EnPassantType {
+				steps = append(steps, stepAbsolute)
+				continue
+			}
+			if b.PieceAt(stepAbsolute).Color() == rook.Color() ||
+				b.PieceAt(stepAbsolute).Type() == NoneType {
+				break
+			}
+			if b.PieceAt(stepAbsolute).Color() != rook.Color() {
+				steps = append(steps, stepAbsolute)
+				break
+			}
+		}
+	}
+
+	for i := 0; i < len(steps); i++ {
+		moveBoard := b.Copy()
+		moveBoard.MovePiece(pos, steps[i])
+		moveBoard.RemoveEnPassant()
+		availableMoves[CoordsToUci(pos, steps[i])] = moveBoard
+	}
+
+	return availableMoves
+}
