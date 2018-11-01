@@ -16,3 +16,8 @@ func (c *Coord) subtract(o *Coord) Coord {
 func (c *Coord) multiply(o *Coord) Coord {
 	return Coord{c.r * o.r, c.c * o.c}
 }
+
+type Move struct {
+	uci      string
+	newBoard []*Board
+}

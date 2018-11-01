@@ -33,6 +33,17 @@ func NewBoard() Board {
 	return Board{field: field}
 }
 
+func (b *Board) Copy() *Board {
+	duplicateField := make([][]PieceInterface, len(b.field))
+	for i := range b.field {
+		duplicateField[i] = make([]PieceInterface, len(b.field[i]))
+		copy(duplicateField[i], b.field[i])
+	}
+
+	copiedBoard := Board{duplicateField}
+	return &copiedBoard
+}
+
 func (b *Board) MoveUCI(uci string) {
 	b.Move(UciToCoords(uci))
 }
@@ -51,11 +62,39 @@ func (b *Board) PieceAt(pos Coord) PieceInterface {
 }
 
 func (b *Board) PrintBoard() {
-	fmt.Println(len(b.field))
 	for i := 7; i >= 0; i-- {
 		for j := 0; j < 8; j++ {
 			fmt.Printf("%c", b.PieceAt(Coord{i, j}).ShortName())
 		}
 		fmt.Println()
 	}
+
+	for i := 0; i < 8; i++ {
+		for j := 0; j < 8; j++ {
+			b.AvailableMovesAtPos(Coord{i, j})
+		}
+	}
+}
+
+func (b *Board) AvailableMovesAtPos(pos Coord) map[string]*Board {
+	availableMoves := make(map[string]*Board)
+
+	piece := b.PieceAt(pos)
+	switch piece.Type() {
+	case PawnType:
+		{
+			pawnAvailableMoves := PawnMoves(b, pos)
+			for key, val := range pawnAvailableMoves {
+				availableMoves[key] = val
+			}
+		}
+	default:
+		{
+			return availableMoves
+		}
+	}
+	//for key, _ := range availableMoves {
+	//	fmt.Println(key)
+	//}
+	return availableMoves
 }
