@@ -1,7 +1,5 @@
 package chess
 
-import "fmt"
-
 func PawnMoves(b *Board, pos Coord) map[string]*Board {
 	availableMoves := make(map[string]*Board)
 
@@ -75,12 +73,36 @@ func PawnMoves(b *Board, pos Coord) map[string]*Board {
 		availableMoves[CoordsToUci(pos, rightCapture)] = moveBoard
 	}
 
-	fmt.Printf("for pos %d %d\n", pos.r, pos.c)
-	fmt.Println(pawn.IsMoved())
-	for key := range availableMoves {
-		fmt.Printf("%s ", key)
+	return availableMoves
+}
+
+func KnightMoves(b *Board, pos Coord) map[string]*Board {
+	availableMoves := make(map[string]*Board)
+
+	knight := b.PieceAt(pos)
+
+	steps := []Coord{
+		{-2, 1}, {-1, 2}, {1, 2}, {2, 1},
+		{2, -1}, {1, -2}, {-1, -2}, {-2, -1},
 	}
-	fmt.Println()
+
+	// absolute coords
+	for i := 0; i < len(steps); i++ {
+		steps[i] = steps[i].add(&pos)
+	}
+
+	for i := 0; i < len(steps); i++ {
+		if b.PieceAt(steps[i]).Color() != knight.Color() && b.PieceAt(steps[i]).Color() != NONE ||
+			b.PieceAt(steps[i]).Type() == EnPassantType ||
+			b.PieceAt(steps[i]).Type() == EmptyType {
+
+			moveBoard := b.Copy()
+			moveBoard.MovePiece(pos, steps[i])
+			moveBoard.RemoveEnPassant()
+
+			availableMoves[CoordsToUci(pos, steps[i])] = moveBoard
+		}
+	}
 
 	return availableMoves
 }

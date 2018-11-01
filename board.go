@@ -109,11 +109,23 @@ func (b *Board) AvailableMovesAtPos(pos Coord) map[string]*Board {
 				availableMoves[key] = val
 			}
 		}
+	case KnightType:
+		{
+			knightAvailableMoves := KnightMoves(b, pos)
+			for key, val := range knightAvailableMoves {
+				availableMoves[key] = val
+			}
+		}
 	default:
 		{
 			return availableMoves
 		}
 	}
+
+	for key := range availableMoves {
+		fmt.Printf("%s ", key)
+	}
+	fmt.Println()
 	return availableMoves
 }
 
