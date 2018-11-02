@@ -199,3 +199,32 @@ func QueenMoves(b *Board, pos Coord) map[string]*Board {
 
 	return availableMoves
 }
+
+func KingMoves(b *Board, pos Coord) map[string]*Board {
+	availableMoves := make(map[string]*Board)
+
+	king := b.PieceAt(pos)
+
+	steps := []Coord{
+		{0, -1}, {1, -1}, {1, 0}, {1, 1},
+		{0, 1}, {-1, 1}, {-1, 0}, {-1, -1},
+	}
+
+	for i := 0; i < len(steps); i++ {
+		stepAbsolute := steps[i].add(&pos)
+		if b.PieceAt(stepAbsolute).Type() == NoneType {
+			continue
+		}
+		if b.PieceAt(stepAbsolute).Type() == EmptyType ||
+			b.PieceAt(stepAbsolute).Type() == EnPassantType ||
+			b.PieceAt(stepAbsolute).Color() != king.Color() {
+
+			moveBoard := b.Copy()
+			moveBoard.MovePiece(pos, stepAbsolute)
+			moveBoard.RemoveEnPassant()
+			availableMoves[CoordsToUci(pos, stepAbsolute)] = moveBoard
+		}
+	}
+
+	return availableMoves
+}

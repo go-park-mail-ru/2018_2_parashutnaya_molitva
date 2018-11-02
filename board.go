@@ -137,6 +137,13 @@ func (b *Board) AvailableMovesAtPos(pos Coord) map[string]*Board {
 				availableMoves[key] = val
 			}
 		}
+	case KingType:
+		{
+			kingAvailableMoves := KingMoves(b, pos)
+			for key, val := range kingAvailableMoves {
+				availableMoves[key] = val
+			}
+		}
 	default:
 		{
 			return availableMoves
