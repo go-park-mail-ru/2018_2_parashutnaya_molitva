@@ -96,9 +96,10 @@ func KnightMoves(b *Board, pos Coord) map[string]*Board {
 	}
 
 	for i := 0; i < len(steps); i++ {
-		if b.PieceAt(steps[i]).Color() != knight.Color() && b.PieceAt(steps[i]).Color() != NONE ||
-			b.PieceAt(steps[i]).Type() == EnPassantType ||
-			b.PieceAt(steps[i]).Type() == EmptyType {
+		piece := b.PieceAt(steps[i])
+		if piece.Color() != knight.Color() && piece.Color() != NONE ||
+			piece.Type() == EnPassantType ||
+			piece.Type() == EmptyType {
 
 			moveBoard := b.Copy()
 			moveBoard.MovePiece(pos, steps[i])
@@ -124,16 +125,17 @@ func BishopMoves(b *Board, pos Coord) map[string]*Board {
 		for j := 1; j < 8; j++ {
 			step := Coord{j * rMultipliers[i], j * cMultipliers[i]}
 			stepAbsolute := step.add(&pos)
-			if b.PieceAt(stepAbsolute).Type() == EmptyType ||
-				b.PieceAt(stepAbsolute).Type() == EnPassantType {
+			piece := b.PieceAt(stepAbsolute)
+			if piece.Type() == EmptyType ||
+				piece.Type() == EnPassantType {
 				steps = append(steps, stepAbsolute)
 				continue
 			}
-			if b.PieceAt(stepAbsolute).Color() == bishop.Color() ||
-				b.PieceAt(stepAbsolute).Type() == NoneType {
+			if piece.Color() == bishop.Color() ||
+				piece.Type() == NoneType {
 				break
 			}
-			if b.PieceAt(stepAbsolute).Color() != bishop.Color() {
+			if piece.Color() != bishop.Color() {
 				steps = append(steps, stepAbsolute)
 				break
 			}
@@ -162,16 +164,17 @@ func RookMoves(b *Board, pos Coord) map[string]*Board {
 		for j := 1; j < 8; j++ {
 			step := Coord{j * rMultipliers[i], j * cMultipliers[i]}
 			stepAbsolute := step.add(&pos)
-			if b.PieceAt(stepAbsolute).Type() == EmptyType ||
-				b.PieceAt(stepAbsolute).Type() == EnPassantType {
+			piece := b.PieceAt(stepAbsolute)
+			if piece.Type() == EmptyType ||
+				piece.Type() == EnPassantType {
 				steps = append(steps, stepAbsolute)
 				continue
 			}
-			if b.PieceAt(stepAbsolute).Color() == rook.Color() ||
-				b.PieceAt(stepAbsolute).Type() == NoneType {
+			if piece.Color() == rook.Color() ||
+				piece.Type() == NoneType {
 				break
 			}
-			if b.PieceAt(stepAbsolute).Color() != rook.Color() {
+			if piece.Color() != rook.Color() {
 				steps = append(steps, stepAbsolute)
 				break
 			}
@@ -216,12 +219,13 @@ func KingMoves(b *Board, pos Coord, attackOnly bool) map[string]*Board {
 
 	for i := 0; i < len(steps); i++ {
 		stepAbsolute := steps[i].add(&pos)
-		if b.PieceAt(stepAbsolute).Type() == NoneType {
+		piece := b.PieceAt(stepAbsolute)
+		if piece.Type() == NoneType {
 			continue
 		}
-		if b.PieceAt(stepAbsolute).Type() == EmptyType ||
-			b.PieceAt(stepAbsolute).Type() == EnPassantType ||
-			b.PieceAt(stepAbsolute).Color() != king.Color() {
+		if piece.Type() == EmptyType ||
+			piece.Type() == EnPassantType ||
+			piece.Color() != king.Color() {
 
 			moveBoard := b.Copy()
 			moveBoard.MovePiece(pos, stepAbsolute)
