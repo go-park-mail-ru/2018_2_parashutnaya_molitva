@@ -1,6 +1,8 @@
 package chess
 
-func PawnMoves(b *Board, pos Coord) map[string]*Board {
+import "fmt"
+
+func PawnMoves(b *Board, pos Coord, attackOnly bool) map[string]*Board {
 	availableMoves := make(map[string]*Board)
 
 	pawn := b.PieceAt(pos)
@@ -32,21 +34,23 @@ func PawnMoves(b *Board, pos Coord) map[string]*Board {
 	rightCapture = rightCapture.add(&pos)
 	enPasant = doubleForward.add(&enPasant)
 
-	pieceAtForward := b.PieceAt(forward)
-	if pieceAtForward.Type() == EmptyType {
-		moveBoard := b.Copy()
-		moveBoard.MovePiece(pos, forward)
-		moveBoard.RemoveEnPassant()
-		availableMoves[CoordsToUci(pos, forward)] = moveBoard
-	}
+	if !attackOnly {
+		pieceAtForward := b.PieceAt(forward)
+		if pieceAtForward.Type() == EmptyType {
+			moveBoard := b.Copy()
+			moveBoard.MovePiece(pos, forward)
+			moveBoard.RemoveEnPassant()
+			availableMoves[CoordsToUcis(pos, forward)] = moveBoard
+		}
 
-	pieceAtDoubleForward := b.PieceAt(doubleForward)
-	if pieceAtDoubleForward.Type() == EmptyType && !pawn.IsMoved() {
-		moveBoard := b.Copy()
-		moveBoard.MovePiece(pos, doubleForward)
-		moveBoard.RemoveEnPassant()
-		moveBoard.SetPieceAt(enPasant, NewPiece(EnPassantType, pawn.Color()))
-		availableMoves[CoordsToUci(pos, doubleForward)] = moveBoard
+		pieceAtDoubleForward := b.PieceAt(doubleForward)
+		if pieceAtDoubleForward.Type() == EmptyType && !pawn.IsMoved() {
+			moveBoard := b.Copy()
+			moveBoard.MovePiece(pos, doubleForward)
+			moveBoard.RemoveEnPassant()
+			moveBoard.SetPieceAt(enPasant, NewPiece(EnPassantType, pawn.Color()))
+			availableMoves[CoordsToUcis(pos, doubleForward)] = moveBoard
+		}
 	}
 
 	pieceAtLeftCapture := b.PieceAt(leftCapture)
@@ -58,7 +62,7 @@ func PawnMoves(b *Board, pos Coord) map[string]*Board {
 			pawnEnPassantAbsolute := pawnEnPassantRelative.add(&leftCapture)
 			moveBoard.SetPieceAt(pawnEnPassantAbsolute, NewPiece(EmptyType, NONE))
 		}
-		availableMoves[CoordsToUci(pos, leftCapture)] = moveBoard
+		availableMoves[CoordsToUcis(pos, leftCapture)] = moveBoard
 	}
 
 	pieceAtRightCapture := b.PieceAt(rightCapture)
@@ -70,7 +74,7 @@ func PawnMoves(b *Board, pos Coord) map[string]*Board {
 			pawnEnPassantAbsolute := pawnEnPassantRelative.add(&rightCapture)
 			moveBoard.SetPieceAt(pawnEnPassantAbsolute, NewPiece(EmptyType, NONE))
 		}
-		availableMoves[CoordsToUci(pos, rightCapture)] = moveBoard
+		availableMoves[CoordsToUcis(pos, rightCapture)] = moveBoard
 	}
 
 	return availableMoves
@@ -100,7 +104,7 @@ func KnightMoves(b *Board, pos Coord) map[string]*Board {
 			moveBoard.MovePiece(pos, steps[i])
 			moveBoard.RemoveEnPassant()
 
-			availableMoves[CoordsToUci(pos, steps[i])] = moveBoard
+			availableMoves[CoordsToUcis(pos, steps[i])] = moveBoard
 		}
 	}
 
@@ -140,7 +144,7 @@ func BishopMoves(b *Board, pos Coord) map[string]*Board {
 		moveBoard := b.Copy()
 		moveBoard.MovePiece(pos, steps[i])
 		moveBoard.RemoveEnPassant()
-		availableMoves[CoordsToUci(pos, steps[i])] = moveBoard
+		availableMoves[CoordsToUcis(pos, steps[i])] = moveBoard
 	}
 
 	return availableMoves
@@ -178,7 +182,7 @@ func RookMoves(b *Board, pos Coord) map[string]*Board {
 		moveBoard := b.Copy()
 		moveBoard.MovePiece(pos, steps[i])
 		moveBoard.RemoveEnPassant()
-		availableMoves[CoordsToUci(pos, steps[i])] = moveBoard
+		availableMoves[CoordsToUcis(pos, steps[i])] = moveBoard
 	}
 
 	return availableMoves
@@ -200,7 +204,7 @@ func QueenMoves(b *Board, pos Coord) map[string]*Board {
 	return availableMoves
 }
 
-func KingMoves(b *Board, pos Coord) map[string]*Board {
+func KingMoves(b *Board, pos Coord, attackOnly bool) map[string]*Board {
 	availableMoves := make(map[string]*Board)
 
 	king := b.PieceAt(pos)
@@ -222,9 +226,85 @@ func KingMoves(b *Board, pos Coord) map[string]*Board {
 			moveBoard := b.Copy()
 			moveBoard.MovePiece(pos, stepAbsolute)
 			moveBoard.RemoveEnPassant()
-			availableMoves[CoordsToUci(pos, stepAbsolute)] = moveBoard
+			availableMoves[CoordsToUcis(pos, stepAbsolute)] = moveBoard
 		}
 	}
 
+	if !attackOnly {
+		// king-side castling
+		kingSideRookCoord := Coord{0, 3}
+		kingSideRookCoord = kingSideRookCoord.add(&pos)
+
+		kingKMovementCoords := []Coord{{0, 1}, {0, 2}}
+		for i := 0; i < len(kingKMovementCoords); i++ {
+			kingKMovementCoords[i] = kingKMovementCoords[i].add(&pos)
+		}
+
+		kRook := b.PieceAt(kingSideRookCoord)
+		if !b.IsCheck(king.Color()) && !king.IsMoved() && kRook.Type() == RookType && !kRook.IsMoved() {
+			castlingIsLegal := true
+			for i := 0; i < len(kingKMovementCoords); i++ {
+				if b.PieceAt(kingKMovementCoords[i]).Type() != EmptyType {
+					castlingIsLegal = false
+					break
+				}
+				moveBoard := b.Copy()
+				moveBoard.MovePiece(pos, kingKMovementCoords[i])
+				moveBoard.RemoveEnPassant()
+				if moveBoard.IsCheck(king.Color()) {
+					castlingIsLegal = false
+					break
+				}
+			}
+			if castlingIsLegal {
+				fmt.Println("castle is legal")
+				moveBoard := b.Copy()
+				moveBoard.MovePiece(pos, kingKMovementCoords[len(kingKMovementCoords)-1])
+				moveBoard.MovePiece(kingSideRookCoord, kingKMovementCoords[len(kingKMovementCoords)-2])
+				moveBoard.RemoveEnPassant()
+				availableMoves[CoordsToUcis(pos, kingKMovementCoords[len(kingKMovementCoords)-1])] = moveBoard
+			}
+		}
+
+		// queen-side castling
+		queenSideRookCoord := Coord{0, -4}
+		queenSideRookCoord = queenSideRookCoord.add(&pos)
+
+		kingQMovementCoords := []Coord{{0, -1}, {0, -2}}
+		for i := 0; i < len(kingQMovementCoords); i++ {
+			kingQMovementCoords[i] = kingQMovementCoords[i].add(&pos)
+		}
+
+		rookJumpCoord := Coord{0, -3}
+		rookJumpCoord = rookJumpCoord.add(&pos)
+
+		qRook := b.PieceAt(queenSideRookCoord)
+		if !b.IsCheck(king.Color()) && !king.IsMoved() && qRook.Type() == RookType && !qRook.IsMoved() &&
+			b.PieceAt(rookJumpCoord).Type() == EmptyType {
+			castlingIsLegal := true
+			for i := 0; i < len(kingQMovementCoords); i++ {
+				if b.PieceAt(kingQMovementCoords[i]).Type() != EmptyType {
+					castlingIsLegal = false
+					break
+				}
+				moveBoard := b.Copy()
+				moveBoard.MovePiece(pos, kingQMovementCoords[i])
+				moveBoard.RemoveEnPassant()
+				if moveBoard.IsCheck(king.Color()) {
+					castlingIsLegal = false
+					break
+				}
+			}
+			if castlingIsLegal {
+				fmt.Println("castle is legal")
+				moveBoard := b.Copy()
+				moveBoard.MovePiece(pos, kingQMovementCoords[len(kingQMovementCoords)-1])
+				moveBoard.MovePiece(queenSideRookCoord, kingQMovementCoords[len(kingQMovementCoords)-2])
+				moveBoard.RemoveEnPassant()
+				availableMoves[CoordsToUcis(pos, kingQMovementCoords[len(kingQMovementCoords)-1])] = moveBoard
+			}
+		}
+
+	}
 	return availableMoves
 }

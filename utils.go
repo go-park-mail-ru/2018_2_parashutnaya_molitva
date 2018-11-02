@@ -30,7 +30,7 @@ func CoordToUciColumnKeys() map[int]byte {
 	return columns
 }
 
-func UciToCoords(uci string) (from, to Coord) {
+func UcisToCoords(uci string) (from, to Coord) {
 	if len(uci) != 4 {
 		panic(fmt.Sprintf("uci string must be 4 characters long (%s)", uci))
 	}
@@ -65,7 +65,7 @@ func UciToCoords(uci string) (from, to Coord) {
 	return
 }
 
-func CoordsToUci(from, to Coord) string {
+func CoordsToUcis(from, to Coord) string {
 	var result string
 
 	coordToUciRowKeys := CoordToUciRowKeys()

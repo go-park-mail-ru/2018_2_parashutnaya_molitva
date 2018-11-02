@@ -1,6 +1,9 @@
 package chess
 
-import "fmt"
+import (
+	"fmt"
+	"sort"
+)
 
 type Board struct {
 	field [][]Piece
@@ -51,7 +54,7 @@ func (b *Board) Copy() *Board {
 }
 
 func (b *Board) MoveUci(uci string) {
-	availableMoves := b.AvailableMoves()
+	availableMoves := b.PseudoLegalMoves(false)
 	val, exists := availableMoves[uci]
 	if exists == false {
 		fmt.Println("move is illegal")
@@ -61,7 +64,7 @@ func (b *Board) MoveUci(uci string) {
 }
 
 func (b *Board) MovePieceUci(uci string) {
-	b.MovePiece(UciToCoords(uci))
+	b.MovePiece(UcisToCoords(uci))
 }
 
 func (b *Board) MovePiece(from, to Coord) {
@@ -83,28 +86,37 @@ func (b *Board) SetPieceAt(pos Coord, p Piece) {
 }
 
 func (b *Board) PrintBoard() {
+	fmt.Println(b.IsCheck(WHITE))
+	fmt.Println(b.IsCheck(BLACK))
 	for i := 7; i >= 0; i-- {
 		for j := 0; j < 8; j++ {
 			fmt.Printf("%c", b.PieceAt(Coord{i, j}).ShortName())
 		}
 		fmt.Println()
 	}
-
-	for i := 0; i < 8; i++ {
-		for j := 0; j < 8; j++ {
-			b.AvailableMovesAtPos(Coord{i, j})
-		}
-	}
+	b.PrintPseudoLegalMoves()
 }
 
-func (b *Board) AvailableMovesAtPos(pos Coord) map[string]*Board {
+func (b *Board) PrintPseudoLegalMoves() {
+	var moves []string
+	for move := range b.PseudoLegalMoves(false) {
+		moves = append(moves, move)
+	}
+	sort.Strings(moves)
+	for _, move := range moves {
+		fmt.Printf("%s ", move)
+	}
+	fmt.Println()
+}
+
+func (b *Board) PseudoLegalMovesAtPos(pos Coord, attackOnly bool) map[string]*Board {
 	availableMoves := make(map[string]*Board)
 
 	piece := b.PieceAt(pos)
 	switch piece.Type() {
 	case PawnType:
 		{
-			pawnAvailableMoves := PawnMoves(b, pos)
+			pawnAvailableMoves := PawnMoves(b, pos, attackOnly)
 			for key, val := range pawnAvailableMoves {
 				availableMoves[key] = val
 			}
@@ -139,7 +151,7 @@ func (b *Board) AvailableMovesAtPos(pos Coord) map[string]*Board {
 		}
 	case KingType:
 		{
-			kingAvailableMoves := KingMoves(b, pos)
+			kingAvailableMoves := KingMoves(b, pos, attackOnly)
 			for key, val := range kingAvailableMoves {
 				availableMoves[key] = val
 			}
@@ -150,20 +162,36 @@ func (b *Board) AvailableMovesAtPos(pos Coord) map[string]*Board {
 		}
 	}
 
-	for key := range availableMoves {
-		fmt.Printf("%s ", key)
-	}
-	fmt.Println()
+	//for key := range availableMoves {
+	//	fmt.Printf("%s ", key)
+	//}
+	//fmt.Println()
 	return availableMoves
 }
 
-func (b *Board) AvailableMoves() map[string]*Board {
+func (b *Board) PseudoLegalMoves(attackOnly bool) map[string]*Board {
 	availableMoves := make(map[string]*Board)
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
-			movesAtPos := b.AvailableMovesAtPos(Coord{i, j})
+			movesAtPos := b.PseudoLegalMovesAtPos(Coord{i, j}, attackOnly)
 			for key, val := range movesAtPos {
 				availableMoves[key] = val
+			}
+		}
+	}
+
+	return availableMoves
+}
+
+func (b *Board) PseudoLegalMovesWithColor(color PieceColor, attackOnly bool) map[string]*Board {
+	availableMoves := make(map[string]*Board)
+	for i := 0; i < 8; i++ {
+		for j := 0; j < 8; j++ {
+			if b.PieceAt(Coord{i, j}).Color() == color {
+				movesAtPos := b.PseudoLegalMovesAtPos(Coord{i, j}, attackOnly)
+				for key, val := range movesAtPos {
+					availableMoves[key] = val
+				}
 			}
 		}
 	}
@@ -179,4 +207,32 @@ func (b *Board) RemoveEnPassant() {
 			}
 		}
 	}
+}
+
+func (b *Board) IsCheck(color PieceColor) bool {
+	oppositeColor := WHITE
+	if color == WHITE {
+		oppositeColor = BLACK
+	}
+	pseudoMoves := b.PseudoLegalMovesWithColor(oppositeColor, true)
+
+	for _, moveBoard := range pseudoMoves {
+		if !moveBoard.kingExists(color) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (b *Board) kingExists(color PieceColor) bool {
+	for i := 0; i < 8; i++ {
+		for j := 0; j < 8; j++ {
+			p := b.PieceAt(Coord{i, j})
+			if p.Type() == KingType && p.Color() == color {
+				return true
+			}
+		}
+	}
+	return false
 }
