@@ -1,10 +1,8 @@
-# golang chess engine
+package main
 
-## example
-```go
 import (
 	"fmt"
-	chess "github.com/Chubasik/chess"
+	chess "github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/app/chess"
 )
 
 func main() {
@@ -20,19 +18,3 @@ func main() {
 		}
 	}
 }
-```
-
-## output
-```
-rnbqkbnr
-pppppppp
-........
-........
-........
-........
-PPPPPPPP
-RNBQKBNR
-a2a3 a2a4 b1a3 b1c3 b2b3 b2b4 c2c3 c2c4 d2d3 d2d4 e2e3 e2e4 f2f3 f2f4 g1f3 g1h3 g2g3 g2g4 h2h3 h2h4 
-
-
-```
