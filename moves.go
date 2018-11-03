@@ -1,30 +1,30 @@
 package chess
 
-func promotionMap() map[string]PieceType {
-	pMap := map[string]PieceType{
-		"q": QueenType,
-		"r": RookType,
-		"b": BishopType,
-		"n": KnightType,
+func promotionMap() map[string]pieceType {
+	pMap := map[string]pieceType{
+		"q": queenType,
+		"r": rookType,
+		"b": bishopType,
+		"n": knightType,
 	}
 	return pMap
 }
 
-func PawnMoves(b *Board, pos Coord, attackOnly bool) map[string]*Board {
-	availableMoves := make(map[string]*Board)
+func pawnMoves(b *board, pos coord, attackOnly bool) map[string]*board {
+	availableMoves := make(map[string]*board)
 
-	pawn := b.PieceAt(pos)
+	pawn := b.pieceAt(pos)
 
 	// relative coordinates
-	forward := Coord{1, 0}
-	doubleForward := Coord{2, 0}
-	capture := Coord{1, -1}
-	enPasant := Coord{-1, 0}
-	pawnEnPassantRelative := Coord{-1, 0}
+	forward := coord{1, 0}
+	doubleForward := coord{2, 0}
+	capture := coord{1, -1}
+	enPasant := coord{-1, 0}
+	pawnEnPassantRelative := coord{-1, 0}
 
 	// reverse steps for black
-	if pawn.Color() == BLACK {
-		reverseFactor := &Coord{-1, 1}
+	if pawn.getColor() == black {
+		reverseFactor := &coord{-1, 1}
 
 		forward = forward.multiply(reverseFactor)
 		doubleForward = doubleForward.multiply(reverseFactor)
@@ -39,65 +39,65 @@ func PawnMoves(b *Board, pos Coord, attackOnly bool) map[string]*Board {
 	enPasant = doubleForward.add(&enPasant)
 
 	if !attackOnly {
-		pieceAtForward := b.PieceAt(forward)
-		if pieceAtForward.Type() == EmptyType {
-			uci := CoordsToUcis(pos, forward)
+		pieceAtForward := b.pieceAt(forward)
+		if pieceAtForward.getType() == emptyType {
+			uci := coordsToUcis(pos, forward)
 			// promotion
-			if pawn.Color() == WHITE && forward.r == 7 ||
-				pawn.Color() == BLACK && forward.r == 0 {
+			if pawn.getColor() == white && forward.r == 7 ||
+				pawn.getColor() == black && forward.r == 0 {
 				pMap := promotionMap()
 				for pKey, pType := range pMap {
-					moveBoard := b.Copy()
-					moveBoard.MovePiece(pos, forward)
-					moveBoard.SetPieceAt(forward, NewPiece(pType, pawn.Color()))
-					moveBoard.RemoveEnPassant()
+					moveBoard := b.copy()
+					moveBoard.movePiece(pos, forward)
+					moveBoard.setPieceAt(forward, newPiece(pType, pawn.getColor()))
+					moveBoard.removeEnPassant()
 					availableMoves[uci+pKey] = moveBoard
 				}
 			} else {
-				moveBoard := b.Copy()
-				moveBoard.MovePiece(pos, forward)
-				moveBoard.RemoveEnPassant()
+				moveBoard := b.copy()
+				moveBoard.movePiece(pos, forward)
+				moveBoard.removeEnPassant()
 				availableMoves[uci] = moveBoard
 			}
 		}
 
-		pieceAtDoubleForward := b.PieceAt(doubleForward)
-		if pieceAtDoubleForward.Type() == EmptyType && !pawn.IsMoved() {
-			moveBoard := b.Copy()
-			moveBoard.MovePiece(pos, doubleForward)
-			moveBoard.RemoveEnPassant()
-			moveBoard.SetPieceAt(enPasant, NewPiece(EnPassantType, pawn.Color()))
-			availableMoves[CoordsToUcis(pos, doubleForward)] = moveBoard
+		pieceAtDoubleForward := b.pieceAt(doubleForward)
+		if pieceAtDoubleForward.getType() == emptyType && !pawn.getIsMoved() {
+			moveBoard := b.copy()
+			moveBoard.movePiece(pos, doubleForward)
+			moveBoard.removeEnPassant()
+			moveBoard.setPieceAt(enPasant, newPiece(enPassantType, pawn.getColor()))
+			availableMoves[coordsToUcis(pos, doubleForward)] = moveBoard
 		}
 	}
 
-	captureMultipliers := []Coord{{1, 1}, {1, -1}}
+	captureMultipliers := []coord{{1, 1}, {1, -1}}
 
 	for i := 0; i < len(captureMultipliers); i++ {
 		captureAbs := capture.multiply(&captureMultipliers[i])
 		captureAbs = captureAbs.add(&pos)
-		pieceAtCapture := b.PieceAt(captureAbs)
+		pieceAtCapture := b.pieceAt(captureAbs)
 
-		if pieceAtCapture.Color() != pawn.Color() && pieceAtCapture.Color() != NONE {
-			uci := CoordsToUcis(pos, captureAbs)
+		if pieceAtCapture.getColor() != pawn.getColor() && pieceAtCapture.getColor() != none {
+			uci := coordsToUcis(pos, captureAbs)
 			// promotion
-			if pawn.Color() == WHITE && captureAbs.r == 7 ||
-				pawn.Color() == BLACK && captureAbs.r == 0 {
+			if pawn.getColor() == white && captureAbs.r == 7 ||
+				pawn.getColor() == black && captureAbs.r == 0 {
 				pMap := promotionMap()
 				for pKey, pType := range pMap {
-					moveBoard := b.Copy()
-					moveBoard.MovePiece(pos, captureAbs)
-					moveBoard.SetPieceAt(captureAbs, NewPiece(pType, pawn.Color()))
-					moveBoard.RemoveEnPassant()
+					moveBoard := b.copy()
+					moveBoard.movePiece(pos, captureAbs)
+					moveBoard.setPieceAt(captureAbs, newPiece(pType, pawn.getColor()))
+					moveBoard.removeEnPassant()
 					availableMoves[uci+pKey] = moveBoard
 				}
 			} else {
-				moveBoard := b.Copy()
-				moveBoard.MovePiece(pos, captureAbs)
-				moveBoard.RemoveEnPassant()
-				if pieceAtCapture.Type() == EnPassantType {
+				moveBoard := b.copy()
+				moveBoard.movePiece(pos, captureAbs)
+				moveBoard.removeEnPassant()
+				if pieceAtCapture.getType() == enPassantType {
 					pawnEnPassantAbsolute := pawnEnPassantRelative.add(&captureAbs)
-					moveBoard.SetPieceAt(pawnEnPassantAbsolute, NewPiece(EmptyType, NONE))
+					moveBoard.setPieceAt(pawnEnPassantAbsolute, newPiece(emptyType, none))
 				}
 				availableMoves[uci] = moveBoard
 			}
@@ -107,12 +107,12 @@ func PawnMoves(b *Board, pos Coord, attackOnly bool) map[string]*Board {
 	return availableMoves
 }
 
-func KnightMoves(b *Board, pos Coord) map[string]*Board {
-	availableMoves := make(map[string]*Board)
+func knightMoves(b *board, pos coord) map[string]*board {
+	availableMoves := make(map[string]*board)
 
-	knight := b.PieceAt(pos)
+	knight := b.pieceAt(pos)
 
-	steps := []Coord{
+	steps := []coord{
 		{-2, 1}, {-1, 2}, {1, 2}, {2, 1},
 		{2, -1}, {1, -2}, {-1, -2}, {-2, -1},
 	}
@@ -123,46 +123,46 @@ func KnightMoves(b *Board, pos Coord) map[string]*Board {
 	}
 
 	for i := 0; i < len(steps); i++ {
-		piece := b.PieceAt(steps[i])
-		if piece.Color() != knight.Color() && piece.Color() != NONE ||
-			piece.Type() == EnPassantType ||
-			piece.Type() == EmptyType {
+		piece := b.pieceAt(steps[i])
+		if piece.getColor() != knight.getColor() && piece.getColor() != none ||
+			piece.getType() == enPassantType ||
+			piece.getType() == emptyType {
 
-			moveBoard := b.Copy()
-			moveBoard.MovePiece(pos, steps[i])
-			moveBoard.RemoveEnPassant()
+			moveBoard := b.copy()
+			moveBoard.movePiece(pos, steps[i])
+			moveBoard.removeEnPassant()
 
-			availableMoves[CoordsToUcis(pos, steps[i])] = moveBoard
+			availableMoves[coordsToUcis(pos, steps[i])] = moveBoard
 		}
 	}
 
 	return availableMoves
 }
 
-func BishopMoves(b *Board, pos Coord) map[string]*Board {
-	availableMoves := make(map[string]*Board)
+func bishopMoves(b *board, pos coord) map[string]*board {
+	availableMoves := make(map[string]*board)
 
-	bishop := b.PieceAt(pos)
+	bishop := b.pieceAt(pos)
 
-	steps := make([]Coord, 0, 16)
+	steps := make([]coord, 0, 16)
 
 	rMultipliers := []int{1, 1, -1, -1}
 	cMultipliers := []int{1, -1, 1, -1}
 	for i := 0; i < len(rMultipliers); i++ {
 		for j := 1; j < 8; j++ {
-			step := Coord{j * rMultipliers[i], j * cMultipliers[i]}
+			step := coord{j * rMultipliers[i], j * cMultipliers[i]}
 			stepAbsolute := step.add(&pos)
-			piece := b.PieceAt(stepAbsolute)
-			if piece.Type() == EmptyType ||
-				piece.Type() == EnPassantType {
+			piece := b.pieceAt(stepAbsolute)
+			if piece.getType() == emptyType ||
+				piece.getType() == enPassantType {
 				steps = append(steps, stepAbsolute)
 				continue
 			}
-			if piece.Color() == bishop.Color() ||
-				piece.Type() == NoneType {
+			if piece.getColor() == bishop.getColor() ||
+				piece.getType() == noneType {
 				break
 			}
-			if piece.Color() != bishop.Color() {
+			if piece.getColor() != bishop.getColor() {
 				steps = append(steps, stepAbsolute)
 				break
 			}
@@ -170,38 +170,38 @@ func BishopMoves(b *Board, pos Coord) map[string]*Board {
 	}
 
 	for i := 0; i < len(steps); i++ {
-		moveBoard := b.Copy()
-		moveBoard.MovePiece(pos, steps[i])
-		moveBoard.RemoveEnPassant()
-		availableMoves[CoordsToUcis(pos, steps[i])] = moveBoard
+		moveBoard := b.copy()
+		moveBoard.movePiece(pos, steps[i])
+		moveBoard.removeEnPassant()
+		availableMoves[coordsToUcis(pos, steps[i])] = moveBoard
 	}
 
 	return availableMoves
 }
 
-func RookMoves(b *Board, pos Coord) map[string]*Board {
-	availableMoves := make(map[string]*Board)
-	rook := b.PieceAt(pos)
+func rookMoves(b *board, pos coord) map[string]*board {
+	availableMoves := make(map[string]*board)
+	rook := b.pieceAt(pos)
 
-	steps := make([]Coord, 0, 16)
+	steps := make([]coord, 0, 16)
 
 	rMultipliers := []int{1, 0, -1, 0}
 	cMultipliers := []int{0, 1, 0, -1}
 	for i := 0; i < len(rMultipliers); i++ {
 		for j := 1; j < 8; j++ {
-			step := Coord{j * rMultipliers[i], j * cMultipliers[i]}
+			step := coord{j * rMultipliers[i], j * cMultipliers[i]}
 			stepAbsolute := step.add(&pos)
-			piece := b.PieceAt(stepAbsolute)
-			if piece.Type() == EmptyType ||
-				piece.Type() == EnPassantType {
+			piece := b.pieceAt(stepAbsolute)
+			if piece.getType() == emptyType ||
+				piece.getType() == enPassantType {
 				steps = append(steps, stepAbsolute)
 				continue
 			}
-			if piece.Color() == rook.Color() ||
-				piece.Type() == NoneType {
+			if piece.getColor() == rook.getColor() ||
+				piece.getType() == noneType {
 				break
 			}
-			if piece.Color() != rook.Color() {
+			if piece.getColor() != rook.getColor() {
 				steps = append(steps, stepAbsolute)
 				break
 			}
@@ -209,24 +209,24 @@ func RookMoves(b *Board, pos Coord) map[string]*Board {
 	}
 
 	for i := 0; i < len(steps); i++ {
-		moveBoard := b.Copy()
-		moveBoard.MovePiece(pos, steps[i])
-		moveBoard.RemoveEnPassant()
-		availableMoves[CoordsToUcis(pos, steps[i])] = moveBoard
+		moveBoard := b.copy()
+		moveBoard.movePiece(pos, steps[i])
+		moveBoard.removeEnPassant()
+		availableMoves[coordsToUcis(pos, steps[i])] = moveBoard
 	}
 
 	return availableMoves
 }
 
-func QueenMoves(b *Board, pos Coord) map[string]*Board {
-	availableMoves := make(map[string]*Board)
+func queenMoves(b *board, pos coord) map[string]*board {
+	availableMoves := make(map[string]*board)
 
-	rookAvailableMoves := RookMoves(b, pos)
+	rookAvailableMoves := rookMoves(b, pos)
 	for key, val := range rookAvailableMoves {
 		availableMoves[key] = val
 	}
 
-	bishopAvailableMoves := BishopMoves(b, pos)
+	bishopAvailableMoves := bishopMoves(b, pos)
 	for key, val := range bishopAvailableMoves {
 		availableMoves[key] = val
 	}
@@ -234,103 +234,103 @@ func QueenMoves(b *Board, pos Coord) map[string]*Board {
 	return availableMoves
 }
 
-func KingMoves(b *Board, pos Coord, attackOnly bool) map[string]*Board {
-	availableMoves := make(map[string]*Board)
+func kingMoves(b *board, pos coord, attackOnly bool) map[string]*board {
+	availableMoves := make(map[string]*board)
 
-	king := b.PieceAt(pos)
+	king := b.pieceAt(pos)
 
-	steps := []Coord{
+	steps := []coord{
 		{0, -1}, {1, -1}, {1, 0}, {1, 1},
 		{0, 1}, {-1, 1}, {-1, 0}, {-1, -1},
 	}
 
 	for i := 0; i < len(steps); i++ {
 		stepAbsolute := steps[i].add(&pos)
-		piece := b.PieceAt(stepAbsolute)
-		if piece.Type() == NoneType {
+		piece := b.pieceAt(stepAbsolute)
+		if piece.getType() == noneType {
 			continue
 		}
-		if piece.Type() == EmptyType ||
-			piece.Type() == EnPassantType ||
-			piece.Color() != king.Color() {
+		if piece.getType() == emptyType ||
+			piece.getType() == enPassantType ||
+			piece.getColor() != king.getColor() {
 
-			moveBoard := b.Copy()
-			moveBoard.MovePiece(pos, stepAbsolute)
-			moveBoard.RemoveEnPassant()
-			availableMoves[CoordsToUcis(pos, stepAbsolute)] = moveBoard
+			moveBoard := b.copy()
+			moveBoard.movePiece(pos, stepAbsolute)
+			moveBoard.removeEnPassant()
+			availableMoves[coordsToUcis(pos, stepAbsolute)] = moveBoard
 		}
 	}
 
 	if !attackOnly {
 		// king-side castling
-		kingSideRookCoord := Coord{0, 3}
+		kingSideRookCoord := coord{0, 3}
 		kingSideRookCoord = kingSideRookCoord.add(&pos)
 
-		kingKMovementCoords := []Coord{{0, 1}, {0, 2}}
+		kingKMovementCoords := []coord{{0, 1}, {0, 2}}
 		for i := 0; i < len(kingKMovementCoords); i++ {
 			kingKMovementCoords[i] = kingKMovementCoords[i].add(&pos)
 		}
 
-		kRook := b.PieceAt(kingSideRookCoord)
-		if !b.IsCheck(king.Color()) && !king.IsMoved() && kRook.Type() == RookType && !kRook.IsMoved() {
+		kRook := b.pieceAt(kingSideRookCoord)
+		if !b.isCheck(king.getColor()) && !king.getIsMoved() && kRook.getType() == rookType && !kRook.getIsMoved() {
 			castlingIsLegal := true
 			for i := 0; i < len(kingKMovementCoords); i++ {
-				if b.PieceAt(kingKMovementCoords[i]).Type() != EmptyType {
+				if b.pieceAt(kingKMovementCoords[i]).getType() != emptyType {
 					castlingIsLegal = false
 					break
 				}
-				moveBoard := b.Copy()
-				moveBoard.MovePiece(pos, kingKMovementCoords[i])
-				moveBoard.RemoveEnPassant()
-				if moveBoard.IsCheck(king.Color()) {
+				moveBoard := b.copy()
+				moveBoard.movePiece(pos, kingKMovementCoords[i])
+				moveBoard.removeEnPassant()
+				if moveBoard.isCheck(king.getColor()) {
 					castlingIsLegal = false
 					break
 				}
 			}
 			if castlingIsLegal {
-				moveBoard := b.Copy()
-				moveBoard.MovePiece(pos, kingKMovementCoords[len(kingKMovementCoords)-1])
-				moveBoard.MovePiece(kingSideRookCoord, kingKMovementCoords[len(kingKMovementCoords)-2])
-				moveBoard.RemoveEnPassant()
-				availableMoves[CoordsToUcis(pos, kingKMovementCoords[len(kingKMovementCoords)-1])] = moveBoard
+				moveBoard := b.copy()
+				moveBoard.movePiece(pos, kingKMovementCoords[len(kingKMovementCoords)-1])
+				moveBoard.movePiece(kingSideRookCoord, kingKMovementCoords[len(kingKMovementCoords)-2])
+				moveBoard.removeEnPassant()
+				availableMoves[coordsToUcis(pos, kingKMovementCoords[len(kingKMovementCoords)-1])] = moveBoard
 			}
 		}
 
 		// queen-side castling
-		queenSideRookCoord := Coord{0, -4}
+		queenSideRookCoord := coord{0, -4}
 		queenSideRookCoord = queenSideRookCoord.add(&pos)
 
-		kingQMovementCoords := []Coord{{0, -1}, {0, -2}}
+		kingQMovementCoords := []coord{{0, -1}, {0, -2}}
 		for i := 0; i < len(kingQMovementCoords); i++ {
 			kingQMovementCoords[i] = kingQMovementCoords[i].add(&pos)
 		}
 
-		rookJumpCoord := Coord{0, -3}
+		rookJumpCoord := coord{0, -3}
 		rookJumpCoord = rookJumpCoord.add(&pos)
 
-		qRook := b.PieceAt(queenSideRookCoord)
-		if !b.IsCheck(king.Color()) && !king.IsMoved() && qRook.Type() == RookType && !qRook.IsMoved() &&
-			b.PieceAt(rookJumpCoord).Type() == EmptyType {
+		qRook := b.pieceAt(queenSideRookCoord)
+		if !b.isCheck(king.getColor()) && !king.getIsMoved() && qRook.getType() == rookType && !qRook.getIsMoved() &&
+			b.pieceAt(rookJumpCoord).getType() == emptyType {
 			castlingIsLegal := true
 			for i := 0; i < len(kingQMovementCoords); i++ {
-				if b.PieceAt(kingQMovementCoords[i]).Type() != EmptyType {
+				if b.pieceAt(kingQMovementCoords[i]).getType() != emptyType {
 					castlingIsLegal = false
 					break
 				}
-				moveBoard := b.Copy()
-				moveBoard.MovePiece(pos, kingQMovementCoords[i])
-				moveBoard.RemoveEnPassant()
-				if moveBoard.IsCheck(king.Color()) {
+				moveBoard := b.copy()
+				moveBoard.movePiece(pos, kingQMovementCoords[i])
+				moveBoard.removeEnPassant()
+				if moveBoard.isCheck(king.getColor()) {
 					castlingIsLegal = false
 					break
 				}
 			}
 			if castlingIsLegal {
-				moveBoard := b.Copy()
-				moveBoard.MovePiece(pos, kingQMovementCoords[len(kingQMovementCoords)-1])
-				moveBoard.MovePiece(queenSideRookCoord, kingQMovementCoords[len(kingQMovementCoords)-2])
-				moveBoard.RemoveEnPassant()
-				availableMoves[CoordsToUcis(pos, kingQMovementCoords[len(kingQMovementCoords)-1])] = moveBoard
+				moveBoard := b.copy()
+				moveBoard.movePiece(pos, kingQMovementCoords[len(kingQMovementCoords)-1])
+				moveBoard.movePiece(queenSideRookCoord, kingQMovementCoords[len(kingQMovementCoords)-2])
+				moveBoard.removeEnPassant()
+				availableMoves[coordsToUcis(pos, kingQMovementCoords[len(kingQMovementCoords)-1])] = moveBoard
 			}
 		}
 

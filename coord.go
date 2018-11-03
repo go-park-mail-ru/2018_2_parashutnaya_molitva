@@ -1,18 +1,18 @@
 package chess
 
-type Coord struct {
+type coord struct {
 	r int
 	c int
 }
 
-func (c *Coord) add(o *Coord) Coord {
-	return Coord{c.r + o.r, c.c + o.c}
+func (c *coord) add(o *coord) coord {
+	return coord{c.r + o.r, c.c + o.c}
 }
 
-func (c *Coord) subtract(o *Coord) Coord {
-	return Coord{c.r - o.r, c.c - o.c}
+func (c *coord) subtract(o *coord) coord {
+	return coord{c.r - o.r, c.c - o.c}
 }
 
-func (c *Coord) multiply(o *Coord) Coord {
-	return Coord{c.r * o.r, c.c * o.c}
+func (c *coord) multiply(o *coord) coord {
+	return coord{c.r * o.r, c.c * o.c}
 }

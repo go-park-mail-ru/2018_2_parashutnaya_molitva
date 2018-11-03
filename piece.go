@@ -1,100 +1,91 @@
 package chess
 
-type Piece struct {
-	pieceType PieceType
-	color     PieceColor
+type piece struct {
+	pieceType pieceType
+	color     pieceColor
 	isMoved   bool
-	PieceInterface
 }
 
-type PieceInterface interface {
-	Type() PieceType
-	Color() PieceColor
-	IsMoved() bool
-	SetMoved(bool)
-	ShortName() rune
-}
-
-func NewPiece(pt PieceType, color PieceColor) Piece {
-	return Piece{
+func newPiece(pt pieceType, color pieceColor) piece {
+	return piece{
 		pieceType: pt,
 		color:     color,
 		isMoved:   false,
 	}
 }
 
-func (p *Piece) Type() PieceType {
+func (p *piece) getType() pieceType {
 	return p.pieceType
 }
 
-func (p *Piece) Color() PieceColor {
+func (p *piece) getColor() pieceColor {
 	return p.color
 }
 
-func (p *Piece) IsMoved() bool {
+func (p *piece) getIsMoved() bool {
 	return p.isMoved
 }
 
-func (p *Piece) SetMoved(bool) {
+func (p *piece) setMoved(bool) {
 	p.isMoved = true
 }
 
-func (p *Piece) ShortName() rune {
+func (p *piece) shortName() rune {
 
-	switch p.Type() {
-	case EmptyType:
+	switch p.getType() {
+	case emptyType:
 		{
 			return '.'
 		}
-	case NoneType:
+	case noneType:
 		{
 			return '!'
 		}
-	case EnPassantType:
+	case enPassantType:
 		{
-			if p.Color() == WHITE {
+			if p.getColor() == white {
 				return 'E'
 			}
 			return 'e'
 		}
-	case PawnType:
+	case pawnType:
 		{
-			if p.Color() == WHITE {
+			if p.getColor() == white {
 				return 'P'
 			}
 			return 'p'
 		}
-	case KnightType:
+	case knightType:
 		{
-			if p.Color() == WHITE {
+			if p.getColor() == white {
 				return 'N'
 			}
 			return 'n'
 		}
-	case BishopType:
+	case bishopType:
 		{
-			if p.Color() == WHITE {
+			if p.getColor() == white {
 				return 'B'
 			}
 			return 'b'
 		}
-	case RookType:
+	case rookType:
 		{
-			if p.Color() == WHITE {
+			if p.getColor() == white {
 				return 'R'
 			}
 			return 'r'
 		}
-	case QueenType:
+	case queenType:
 		{
-			if p.Color() == WHITE {
+			if p.getColor() == white {
 				return 'Q'
 			}
 			return 'q'
 		}
-	case KingType:
+	case kingType:
 		{
-			if p.Color() == WHITE {
+			if p.getColor() == white {
 				return 'K'
 			}
 			return 'k'

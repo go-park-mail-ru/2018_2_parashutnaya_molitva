@@ -1,23 +1,23 @@
 package chess
 
-type PieceColor int
+type pieceColor int
 
 const (
-	WHITE PieceColor = 1
-	BLACK PieceColor = 0
-	NONE  PieceColor = -1
+	white pieceColor = 1
+	black pieceColor = 0
+	none  pieceColor = -1
 )
 
-type PieceType int
+type pieceType int
 
 const (
-	EmptyType PieceType = iota
-	NoneType
-	EnPassantType
-	PawnType
-	KnightType
-	BishopType
-	RookType
-	QueenType
-	KingType
+	emptyType pieceType = iota
+	noneType
+	enPassantType
+	pawnType
+	knightType
+	bishopType
+	rookType
+	queenType
+	kingType
 )

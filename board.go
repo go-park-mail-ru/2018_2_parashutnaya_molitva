@@ -2,164 +2,150 @@ package chess
 
 import (
 	"fmt"
-	"sort"
 )
 
-type Board struct {
-	field [][]Piece
+type board struct {
+	field [][]piece
 }
 
-func NewBoard() Board {
-	field := make([][]Piece, 8)
+func newBoard() board {
+	field := make([][]piece, 8)
 
-	field[0] = []Piece{
-		NewPiece(RookType, WHITE), NewPiece(KnightType, WHITE), NewPiece(BishopType, WHITE), NewPiece(QueenType, WHITE),
-		NewPiece(KingType, WHITE), NewPiece(BishopType, WHITE), NewPiece(KnightType, WHITE), NewPiece(RookType, WHITE),
+	field[0] = []piece{
+		newPiece(rookType, white), newPiece(knightType, white), newPiece(bishopType, white), newPiece(queenType, white),
+		newPiece(kingType, white), newPiece(bishopType, white), newPiece(knightType, white), newPiece(rookType, white),
 	}
 	for i := 1; i < 7; i++ {
-		field[i] = make([]Piece, 8)
+		field[i] = make([]piece, 8)
 	}
 	for i := 0; i < 8; i++ {
-		field[1][i] = NewPiece(PawnType, WHITE)
+		field[1][i] = newPiece(pawnType, white)
 	}
 	for i := 2; i < 6; i++ {
 		for j := 0; j < 8; j++ {
-			field[i][j] = NewPiece(EmptyType, NONE)
+			field[i][j] = newPiece(emptyType, none)
 		}
 	}
 	for i := 0; i < 8; i++ {
-		field[6][i] = NewPiece(PawnType, BLACK)
+		field[6][i] = newPiece(pawnType, black)
 	}
-	field[7] = []Piece{
-		NewPiece(RookType, BLACK), NewPiece(KnightType, BLACK), NewPiece(BishopType, BLACK), NewPiece(QueenType, BLACK),
-		NewPiece(KingType, BLACK), NewPiece(BishopType, BLACK), NewPiece(KnightType, BLACK), NewPiece(RookType, BLACK),
+	field[7] = []piece{
+		newPiece(rookType, black), newPiece(knightType, black), newPiece(bishopType, black), newPiece(queenType, black),
+		newPiece(kingType, black), newPiece(bishopType, black), newPiece(knightType, black), newPiece(rookType, black),
 	}
 
-	return Board{field: field}
+	return board{field: field}
 }
 
-func (b *Board) Assign(o *Board) {
+func (b *board) assign(o *board) {
 	b.field = o.field
 }
 
-func (b *Board) Copy() *Board {
-	duplicateField := make([][]Piece, len(b.field))
+func (b *board) copy() *board {
+	duplicateField := make([][]piece, len(b.field))
 	for i := range b.field {
-		duplicateField[i] = make([]Piece, len(b.field[i]))
+		duplicateField[i] = make([]piece, len(b.field[i]))
 		copy(duplicateField[i], b.field[i])
 	}
 
-	copiedBoard := Board{duplicateField}
+	copiedBoard := board{duplicateField}
 	return &copiedBoard
 }
 
-func (b *Board) MoveUci(uci string) {
-	availableMoves := b.PseudoLegalMoves(false)
+func (b *board) moveUci(uci string) {
+	availableMoves := b.pseudoLegalMoves(false)
 	val, exists := availableMoves[uci]
 	if exists == false {
-		fmt.Println("move is illegal")
 		return
 	}
-	b.Assign(val)
+	b.assign(val)
 }
 
-func (b *Board) MovePieceUci(uci string) {
-	b.MovePiece(UcisToCoords(uci))
+func (b *board) movePieceUci(uci string) {
+	b.movePiece(ucisToCoords(uci))
 }
 
-func (b *Board) MovePiece(from, to Coord) {
+func (b *board) movePiece(from, to coord) {
 	b.field[to.r][to.c] = b.field[from.r][from.c]
-	b.field[to.r][to.c].SetMoved(true)
-	b.field[from.r][from.c] = NewPiece(EmptyType, NONE)
+	b.field[to.r][to.c].setMoved(true)
+	b.field[from.r][from.c] = newPiece(emptyType, none)
 }
 
-func (b *Board) PieceAt(pos Coord) *Piece {
+func (b *board) pieceAt(pos coord) *piece {
 	if pos.r < 0 || pos.r >= 8 || pos.c < 0 || pos.c >= 8 {
-		nonePiece := NewPiece(NoneType, NONE)
+		nonePiece := newPiece(noneType, none)
 		return &nonePiece
 	}
 	return &b.field[pos.r][pos.c]
 }
 
-func (b *Board) SetPieceAt(pos Coord, p Piece) {
+func (b *board) setPieceAt(pos coord, p piece) {
 	b.field[pos.r][pos.c] = p
 }
 
-func (b *Board) PrintBoard() {
+func (b *board) printBoard() {
 	for i := 7; i >= 0; i-- {
 		for j := 0; j < 8; j++ {
-			fmt.Printf("%c", b.PieceAt(Coord{i, j}).ShortName())
+			fmt.Printf("%c", b.pieceAt(coord{i, j}).shortName())
 		}
 		fmt.Println()
 	}
 }
 
-func (b *Board) PrintPseudoLegalMoves() {
-	var moves []string
-	for move := range b.PseudoLegalMoves(false) {
-		moves = append(moves, move)
-	}
-	sort.Strings(moves)
-	for _, move := range moves {
-		fmt.Printf("%s ", move)
-	}
-	fmt.Println()
-}
-
-func (b *Board) LegalMoves(color PieceColor) map[string]*Board {
-	pseudoLegalMoves := b.PseudoLegalMovesWithColor(color, false)
-	legalMoves := make(map[string]*Board)
+func (b *board) legalMoves(color pieceColor) map[string]*board {
+	pseudoLegalMoves := b.pseudoLegalMovesWithColor(color, false)
+	legalMoves := make(map[string]*board)
 	for move, board := range pseudoLegalMoves {
-		if !board.IsCheck(color) {
+		if !board.isCheck(color) {
 			legalMoves[move] = board
 		}
 	}
 	return legalMoves
 }
 
-func (b *Board) PseudoLegalMovesAtPos(pos Coord, attackOnly bool) map[string]*Board {
-	availableMoves := make(map[string]*Board)
+func (b *board) pseudoLegalMovesAtPos(pos coord, attackOnly bool) map[string]*board {
+	availableMoves := make(map[string]*board)
 
-	piece := b.PieceAt(pos)
-	switch piece.Type() {
-	case PawnType:
+	piece := b.pieceAt(pos)
+	switch piece.getType() {
+	case pawnType:
 		{
-			pawnAvailableMoves := PawnMoves(b, pos, attackOnly)
+			pawnAvailableMoves := pawnMoves(b, pos, attackOnly)
 			for key, val := range pawnAvailableMoves {
 				availableMoves[key] = val
 			}
 		}
-	case KnightType:
+	case knightType:
 		{
-			knightAvailableMoves := KnightMoves(b, pos)
+			knightAvailableMoves := knightMoves(b, pos)
 			for key, val := range knightAvailableMoves {
 				availableMoves[key] = val
 			}
 		}
-	case BishopType:
+	case bishopType:
 		{
-			bishopAvailableMoves := BishopMoves(b, pos)
+			bishopAvailableMoves := bishopMoves(b, pos)
 			for key, val := range bishopAvailableMoves {
 				availableMoves[key] = val
 			}
 		}
-	case RookType:
+	case rookType:
 		{
-			rookAvailableMoves := RookMoves(b, pos)
+			rookAvailableMoves := rookMoves(b, pos)
 			for key, val := range rookAvailableMoves {
 				availableMoves[key] = val
 			}
 		}
-	case QueenType:
+	case queenType:
 		{
-			queenAvailableMoves := QueenMoves(b, pos)
+			queenAvailableMoves := queenMoves(b, pos)
 			for key, val := range queenAvailableMoves {
 				availableMoves[key] = val
 			}
 		}
-	case KingType:
+	case kingType:
 		{
-			kingAvailableMoves := KingMoves(b, pos, attackOnly)
+			kingAvailableMoves := kingMoves(b, pos, attackOnly)
 			for key, val := range kingAvailableMoves {
 				availableMoves[key] = val
 			}
@@ -170,18 +156,14 @@ func (b *Board) PseudoLegalMovesAtPos(pos Coord, attackOnly bool) map[string]*Bo
 		}
 	}
 
-	//for key := range availableMoves {
-	//	fmt.Printf("%s ", key)
-	//}
-	//fmt.Println()
 	return availableMoves
 }
 
-func (b *Board) PseudoLegalMoves(attackOnly bool) map[string]*Board {
-	availableMoves := make(map[string]*Board)
+func (b *board) pseudoLegalMoves(attackOnly bool) map[string]*board {
+	availableMoves := make(map[string]*board)
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
-			movesAtPos := b.PseudoLegalMovesAtPos(Coord{i, j}, attackOnly)
+			movesAtPos := b.pseudoLegalMovesAtPos(coord{i, j}, attackOnly)
 			for key, val := range movesAtPos {
 				availableMoves[key] = val
 			}
@@ -191,12 +173,12 @@ func (b *Board) PseudoLegalMoves(attackOnly bool) map[string]*Board {
 	return availableMoves
 }
 
-func (b *Board) PseudoLegalMovesWithColor(color PieceColor, attackOnly bool) map[string]*Board {
-	availableMoves := make(map[string]*Board)
+func (b *board) pseudoLegalMovesWithColor(color pieceColor, attackOnly bool) map[string]*board {
+	availableMoves := make(map[string]*board)
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
-			if b.PieceAt(Coord{i, j}).Color() == color {
-				movesAtPos := b.PseudoLegalMovesAtPos(Coord{i, j}, attackOnly)
+			if b.pieceAt(coord{i, j}).getColor() == color {
+				movesAtPos := b.pseudoLegalMovesAtPos(coord{i, j}, attackOnly)
 				for key, val := range movesAtPos {
 					availableMoves[key] = val
 				}
@@ -207,22 +189,22 @@ func (b *Board) PseudoLegalMovesWithColor(color PieceColor, attackOnly bool) map
 	return availableMoves
 }
 
-func (b *Board) RemoveEnPassant() {
+func (b *board) removeEnPassant() {
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
-			if (b.PieceAt(Coord{i, j}).Type() == EnPassantType) {
-				b.SetPieceAt(Coord{i, j}, NewPiece(EmptyType, NONE))
+			if (b.pieceAt(coord{i, j}).getType() == enPassantType) {
+				b.setPieceAt(coord{i, j}, newPiece(emptyType, none))
 			}
 		}
 	}
 }
 
-func (b *Board) IsCheck(color PieceColor) bool {
-	oppositeColor := WHITE
-	if color == WHITE {
-		oppositeColor = BLACK
+func (b *board) isCheck(color pieceColor) bool {
+	oppositeColor := white
+	if color == white {
+		oppositeColor = black
 	}
-	pseudoMoves := b.PseudoLegalMovesWithColor(oppositeColor, true)
+	pseudoMoves := b.pseudoLegalMovesWithColor(oppositeColor, true)
 
 	for _, moveBoard := range pseudoMoves {
 		if !moveBoard.kingExists(color) {
@@ -233,11 +215,11 @@ func (b *Board) IsCheck(color PieceColor) bool {
 	return false
 }
 
-func (b *Board) kingExists(color PieceColor) bool {
+func (b *board) kingExists(color pieceColor) bool {
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
-			p := b.PieceAt(Coord{i, j})
-			if p.Type() == KingType && p.Color() == color {
+			p := b.pieceAt(coord{i, j})
+			if p.getType() == kingType && p.getColor() == color {
 				return true
 			}
 		}
@@ -245,10 +227,10 @@ func (b *Board) kingExists(color PieceColor) bool {
 	return false
 }
 
-func (b *Board) isCheckmate(color PieceColor) bool {
-	return b.IsCheck(color) && len(b.LegalMoves(color)) == 0
+func (b *board) isCheckmate(color pieceColor) bool {
+	return b.isCheck(color) && len(b.legalMoves(color)) == 0
 }
 
-func (b *Board) isStalemate(color PieceColor) bool {
-	return !b.IsCheck(color) && len(b.LegalMoves(color)) == 0
+func (b *board) isStalemate(color pieceColor) bool {
+	return !b.isCheck(color) && len(b.legalMoves(color)) == 0
 }
