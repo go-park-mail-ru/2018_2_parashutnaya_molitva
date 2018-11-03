@@ -44,6 +44,10 @@ func (g *Game) IsStalemate() bool {
 	return g.board.isStalemate(g.turn)
 }
 
+func (g *Game) IsGameOver() bool {
+	return g.IsCheckmate() || g.IsStalemate()
+}
+
 func (g *Game) PrintBoard() {
 	g.board.printBoard()
 }
