@@ -86,15 +86,12 @@ func (b *Board) SetPieceAt(pos Coord, p Piece) {
 }
 
 func (b *Board) PrintBoard() {
-	fmt.Println(b.IsCheck(WHITE))
-	fmt.Println(b.IsCheck(BLACK))
 	for i := 7; i >= 0; i-- {
 		for j := 0; j < 8; j++ {
 			fmt.Printf("%c", b.PieceAt(Coord{i, j}).ShortName())
 		}
 		fmt.Println()
 	}
-	b.PrintPseudoLegalMoves()
 }
 
 func (b *Board) PrintPseudoLegalMoves() {
@@ -107,6 +104,17 @@ func (b *Board) PrintPseudoLegalMoves() {
 		fmt.Printf("%s ", move)
 	}
 	fmt.Println()
+}
+
+func (b *Board) LegalMoves(color PieceColor) map[string]*Board {
+	pseudoLegalMoves := b.PseudoLegalMovesWithColor(color, false)
+	legalMoves := make(map[string]*Board)
+	for move, board := range pseudoLegalMoves {
+		if !board.IsCheck(color) {
+			legalMoves[move] = board
+		}
+	}
+	return legalMoves
 }
 
 func (b *Board) PseudoLegalMovesAtPos(pos Coord, attackOnly bool) map[string]*Board {
@@ -235,4 +243,12 @@ func (b *Board) kingExists(color PieceColor) bool {
 		}
 	}
 	return false
+}
+
+func (b *Board) isCheckmate(color PieceColor) bool {
+	return b.IsCheck(color) && len(b.LegalMoves(color)) == 0
+}
+
+func (b *Board) isStalemate(color PieceColor) bool {
+	return !b.IsCheck(color) && len(b.LegalMoves(color)) == 0
 }

@@ -1,7 +1,5 @@
 package chess
 
-import "fmt"
-
 func promotionMap() map[string]PieceType {
 	pMap := map[string]PieceType{
 		"q": QueenType,
@@ -290,7 +288,6 @@ func KingMoves(b *Board, pos Coord, attackOnly bool) map[string]*Board {
 				}
 			}
 			if castlingIsLegal {
-				fmt.Println("castle is legal")
 				moveBoard := b.Copy()
 				moveBoard.MovePiece(pos, kingKMovementCoords[len(kingKMovementCoords)-1])
 				moveBoard.MovePiece(kingSideRookCoord, kingKMovementCoords[len(kingKMovementCoords)-2])

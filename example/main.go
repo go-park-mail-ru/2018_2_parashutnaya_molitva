@@ -7,10 +7,14 @@ import (
 
 func main() {
 	game := chess.NewGame()
-	for i := 0; i < 1000; i++ {
-		game.Board.PrintBoard()
+	for isCheckmate := game.IsCheckmate(); !isCheckmate; isCheckmate = game.IsCheckmate() {
+		game.PrintBoard()
+		game.PrintLegalMoves()
 		var uci string
 		fmt.Scanln(&uci)
-		game.Board.MoveUci(uci)
+		err := game.Move(uci)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 }
