@@ -18,6 +18,7 @@ type FindRoom struct {
 
 func (gr *FindRoom) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	b := isAuth(r)
+	singletoneLogger.LogMessage("Request")
 	if !b {
 		responseWithError(w, http.StatusUnauthorized, errNoAuth)
 		return
@@ -31,11 +32,14 @@ func (gr *FindRoom) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	params := g.RoomParameters{}
+	singletoneLogger.LogMessage(string(body))
 	err = params.UnmarshalJSON(body)
 	if err != nil {
 		responseWithError(w, http.StatusInternalServerError, errParseJSON)
 		return
 	}
+
+	singletoneLogger.LogMessage("here")
 
 	// Пока только один параметр, так что просто кидаем ошибку без названия параметра
 	_, err = params.Validate()
@@ -54,13 +58,15 @@ type FindUserResponse struct {
 }
 
 func (f *FindUserResponse) MarshalJSON() ([]byte, error) {
-	data, err := json.Marshal(f)
+	type NonRecursivAlias FindUserResponse
+	nonRecursivF := (*NonRecursivAlias)(f)
+	data, err := json.Marshal(nonRecursivF)
 	return data, err
 }
 
 type StartGame struct {
-	game     *g.Game
-	upgrader *websocket.Upgrader
+	Game     *g.Game
+	Upgrader *websocket.Upgrader
 }
 
 func (sg *StartGame) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -80,11 +86,11 @@ func (sg *StartGame) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	conn, err := sg.upgrader.Upgrade(w, r, nil)
+	conn, err := sg.Upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		singletoneLogger.LogError(err)
 		return
 	}
 
-	sg.game.InitConnection(u.Email, u.Score, conn)
+	sg.Game.InitConnection(u.Email, u.Score, conn)
 }

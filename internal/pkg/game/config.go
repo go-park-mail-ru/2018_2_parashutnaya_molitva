@@ -9,6 +9,7 @@ const configFileName = "game.json"
 
 type GameConfig struct {
 	InitMessageDeadline int
+	CloseRoomDeadline   int
 	ValidGameDuration   []int
 }
 

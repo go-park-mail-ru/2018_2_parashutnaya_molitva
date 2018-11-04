@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"sync"
+	"time"
 
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	uuid "github.com/google/uuid"
@@ -24,10 +25,12 @@ type RoomParameters struct {
 }
 
 func (r *RoomParameters) UnmarshalJSON(data []byte) error {
-	return json.Unmarshal(data, r)
+	type NonRecursivAlias RoomParameters
+	rp := (*NonRecursivAlias)(r)
+	return json.Unmarshal(data, rp)
 }
 
-func (r *RoomParameters) MarshalJSON() ([]byte, error) {
+func (r *RoomParameters) MarshalJSONLib() ([]byte, error) {
 	data, err := json.Marshal(r)
 	return data, err
 }
@@ -54,7 +57,8 @@ type Room struct {
 	game      *Game
 	gameLogic GameLogic
 
-	ID string
+	ID        string
+	closeTime int // Через какое количество секунд, комната закроется если не заполнилась
 
 	sync.RWMutex
 	availableSlots int
@@ -72,7 +76,7 @@ func createRoomID() string {
 	return id.String()
 }
 
-func NewRoom(g *Game, params RoomParameters) *Room {
+func NewRoom(g *Game, params RoomParameters, closeTime int) *Room {
 	r := &Room{
 		game:       g,
 		ID:         createRoomID(),
@@ -80,6 +84,7 @@ func NewRoom(g *Game, params RoomParameters) *Room {
 		parameters: params,
 		register:   make(chan *Player),
 		isFullChan: make(chan struct{}),
+		isDoneChan: make(chan struct{}, 1),
 		broadcastsIn: [maxPlayers]chan *Message{
 			make(chan *Message),
 			make(chan *Message),
@@ -89,6 +94,7 @@ func NewRoom(g *Game, params RoomParameters) *Room {
 			make(chan *Message),
 		},
 		availableSlots: maxPlayers,
+		closeTime:      closeTime,
 	}
 
 	go r.listen()
@@ -157,25 +163,43 @@ func (r *Room) startGame() {
 }
 
 func (r *Room) listen() {
+	closeTimer := time.NewTimer(time.Second * time.Duration(r.closeTime))
+	startTimer := time.Now()
 LOOP:
 	for {
 		select {
 		case p := <-r.register:
+
+			if !closeTimer.Stop() {
+				<-closeTimer.C
+			}
+
 			if r.isAllPlayersCreated() {
 				r.isFullChan <- struct{}{}
 			} else {
 				r.players = append(r.players, p)
+				closeTimer.Reset(time.Second * time.Duration(r.closeTime))
+				singletoneLogger.LogMessage("Timer was reseted")
 				singletoneLogger.LogMessage(fmt.Sprintf("RoomID %v: Player was added: %v", p.playerData.Name))
-				
 				msg, _ := MarshalToMessage(InfoMsg, &InfoMessage{"Added to room"})
 				p.Send(msg)
 			}
 		case <-r.isFullChan:
 			go r.startGame()
 			break LOOP
+		case <-closeTimer.C:
+			for _, p := range r.players {
+				msg, _ := MarshalToMessage(InfoMsg, &InfoMessage{"Room was closed, while searching"})
+				p.Send(msg)
+			}
+			singletoneLogger.LogMessage(fmt.Sprintf("Room: %v, was closed due to waiting timeout ", r.ID))
+			r.isDoneChan <- struct{}{}
+			break LOOP
 		}
 	}
-
 	<-r.isDoneChan
+	finishTime := time.Now().Sub(startTimer)
+
+	singletoneLogger.LogMessage(fmt.Sprintf("%v", finishTime.Seconds()))
 	r.game.CloseRoom(r.ID)
 }

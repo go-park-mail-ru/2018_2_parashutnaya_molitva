@@ -48,7 +48,6 @@ func (g *Game) findRoom(roomParameters RoomParameters) string {
 			return id
 		}
 	}
-
 	return ""
 }
 
@@ -59,7 +58,7 @@ func (g *Game) InitRoom(roomParameters RoomParameters) string {
 		return id
 	}
 
-	r := NewRoom(g, roomParameters)
+	r := NewRoom(g, roomParameters, gameConfig.CloseRoomDeadline)
 	r.TakeSlot()
 	g.createRoom <- r
 	return r.ID
@@ -156,6 +155,7 @@ func (g *Game) listen() {
 		select {
 		case roomID := <-g.closeRoom:
 			delete(g.rooms, roomID)
+			singletoneLogger.LogMessage(fmt.Sprintf("Room: %v, was deleted", roomID))
 			g.printGameState()
 		case room := <-g.createRoom:
 			g.rooms[room.ID] = room
