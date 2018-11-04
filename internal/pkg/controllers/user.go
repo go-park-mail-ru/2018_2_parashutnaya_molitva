@@ -7,9 +7,9 @@ import (
 	"strconv"
 
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/db"
-	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/routes"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/user"
+	"github.com/gorilla/mux"
 )
 
 //easyjson:json
@@ -30,12 +30,18 @@ type responseUserGuidStruct struct {
 // @Failure 500 {object} controllers.ErrorResponse
 // @Router /user/{guid} [get]
 func GetUser(w http.ResponseWriter, r *http.Request) {
-	pathVariables, ok := routes.GetVar(r)
+	pathVariables := mux.Vars(r)
+	if pathVariables == nil {
+		responseWithError(w, http.StatusBadRequest, "Bad query")
+		return
+	}
+	guid, ok := pathVariables["guid"]
+
 	if !ok {
 		responseWithError(w, http.StatusBadRequest, "Bad query")
 		return
 	}
-	guid := pathVariables["guid"]
+
 	u, err := user.GetUserByGuid(guid)
 	if err != nil && db.IsNotFoundError(err) {
 		responseWithError(w, http.StatusNotFound, "User not found")
@@ -163,12 +169,17 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pathVariables, ok := routes.GetVar(r)
+	pathVariables := mux.Vars(r)
+	if pathVariables == nil {
+		responseWithError(w, http.StatusBadRequest, "Bad query")
+		return
+	}
+	guid, ok := pathVariables["guid"]
 	if !ok {
 		responseWithError(w, http.StatusBadRequest, "Bad query")
 		return
 	}
-	guid := pathVariables["guid"]
+
 	u, err := user.GetUserByGuid(userGuid(r))
 	if u.Guid.Hex() != guid {
 		responseWithError(w, http.StatusMethodNotAllowed, "No access rights")

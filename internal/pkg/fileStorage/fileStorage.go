@@ -1,15 +1,16 @@
 package fileStorage
 
 import (
-	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/config"
-	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/randomGenerator"
-	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/config"
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/randomGenerator"
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 )
 
 var StoragePath string
