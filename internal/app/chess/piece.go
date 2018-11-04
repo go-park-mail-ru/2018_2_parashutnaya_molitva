@@ -26,8 +26,8 @@ func (p *piece) getIsMoved() bool {
 	return p.isMoved
 }
 
-func (p *piece) setMoved(bool) {
-	p.isMoved = true
+func (p *piece) setMoved(moved bool) {
+	p.isMoved = moved
 }
 
 func (p *piece) shortName() rune {
