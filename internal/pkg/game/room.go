@@ -166,7 +166,7 @@ LOOP:
 			} else {
 				r.players = append(r.players, p)
 				singletoneLogger.LogMessage(fmt.Sprintf("RoomID %v: Player was added: %v", p.playerData.Name))
-
+				
 				msg, _ := MarshalToMessage(InfoMsg, &InfoMessage{"Added to room"})
 				p.Send(msg)
 			}

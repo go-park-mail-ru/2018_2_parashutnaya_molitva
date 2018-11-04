@@ -66,7 +66,7 @@ func (g *Game) InitRoom(roomParameters RoomParameters) string {
 }
 
 func (g *Game) readInitMessage(done chan struct{}, conn *websocket.Conn) chan *InitMessage {
-	chanMessage := make(chan *InitMessage)
+	chanMessage := make(chan *InitMessage, 1)
 	go func() {
 		for {
 
