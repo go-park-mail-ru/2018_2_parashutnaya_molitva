@@ -246,13 +246,15 @@ const scoreFactor = 5
 func (r *Room) endGame(winner *Player, loser *Player) {
 	errChangeWinner := winner.playerData.User.AddScore(scoreFactor)
 	if errChangeWinner != nil {
+		singletoneLogger.LogError(errChangeWinner)
 		r.closeConnections(websocket.CloseInternalServerErr, errInternalServerError.Error())
 		r.isDoneChan <- struct{}{}
 		return
 	}
 
-	errChangeLoser := winner.playerData.User.AddScore(-scoreFactor)
+	errChangeLoser := loser.playerData.User.AddScore(-scoreFactor)
 	if errChangeLoser != nil {
+		singletoneLogger.LogError(errChangeWinner)
 		r.closeConnections(websocket.CloseInternalServerErr, errInternalServerError.Error())
 		r.isDoneChan <- struct{}{}
 		return
