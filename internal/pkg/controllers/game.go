@@ -36,7 +36,7 @@ func (gr *FindRoom) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		responseWithError(w, http.StatusInternalServerError, errParseRequestBody)
 		return
 	}
-	defer r.Body.Close()
+	r.Body.Close()
 
 	params := g.RoomParameters{}
 	singletoneLogger.LogMessage(string(body))
