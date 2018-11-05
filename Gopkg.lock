@@ -66,7 +66,6 @@
   version = "v1.0.0"
 
 [[projects]]
-<<<<<<< a7df91f76bdc487b5222b03007bf39839a3ba8d0
   digest = "1:c79fb010be38a59d657c48c6ba1d003a8aa651fa56b579d959d74573b7dff8e1"
   name = "github.com/gorilla/context"
   packages = ["."]
@@ -83,8 +82,6 @@
   version = "v1.6.2"
 
 [[projects]]
-=======
->>>>>>> <40> fix
   digest = "1:7b5c6e2eeaa9ae5907c391a91c132abfd5c9e8a784a341b5625e750c67e6825d"
   name = "github.com/gorilla/websocket"
   packages = ["."]
@@ -237,10 +234,7 @@
   input-imports = [
     "github.com/fatih/color",
     "github.com/google/uuid",
-<<<<<<< a7df91f76bdc487b5222b03007bf39839a3ba8d0
     "github.com/gorilla/mux",
-=======
->>>>>>> <40> fix
     "github.com/gorilla/websocket",
     "github.com/mailru/easyjson",
     "github.com/mailru/easyjson/jlexer",
