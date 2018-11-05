@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-var (
+const (
 	errNoAuth           = "Does not authorised"
 	errNoUser           = "Can't find user"
 	errParseRequestBody = "Can't parse request body"

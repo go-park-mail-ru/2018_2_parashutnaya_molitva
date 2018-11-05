@@ -1,7 +1,6 @@
 package game
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"sync"
@@ -50,19 +49,6 @@ func init() {
 //easyjson:json
 type RoomParameters struct {
 	Duration int `json:"duration" example:"60"`
-}
-
-func (r *RoomParameters) UnmarshalJSON(data []byte) error {
-	type NonRecursivAlias RoomParameters
-	rp := (*NonRecursivAlias)(r)
-	return json.Unmarshal(data, rp)
-}
-
-func (r *RoomParameters) MarshalJSON() ([]byte, error) {
-	type NonRecursivAlias RoomParameters
-	rp := (*NonRecursivAlias)(r)
-	data, err := json.Marshal(rp)
-	return data, err
 }
 
 func (r *RoomParameters) Validate() (string, error) {
@@ -342,7 +328,7 @@ LOOP:
 func (r *Room) turn(msg *Message, out chan<- *Message, turnFunc func(Turn) error) {
 	turn := &TurnMessage{}
 
-	err := msg.ToUnmarshalData(turn)
+	err := msg.UnmarshalData(turn)
 	if err != nil {
 		log.Println(err)
 		out <- errMsgInvalidJSON

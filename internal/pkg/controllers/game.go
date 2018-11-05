@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"net/http"
 
@@ -11,6 +10,8 @@ import (
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/user"
 	"github.com/gorilla/websocket"
 )
+
+//go:generate easyjson -pkg
 
 type FindRoom struct {
 	Game *g.Game
@@ -65,13 +66,6 @@ func (gr *FindRoom) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 //easyjson:json
 type FindUserResponse struct {
 	RoomID string `json:"roomid" example:"xxx-xx-xxxxx"`
-}
-
-func (f *FindUserResponse) MarshalJSON() ([]byte, error) {
-	type NonRecursivAlias FindUserResponse
-	nonRecursivF := (*NonRecursivAlias)(f)
-	data, err := json.Marshal(nonRecursivF)
-	return data, err
 }
 
 type StartGame struct {

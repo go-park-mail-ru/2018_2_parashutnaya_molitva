@@ -21,7 +21,6 @@ var (
 )
 
 func init() {
-	singletoneLogger.LogMessage("INIT")
 	err := jsonConfigReader.Read(configFileName, gameConfig)
 	if err != nil {
 		singletoneLogger.LogError(err)

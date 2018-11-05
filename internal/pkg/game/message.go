@@ -2,7 +2,6 @@ package game
 
 import (
 	"encoding/json"
-	"reflect"
 
 	"github.com/pkg/errors"
 )
@@ -21,39 +20,46 @@ var (
 	errImpossibleUnmarshalToMsg = errors.New("Impossible unmarshal to Message")
 )
 
+//easyjson:json
 type ResultMessage struct {
 	Result string `jsong:"result"`
 	Score  int    `json:"score"`
 }
 
+//easyjson:json
 type TurnMessage struct {
 	Turn string `json:"turn"`
 }
 
+//easyjson:json
 type StartMessage struct {
 	Color string `json:"color"`
 }
 
+//easyjson:json
 type InitMessage struct {
 	RoomId string `json:"roomid"`
 }
 
+//easyjson:json
 type ErrorMessage struct {
 	Error string `json:"error"`
 }
 
+//easyjson:json
 type InfoMessage struct {
 	Info string `json:"info"`
 }
 
+//easyjson:json
 type Message struct {
-	MsgType string
-	Data    json.RawMessage
+	MsgType string          `json:"MsgType"`
+	Data    json.RawMessage `json:"Data"`
 }
 
 func UnmarshalToMessage(data []byte) (*Message, error) {
 	msg := &Message{}
-	err := json.Unmarshal(data, msg)
+	err := msg.UnmarshalJSON(data)
 	if err != nil {
 		return nil, errImpossibleUnmarshalToMsg
 	}
@@ -61,8 +67,9 @@ func UnmarshalToMessage(data []byte) (*Message, error) {
 	return msg, nil
 }
 
-func MarshalToMessage(msgType string, v interface{}) (*Message, error) {
-	data, err := json.Marshal(v)
+func MarshalToMessage(msgType string, v json.Marshaler) (*Message, error) {
+
+	data, err := v.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
@@ -70,14 +77,12 @@ func MarshalToMessage(msgType string, v interface{}) (*Message, error) {
 	return NewMessage(msgType, data), nil
 }
 
-func (m *Message) ToUnmarshalData(v interface{}) error {
-	// Не возвращает ошибку
-	data, _ := m.Data.MarshalJSON()
-	if reflect.DeepEqual(data, []byte("null")) {
+func (m *Message) UnmarshalData(v json.Unmarshaler) error {
+	if m.Data == nil {
 		return errDataIsEmpty
 	}
-
-	return json.Unmarshal(data, v)
+	data := []byte(m.Data)
+	return v.UnmarshalJSON(data)
 }
 
 func NewMessage(msgType string, data []byte) *Message {

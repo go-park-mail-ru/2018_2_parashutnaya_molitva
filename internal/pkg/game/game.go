@@ -11,6 +11,8 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+//go:generate easyjson -pkg
+
 var (
 	errNoRoom               = errors.New("No Room")
 	errUnexpectedClose      = errors.New("Unexpected Close")
@@ -135,6 +137,7 @@ func (g *Game) readInitMessage(done chan struct{}, conn *websocket.Conn) (chan *
 
 			msg, err := UnmarshalToMessage(rawMsg)
 			if err != nil {
+				singletoneLogger.LogError(err)
 				sendError(conn, errInavlidMsgFormat.Error())
 				continue
 			}
@@ -146,7 +149,7 @@ func (g *Game) readInitMessage(done chan struct{}, conn *websocket.Conn) (chan *
 			}
 
 			initMsg := &InitMessage{}
-			err = msg.ToUnmarshalData(initMsg)
+			err = msg.UnmarshalData(initMsg)
 			if err != nil {
 				sendError(conn, errInvalidMsgInitFormat.Error())
 				continue
