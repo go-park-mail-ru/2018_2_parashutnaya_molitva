@@ -24,6 +24,12 @@ func (gr *FindRoom) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	guid := userGuid(r)
+	if guid == "" {
+		responseWithError(w, http.StatusUnauthorized, errNoUser)
+		return
+	}
+
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		responseWithError(w, http.StatusInternalServerError, errParseRequestBody)
@@ -48,7 +54,11 @@ func (gr *FindRoom) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	roomID := gr.Game.InitRoom(params)
+	roomID, err := gr.Game.InitRoom(guid, params)
+	if err != nil {
+		responseWithError(w, http.StatusConflict, err.Error())
+		return
+	}
 	responseWithOk(w, &FindUserResponse{roomID})
 }
 
@@ -86,11 +96,16 @@ func (sg *StartGame) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Уже есть CORS middleware, который отклоняет запросы с неразрешенных Origin
+	sg.Upgrader.CheckOrigin = func(r *http.Request) bool {
+		return true
+	}
+
 	conn, err := sg.Upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		singletoneLogger.LogError(err)
 		return
 	}
 
-	sg.Game.InitConnection(u.Email, u.Score, conn)
+	sg.Game.InitConnection(u.Email, u.Score, &u, conn)
 }

@@ -8,16 +8,31 @@ import (
 )
 
 const (
-	TurnMsg  = "turn"
-	ErrorMsg = "error"
-	InitMsg  = "init"
-	InfoMsg  = "info"
+	TurnMsg   = "turn"
+	ErrorMsg  = "error"
+	InitMsg   = "init"
+	InfoMsg   = "info"
+	StartMsg  = "start"
+	ResultMsg = "result"
 )
 
 var (
 	errDataIsEmpty              = errors.New("Data is empty")
 	errImpossibleUnmarshalToMsg = errors.New("Impossible unmarshal to Message")
 )
+
+type ResultMessage struct {
+	Result string `jsong:"result"`
+	Score  int    `json:"score"`
+}
+
+type TurnMessage struct {
+	Turn string `json:"turn"`
+}
+
+type StartMessage struct {
+	Color string `json:"color"`
+}
 
 type InitMessage struct {
 	RoomId string `json:"roomid"`

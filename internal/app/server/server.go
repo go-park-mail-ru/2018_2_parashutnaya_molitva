@@ -14,7 +14,6 @@ import (
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
-	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type ServerData struct {
@@ -53,9 +52,9 @@ func StartApp(port int) error {
 	router.HandleFunc("/api/user", controllers.CreateUser).Methods("POST", "OPTIONS")
 
 	game := g.NewGame()
-	router.Handle("/api/game/", &controllers.FindRoom{game}).Methods("POST", "OPTIONS")
+	router.Handle("/api/game", &controllers.FindRoom{game}).Methods("POST", "OPTIONS")
 
-	router.Handle("/api/game/ws/", &controllers.StartGame{game, &websocket.Upgrader{}})
+	router.Handle("/api/game/ws", &controllers.StartGame{game, &websocket.Upgrader{}})
 	// Документация
 	router.HandleFunc("/docs/*", httpSwagger.WrapHandler)
 	router.PathPrefix("/storage/").Handler(fileStorage.StorageHandler)

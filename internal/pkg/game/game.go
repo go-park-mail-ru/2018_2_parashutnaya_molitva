@@ -18,54 +18,96 @@ var (
 	errInvalidMsgTypeInit   = errors.New("Invalid type: wating for Init")
 	errInvalidMsgInitFormat = errors.New("Invalid init message format")
 	errInavlidMsgFormat     = errors.New("Invalid message format")
+	errAlreadySearching     = errors.New("Already searching")
+	errAlreadyInRoom        = errors.New("Already in room")
 )
 
 type Game struct {
-	mx         sync.RWMutex
-	rooms      map[string]*Room
+	mx             sync.RWMutex
+	rooms          map[string]*Room
+	searchingGuids map[string]struct{}
+
 	closeRoom  chan string
 	createRoom chan *Room
 }
 
 func NewGame() *Game {
 	g := &Game{
-		mx:         sync.RWMutex{},
-		rooms:      map[string]*Room{},
-		closeRoom:  make(chan string),
-		createRoom: make(chan *Room),
+		mx:             sync.RWMutex{},
+		rooms:          map[string]*Room{},
+		closeRoom:      make(chan string),
+		createRoom:     make(chan *Room),
+		searchingGuids: make(map[string]struct{}),
 	}
 
 	go g.listen()
 	return g
 }
 
-func (g *Game) findRoom(roomParameters RoomParameters) string {
+func (g *Game) findRoom(guid string, roomParameters RoomParameters) (string, error) {
 	g.mx.RLock()
-	defer g.mx.RUnlock()
 	for id, room := range g.rooms {
-		if room.parameters == roomParameters && !room.IsFull() {
-			room.TakeSlot()
-			return id
+		g.mx.RUnlock()
+		if room.IsUserInRoomByGuid(guid) {
+			return "", errAlreadyInRoom
 		}
+
+		if room.parameters == roomParameters && !room.IsFull() {
+			room.TakeSlot(guid)
+			singletoneLogger.LogMessage(fmt.Sprintf("searching: %#v, ", g.searchingGuids))
+			g.deleteFromSearching(guid)
+
+			return id, nil
+		}
+		g.mx.RLock()
 	}
-	return ""
+	g.mx.RUnlock()
+	return "", nil
 }
 
-func (g *Game) InitRoom(roomParameters RoomParameters) string {
-	id := g.findRoom(roomParameters)
+func (g *Game) isUserAlreadySearching(guid string) bool {
+	g.mx.RLock()
+	defer g.mx.RUnlock()
+	_, isExist := g.searchingGuids[guid]
+	return isExist
+}
 
+func (g *Game) addUserInSearching(guid string) {
+	g.mx.Lock()
+	g.searchingGuids[guid] = struct{}{}
+	g.mx.Unlock()
+}
+
+func (g *Game) deleteFromSearching(guid string) {
+	g.mx.Lock()
+	delete(g.searchingGuids, guid)
+	g.mx.Unlock()
+}
+
+func (g *Game) InitRoom(guid string, roomParameters RoomParameters) (string, error) {
+
+	if g.isUserAlreadySearching(guid) {
+		return "", errAlreadySearching
+	}
+	g.addUserInSearching(guid)
+	id, err := g.findRoom(guid, roomParameters)
+	singletoneLogger.LogMessage("Finded" + id)
 	if id != "" {
-		return id
+		return id, nil
+	} else if err != nil {
+		return "", err
 	}
 
 	r := NewRoom(g, roomParameters, gameConfig.CloseRoomDeadline)
-	r.TakeSlot()
+	r.TakeSlot(guid)
 	g.createRoom <- r
-	return r.ID
+	g.deleteFromSearching(guid)
+	return r.ID, nil
 }
 
-func (g *Game) readInitMessage(done chan struct{}, conn *websocket.Conn) chan *InitMessage {
+func (g *Game) readInitMessage(done chan struct{}, conn *websocket.Conn) (chan *InitMessage, chan error) {
 	chanMessage := make(chan *InitMessage, 1)
+	chanCloseError := make(chan error)
 	go func() {
 		for {
 
@@ -77,9 +119,12 @@ func (g *Game) readInitMessage(done chan struct{}, conn *websocket.Conn) chan *I
 
 			_, rawMsg, err := conn.ReadMessage()
 			if websocket.IsUnexpectedCloseError(err) {
-				conn.Close()
 				singletoneLogger.LogError(err)
+				chanCloseError <- err
 				return
+			} else if err != nil {
+				sendError(conn, err.Error())
+				continue
 			}
 
 			if rawMsg == nil {
@@ -112,15 +157,15 @@ func (g *Game) readInitMessage(done chan struct{}, conn *websocket.Conn) chan *I
 		}
 	}()
 
-	return chanMessage
+	return chanMessage, chanCloseError
 }
 
-func (g *Game) initConnection(name string, score int, conn *websocket.Conn) {
+func (g *Game) initConnection(name string, score int, user UserStorage, conn *websocket.Conn) {
 	done := make(chan struct{})
-	t := time.NewTimer(time.Second * time.Duration(gameConfig.InitMessageDeadline)).C
-
+	t := time.NewTimer(time.Second * time.Duration(gameConfig.InitMessageDeadline))
+	initChan, closeErrorChan := g.readInitMessage(done, conn)
 	select {
-	case initMessage := <-g.readInitMessage(done, conn):
+	case initMessage := <-initChan:
 		close(done)
 		g.mx.RLock()
 		room, exist := g.rooms[initMessage.RoomId]
@@ -131,18 +176,26 @@ func (g *Game) initConnection(name string, score int, conn *websocket.Conn) {
 			return
 		}
 
-		room.AddPlayer(NewPlayer(name, score, conn))
+		room.AddPlayer(NewPlayer(name, score, user, conn))
 		singletoneLogger.LogMessage(fmt.Sprintf("Successfully init msg was read: %v", initMessage))
-	case <-t:
+	case <-t.C:
 		close(done)
-		sendError(conn, errInitMsgWaitTooLong.Error())
+
 		singletoneLogger.LogError(errInitMsgWaitTooLong)
-		conn.Close()
+		sendCloseError(conn, websocket.CloseNormalClosure, errInitMsgWaitTooLong.Error())
+	case closeError := <-closeErrorChan:
+		close(done)
+
+		if !t.Stop() {
+			<-t.C
+		}
+
+		singletoneLogger.LogError(closeError)
 	}
 }
 
-func (g *Game) InitConnection(name string, score int, conn *websocket.Conn) {
-	go g.initConnection(name, score, conn)
+func (g *Game) InitConnection(name string, score int, user UserStorage, conn *websocket.Conn) {
+	go g.initConnection(name, score, user, conn)
 }
 
 func (g *Game) CloseRoom(roomID string) {

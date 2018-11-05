@@ -11,6 +11,8 @@ type GameConfig struct {
 	InitMessageDeadline int
 	CloseRoomDeadline   int
 	ValidGameDuration   []int
+	PongWait            int
+	PingPeriod          int
 }
 
 var (

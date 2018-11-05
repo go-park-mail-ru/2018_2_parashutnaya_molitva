@@ -1,16 +1,13 @@
 package game
 
-type Cell struct {
-	x byte
-	y byte
+type Result struct {
+	isWhiteWinner bool
 }
 
-type Turn struct {
-	from Cell
-	to   Cell
-}
+type Turn string
 
 type GameLogic interface {
 	FirstPlayerTurn(Turn) error
 	SecondPlayerTurn(Turn) error
+	Start() (bool, <-chan Result) // true  - 1 игрок играет за белых. false - 2 игрок играет за белых
 }

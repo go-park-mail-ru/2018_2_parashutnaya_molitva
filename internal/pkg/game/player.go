@@ -2,50 +2,151 @@ package game
 
 import (
 	"fmt"
+	"sync"
+	"time"
 
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"github.com/gorilla/websocket"
+	"github.com/pkg/errors"
 )
+
+type UserStorage interface {
+	AddScore(int) error
+}
 
 type PlayerData struct {
 	Name  string
 	Score int
+	User  UserStorage
 }
 
 type Player struct {
 	conn       *websocket.Conn
 	playerData PlayerData
+
+	sync.RWMutex
+	isClosed bool
+
+	closeChan chan struct{}
 }
 
-func NewPlayer(name string, score int, conn *websocket.Conn) *Player {
+func NewPlayer(name string, score int, user UserStorage, conn *websocket.Conn) *Player {
 	return &Player{
 		conn: conn,
 		playerData: PlayerData{
 			name,
 			score,
+			user,
 		},
+		isClosed:  false,
+		closeChan: make(chan struct{}, 1),
 	}
 }
 
-func (p *Player) Send(msg *Message) {
+func (p *Player) GetName() string {
+	return p.playerData.Name
+}
+
+func (p *Player) GetScore() int {
+	return p.playerData.Score
+}
+
+func (p *Player) IsClosed() bool {
+	p.RLock()
+	defer p.RUnlock()
+	return p.isClosed
+}
+
+func (p *Player) Send(msg *Message) error {
 	err := p.conn.WriteJSON(msg)
-	if err != nil {
-		singletoneLogger.LogError(err)
+	if websocket.IsUnexpectedCloseError(err) {
+		p.close()
+	}
+
+	return errors.WithStack(err)
+}
+
+func (p *Player) close() {
+	p.Lock()
+	p.isClosed = true
+	p.Unlock()
+	p.closeChan <- struct{}{}
+}
+
+// Close - закрывает соедениение с номером ошибки и причиной
+// Безопасен для уже закрытых соеднинений
+func (p *Player) Close(code int, msg string) {
+	if p.IsClosed() {
+		return
+	}
+	p.close()
+	sendCloseError(p.conn, code, msg)
+}
+
+// Читает сообщения из канал и записывает в соединение
+func (p *Player) write(out <-chan *Message, chanCloseError chan<- error) {
+	pingTicker := time.NewTicker(time.Second * time.Duration(gameConfig.PingPeriod))
+	defer pingTicker.Stop()
+	for {
+		select {
+		case msg, ok := <-out:
+			if !ok {
+				return
+			}
+
+			err := p.conn.WriteJSON(msg)
+			if websocket.IsUnexpectedCloseError(err) {
+				p.close()
+				chanCloseError <- errors.WithStack(err)
+				return
+			} else if err != nil {
+				singletoneLogger.LogError(errors.WithStack(err))
+				return
+			}
+		case <-p.closeChan:
+			return
+		case <-pingTicker.C:
+			err := p.conn.WriteMessage(websocket.PingMessage, nil)
+			if websocket.IsUnexpectedCloseError(err) {
+				p.close()
+				chanCloseError <- errors.WithStack(err)
+				return
+			} else if err != nil {
+				singletoneLogger.LogError(errors.WithStack(err))
+				return
+			}
+		}
 	}
 }
 
 // Читает сообщения из соединения и записывает в канал
-func (p *Player) read(out chan<- *Message) {
+func (p *Player) read(in chan<- *Message, chanCloseError chan<- error) {
+	readMessage := &Message{}
 
+	p.conn.SetReadDeadline(time.Now().Add(time.Second * time.Duration(gameConfig.PongWait)))
+	p.conn.SetPongHandler(func(string) error {
+		p.conn.SetReadDeadline(time.Now().Add(time.Second * time.Duration(gameConfig.PongWait)))
+		return nil
+	})
+	for !p.IsClosed() {
+		err := p.conn.ReadJSON(readMessage)
+
+		if websocket.IsUnexpectedCloseError(err) {
+			p.close()
+			chanCloseError <- errors.WithStack(err)
+			return
+		} else if err != nil {
+			singletoneLogger.LogError(errors.WithStack(err))
+			return
+		}
+
+		in <- readMessage
+	}
 }
 
-// Читает сообщения из канала и записывает в соединение
-func (p *Player) write(in <-chan *Message) {
-
-}
-
-func (p *Player) Start(out chan<- *Message, in <-chan *Message) {
+func (p *Player) Start(in chan<- *Message, out <-chan *Message, chanCloseError chan<- error) {
 	singletoneLogger.LogMessage(fmt.Sprintf("Start listen player: %v", p.playerData.Name))
-	go p.read(out)
-	go p.write(in)
+
+	go p.read(in, chanCloseError)
+	go p.write(out, chanCloseError)
 }
