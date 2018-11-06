@@ -12,6 +12,7 @@ type Game struct {
 	status GameStatus
 }
 
+// game constructor with starting position
 func NewGame() *Game {
 	return &Game{
 		board: newBoard(),
@@ -19,6 +20,8 @@ func NewGame() *Game {
 	}
 }
 
+// makes move `uci`
+// returns nil if move is legal
 func (g *Game) Move(uci string) error {
 	legalMoves := g.board.legalMoves(g.turn)
 
@@ -37,18 +40,22 @@ func (g *Game) Move(uci string) error {
 	return nil
 }
 
+// checkmate condition check
 func (g *Game) IsCheckmate() bool {
 	return g.board.isCheckmate(g.turn)
 }
 
+// stalemate condition check
 func (g *Game) IsStalemate() bool {
 	return g.board.isStalemate(g.turn)
 }
 
+// insufficient material condition check
 func (g *Game) IsInsufficientMaterial() bool {
 	return g.board.isInsufficientMaterial()
 }
 
+// game over condition check
 func (g *Game) IsGameOver() bool {
 	return g.IsCheckmate() || g.IsStalemate() || g.IsInsufficientMaterial()
 }
@@ -58,6 +65,7 @@ func (g *Game) CurrentTurn() bool {
 	return g.turn == white
 }
 
+// returns flattened board
 // example: "RNBQKBNRPPPPPPPP................................pppppppprnbqkbnr"
 func (g *Game) BoardString() string {
 	resultBuilder := &strings.Builder{}
@@ -69,6 +77,7 @@ func (g *Game) BoardString() string {
 	return resultBuilder.String()
 }
 
+// returns board status
 func (g *Game) Status() GameStatus {
 	if g.IsCheckmate() {
 		if g.turn == white {
@@ -83,6 +92,8 @@ func (g *Game) Status() GameStatus {
 	return InProgress
 }
 
+// returns slice of legal moves
+// example: [a2a3 a2a4 b1a3 b1c3 b2b3 b2b4 c2c3 c2c4 d2d3 d2d4 e2e3 e2e4 f2f3 f2f4 g1f3 g1h3 g2g3 g2g4 h2h3 h2h4]
 func (g *Game) LegalMoves() []string {
 	legalMoves := g.board.legalMoves(g.turn)
 	legalMovesSlice := make([]string, 0, len(legalMoves))
@@ -94,10 +105,12 @@ func (g *Game) LegalMoves() []string {
 	return legalMovesSlice
 }
 
+// prints board
 func (g *Game) PrintBoard() {
 	g.board.printBoard()
 }
 
+// prints legal moves
 func (g *Game) PrintLegalMoves() {
 	fmt.Println(g.LegalMoves())
 }

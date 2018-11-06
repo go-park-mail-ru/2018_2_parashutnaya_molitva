@@ -8,6 +8,7 @@ type board struct {
 	field [][]piece
 }
 
+// board with starting position
 func newBoard() *board {
 	field := make([][]piece, 8)
 
@@ -37,6 +38,7 @@ func newBoard() *board {
 	return &board{field: field}
 }
 
+// board copy
 func (b *board) copy() *board {
 	duplicateField := make([][]piece, len(b.field))
 	for i := range b.field {
@@ -48,12 +50,14 @@ func (b *board) copy() *board {
 	return &copiedBoard
 }
 
+// moves piece from `from` to `to`
 func (b *board) movePiece(from, to *coord) {
 	b.field[to.r][to.c] = b.field[from.r][from.c]
 	b.field[to.r][to.c].setMoved(true)
 	b.field[from.r][from.c] = newPiece(emptyType, none)
 }
 
+// returns piece at coord `pos`
 func (b *board) pieceAt(pos *coord) *piece {
 	if pos.r < 0 || pos.r >= 8 || pos.c < 0 || pos.c >= 8 {
 		nonePiece := newPiece(noneType, none)
@@ -62,10 +66,12 @@ func (b *board) pieceAt(pos *coord) *piece {
 	return &b.field[pos.r][pos.c]
 }
 
+// sets piece `p` at coord `pos`
 func (b *board) setPieceAt(pos *coord, p piece) {
 	b.field[pos.r][pos.c] = p
 }
 
+// prints current board position
 func (b *board) printBoard() {
 	for i := 7; i >= 0; i-- {
 		for j := 0; j < 8; j++ {
@@ -75,6 +81,7 @@ func (b *board) printBoard() {
 	}
 }
 
+// returns available moves for current position `color`
 func (b *board) legalMoves(color pieceColor) map[string]*board {
 	pseudoLegalMoves := b.pseudoLegalMovesWithColor(color, false)
 	legalMoves := make(map[string]*board)
@@ -86,6 +93,8 @@ func (b *board) legalMoves(color pieceColor) map[string]*board {
 	return legalMoves
 }
 
+// returns unfiltered (not checking for check) moves for coord `pos`
+// `attackOnly` is required to dodge infinite recursion while solving king moves
 func (b *board) pseudoLegalMovesAtPos(pos *coord, attackOnly bool) map[string]*board {
 	availableMoves := make(map[string]*board)
 
@@ -142,20 +151,8 @@ func (b *board) pseudoLegalMovesAtPos(pos *coord, attackOnly bool) map[string]*b
 	return availableMoves
 }
 
-func (b *board) pseudoLegalMoves(attackOnly bool) map[string]*board {
-	availableMoves := make(map[string]*board)
-	for i := 0; i < 8; i++ {
-		for j := 0; j < 8; j++ {
-			movesAtPos := b.pseudoLegalMovesAtPos(&coord{i, j}, attackOnly)
-			for key, val := range movesAtPos {
-				availableMoves[key] = val
-			}
-		}
-	}
-
-	return availableMoves
-}
-
+// returns unfiltered (not checking for check) moves for `color`
+// `attackOnly` is required to dodge infinite recursion while solving king moves
 func (b *board) pseudoLegalMovesWithColor(color pieceColor, attackOnly bool) map[string]*board {
 	availableMoves := make(map[string]*board)
 	for i := 0; i < 8; i++ {
@@ -172,6 +169,7 @@ func (b *board) pseudoLegalMovesWithColor(color pieceColor, attackOnly bool) map
 	return availableMoves
 }
 
+// removes en passant piece from board
 func (b *board) removeEnPassant() {
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
@@ -183,6 +181,7 @@ func (b *board) removeEnPassant() {
 	}
 }
 
+// returns true if `color` is in check
 func (b *board) isCheck(color pieceColor) bool {
 	oppositeColor := white
 	if color == white {
@@ -199,6 +198,7 @@ func (b *board) isCheck(color pieceColor) bool {
 	return false
 }
 
+// returns true if king of `color` exists on board
 func (b *board) kingExists(color pieceColor) bool {
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
@@ -211,14 +211,17 @@ func (b *board) kingExists(color pieceColor) bool {
 	return false
 }
 
+// returns true if `color` is checkmated
 func (b *board) isCheckmate(color pieceColor) bool {
 	return b.isCheck(color) && len(b.legalMoves(color)) == 0
 }
 
+// returns true if stalemate
 func (b *board) isStalemate(color pieceColor) bool {
 	return !b.isCheck(color) && len(b.legalMoves(color)) == 0
 }
 
+// return true if only 2 kings left
 func (b *board) isInsufficientMaterial() bool {
 	pieceCounter := 0
 	for i := 0; i < 8; i++ {

@@ -1,15 +1,17 @@
 package chess
 
 func promotionMap() map[string]pieceType {
-	pMap := map[string]pieceType{
+	return map[string]pieceType{
 		"q": queenType,
 		"r": rookType,
 		"b": bishopType,
 		"n": knightType,
 	}
-	return pMap
 }
 
+// unfiltered pawn moves on board `b` at coord `pos`
+// if `attackOnly` is true, returns only capture moves
+// `attackOnly` is required to dodge infinite recursion while solving king moves
 func pawnMoves(b *board, pos *coord, attackOnly bool) map[string]*board {
 	availableMoves := make(map[string]*board)
 
@@ -107,6 +109,7 @@ func pawnMoves(b *board, pos *coord, attackOnly bool) map[string]*board {
 	return availableMoves
 }
 
+// unfiltered knight moves on board `b` at coord `pos`
 func knightMoves(b *board, pos *coord) map[string]*board {
 	availableMoves := make(map[string]*board)
 
@@ -139,6 +142,7 @@ func knightMoves(b *board, pos *coord) map[string]*board {
 	return availableMoves
 }
 
+// unfiltered bishop moves on board `b` at coord `pos`
 func bishopMoves(b *board, pos *coord) map[string]*board {
 	availableMoves := make(map[string]*board)
 
@@ -146,6 +150,7 @@ func bishopMoves(b *board, pos *coord) map[string]*board {
 
 	steps := make([]*coord, 0, 16)
 
+	// direction multipliers
 	rMultipliers := []int{1, 1, -1, -1}
 	cMultipliers := []int{1, -1, 1, -1}
 	for i := 0; i < len(rMultipliers); i++ {
@@ -179,12 +184,14 @@ func bishopMoves(b *board, pos *coord) map[string]*board {
 	return availableMoves
 }
 
+// unfiltered rook moves on board `b` at coord `pos`
 func rookMoves(b *board, pos *coord) map[string]*board {
 	availableMoves := make(map[string]*board)
 	rook := b.pieceAt(pos)
 
 	steps := make([]*coord, 0, 16)
 
+	// direction multipliers
 	rMultipliers := []int{1, 0, -1, 0}
 	cMultipliers := []int{0, 1, 0, -1}
 	for i := 0; i < len(rMultipliers); i++ {
@@ -218,6 +225,7 @@ func rookMoves(b *board, pos *coord) map[string]*board {
 	return availableMoves
 }
 
+// unfiltered pawn moves on board `b` at coord `pos`
 func queenMoves(b *board, pos *coord) map[string]*board {
 	availableMoves := make(map[string]*board)
 
@@ -234,6 +242,9 @@ func queenMoves(b *board, pos *coord) map[string]*board {
 	return availableMoves
 }
 
+// unfiltered king moves on board `b` at coord `pos`
+// if `attackOnly` is true, skips castling move
+// `attackOnly` is required to dodge infinite recursion while solving king moves
 func kingMoves(b *board, pos *coord, attackOnly bool) map[string]*board {
 	availableMoves := make(map[string]*board)
 
