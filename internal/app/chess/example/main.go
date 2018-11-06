@@ -7,7 +7,7 @@ import (
 
 func main() {
 	game := chess.NewGame()
-	for !game.IsGameOver() {
+	for game.Status() == chess.InProgress {
 		game.PrintBoard()
 		game.PrintLegalMoves()
 		var uci string
@@ -16,5 +16,14 @@ func main() {
 		if err != nil {
 			fmt.Println(err)
 		}
+	}
+
+	switch game.Status() {
+	case chess.WhiteWon:
+		fmt.Println("white won")
+	case chess.BlackWon:
+		fmt.Println("black won")
+	case chess.Draw:
+		fmt.Println("draw")
 	}
 }

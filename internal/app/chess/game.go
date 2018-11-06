@@ -7,8 +7,9 @@ import (
 )
 
 type Game struct {
-	board *board // P N B R Q K p n b r q k .
-	turn  pieceColor
+	board  *board // P N B R Q K p n b r q k .
+	turn   pieceColor
+	status GameStatus
 }
 
 func NewGame() *Game {
@@ -66,6 +67,20 @@ func (g *Game) BoardString() string {
 		}
 	}
 	return resultBuilder.String()
+}
+
+func (g *Game) Status() GameStatus {
+	if g.IsCheckmate() {
+		if g.turn == white {
+			return BlackWon
+		} else {
+			return WhiteWon
+		}
+	}
+	if g.IsStalemate() || g.IsInsufficientMaterial() {
+		return Draw
+	}
+	return InProgress
 }
 
 func (g *Game) LegalMoves() []string {

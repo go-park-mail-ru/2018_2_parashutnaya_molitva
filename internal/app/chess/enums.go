@@ -21,3 +21,12 @@ const (
 	queenType
 	kingType
 )
+
+type GameStatus int
+
+const (
+	WhiteWon GameStatus = iota
+	BlackWon
+	Draw
+	InProgress
+)
