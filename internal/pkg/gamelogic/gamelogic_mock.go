@@ -1,4 +1,4 @@
-package game
+package gamelogic
 
 import (
 	"fmt"
@@ -9,13 +9,8 @@ import (
 
 type GLMock struct{}
 
-func (g *GLMock) FirstPlayerTurn(turn Turn) error {
-	singletoneLogger.LogMessage(fmt.Sprintf("First player turn: %v", turn))
-	return nil
-}
-
-func (g *GLMock) SecondPlayerTurn(turn Turn) error {
-	singletoneLogger.LogMessage(fmt.Sprintf("Second player turn. %v", turn))
+func (g *GLMock) PlayerTurn(turn Turn, color bool) error {
+	singletoneLogger.LogMessage(fmt.Sprintf("Color %v(true - white, false - black)  turn: %v", color, turn))
 	return nil
 }
 
@@ -24,7 +19,7 @@ func (g *GLMock) Start() (bool, <-chan Result) {
 	res := make(chan Result, 1)
 	go func() {
 		<-time.NewTimer(time.Second * 20).C
-		res <- Result{true}
+		res <- Result{true, false}
 	}()
 
 	return true, res
