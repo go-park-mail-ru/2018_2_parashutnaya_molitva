@@ -32,3 +32,5 @@
 [[constraint]]
   name = "github.com/gorilla/mux"
   version = "1.6.2"
+  name = "github.com/google/uuid"
+  version = "1.0.0"

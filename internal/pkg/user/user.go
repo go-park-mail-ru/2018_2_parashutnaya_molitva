@@ -70,7 +70,7 @@ func (u *User) ChangePassword(password string) error {
 func (u *User) AddScore(score int) error {
 	u.Score += score
 	err := collection.UpdateId(u.Guid, u)
-	return err
+	return errors.WithStack(err)
 }
 
 func CreateUser(email string, password string) (User, error) {
