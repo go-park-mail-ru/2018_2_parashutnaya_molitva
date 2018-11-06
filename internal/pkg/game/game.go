@@ -141,6 +141,7 @@ func (g *Game) readInitMessage(done chan struct{}, conn *websocket.Conn) (chan *
 				sendError(conn, errInavlidMsgFormat.Error())
 				continue
 			}
+
 			singletoneLogger.LogMessage(fmt.Sprintf("%#v", msg))
 			if msg.MsgType != InitMsg {
 				sendError(conn, errInvalidMsgTypeInit.Error())
@@ -210,11 +211,19 @@ func (g *Game) listen() {
 	for {
 		select {
 		case roomID := <-g.closeRoom:
+
+			g.mx.Lock()
 			delete(g.rooms, roomID)
+			g.mx.Unlock()
+
 			singletoneLogger.LogMessage(fmt.Sprintf("Room: %v, was deleted", roomID))
 			g.printGameState()
 		case room := <-g.createRoom:
+
+			g.mx.Lock()
 			g.rooms[room.ID] = room
+			g.mx.Unlock()
+
 			g.printGameState()
 		}
 	}
