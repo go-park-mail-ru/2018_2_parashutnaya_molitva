@@ -38,6 +38,7 @@ func StartApp(port int) error {
 	router := mux.NewRouter()
 	router.Use(authMiddleware)
 	router.Use(corsMiddleware)
+	router.Use(recoverPanicMiddleware)
 
 	router.HandleFunc("/api/session", controllers.Session).Methods("POST", "GET", "OPTIONS")
 	router.HandleFunc("/api/session", controllers.DeleteSession).Methods("DELETE", "OPTIONS")
