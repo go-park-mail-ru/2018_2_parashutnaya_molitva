@@ -6,13 +6,15 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/gamelogic"
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/randomGenerator"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
-	uuid "github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 )
 
 const maxPlayers = 2
+const scoreFactor = 5
 
 var (
 	errRoomIsFull          = errors.New("Room is full")
@@ -73,7 +75,7 @@ func ValidateDuration(duration int) error {
 
 type Room struct {
 	game      *Game
-	gameLogic GameLogic
+	gameLogic gamelogic.GameLogic
 
 	ID        string
 	closeTime int // Через какое количество секунд, комната закроется если не заполнилась
@@ -94,16 +96,15 @@ type Room struct {
 	isFirstWinner bool
 }
 
-func createRoomID() string {
-	id, _ := uuid.NewRandom()
-	return id.String()
-}
-
 func NewRoom(g *Game, params RoomParameters, closeTime int) *Room {
+	id, err := randomGenerator.RandomUUID()
+	if err != nil {
+		singletoneLogger.LogError(err)
+	}
 
 	r := &Room{
 		game:       g,
-		ID:         createRoomID(),
+		ID:         id,
 		players:    make([]*Player, 0, maxPlayers),
 		parameters: params,
 		register:   make(chan *Player),
@@ -123,7 +124,7 @@ func NewRoom(g *Game, params RoomParameters, closeTime int) *Room {
 		},
 		availableSlots: maxPlayers,
 		closeTime:      closeTime,
-		gameLogic:      &GLMock{},
+		gameLogic:      gamelogic.NewChessGameLogic(params.Duration),
 		slotsGuids:     make([]string, 0, maxPlayers),
 	}
 
@@ -177,18 +178,21 @@ func (r *Room) startGame() {
 	singletoneLogger.LogMessage(fmt.Sprintf("RoomID: %v, is started game with:\nPlayer1: %v\nPlayer2: %v",
 		r.ID, r.players[0].playerData, r.players[1].playerData))
 
-	isFirstWhite, gameOverChannel := r.gameLogic.Start()
-
 	for idx, p := range r.players {
 		p.Start(r.broadcastsIn[idx], r.broadcastsOut[idx], r.closeErrors[idx])
 	}
 
 	r.messageToAll(infoMsgGameStarted)
 
+	isFirstWhite, gameOverChannel := r.gameLogic.Start()
 	if isFirstWhite {
+		singletoneLogger.LogMessage(fmt.Sprintf("Player1 is white: %v\nPlayer2 is black: %v",
+			r.players[0].GetName(), r.players[1].GetName()))
 		r.broadcastsOut[0] <- startMsgWhite
 		r.broadcastsOut[1] <- startMsgBlack
 	} else {
+		singletoneLogger.LogMessage(fmt.Sprintf("Player1 is black: %v\nPlayer2 is white: %v",
+			r.players[0].GetName(), r.players[1].GetName()))
 		r.broadcastsOut[0] <- startMsgBlack
 		r.broadcastsOut[1] <- startMsgWhite
 	}
@@ -199,14 +203,14 @@ func (r *Room) startGame() {
 		case firstMsg := <-r.broadcastsIn[0]:
 			switch firstMsg.MsgType {
 			case TurnMsg:
-				r.turn(firstMsg, r.broadcastsOut[0], r.gameLogic.FirstPlayerTurn)
+				r.turn(firstMsg, r.broadcastsOut[0], isFirstWhite)
 			default:
 				r.broadcastsOut[0] <- errMsgUnknownMsgType
 			}
 		case secondMsg := <-r.broadcastsIn[1]:
 			switch secondMsg.MsgType {
 			case TurnMsg:
-				r.turn(secondMsg, r.broadcastsOut[1], r.gameLogic.SecondPlayerTurn)
+				r.turn(secondMsg, r.broadcastsOut[1], !isFirstWhite)
 			default:
 				r.broadcastsOut[1] <- errMsgUnknownMsgType
 			}
@@ -225,17 +229,41 @@ func (r *Room) startGame() {
 		case result := <-gameOverChannel:
 			gameIsEnded = true
 
-			if result.isWhiteWinner && isFirstWhite || !result.isWhiteWinner && !isFirstWhite {
+			if result.IsDraw {
+				r.endGameDraw(r.players[0], r.players[1])
+			} else if result.IsWhiteWinner && isFirstWhite || !result.IsWhiteWinner && !isFirstWhite {
 				r.endGame(r.players[0], r.players[1])
 			} else {
 				r.endGame(r.players[1], r.players[0])
 			}
+
 		}
 
 	}
 }
 
-const scoreFactor = 5
+func (r *Room) endGameDraw(player1 *Player, player2 *Player) {
+	if !player1.IsClosed() {
+		result, _ := MarshalToMessage(ResultMsg, &ResultMessage{"draw", player1.GetScore()})
+		errSend := player1.Send(result)
+		if errSend != nil {
+			singletoneLogger.LogError(errSend)
+		}
+	}
+
+	if !player2.IsClosed() {
+		result, _ := MarshalToMessage(ResultMsg, &ResultMessage{"draw", player2.GetScore()})
+		errSend := player2.Send(result)
+		if errSend != nil {
+			singletoneLogger.LogError(errSend)
+		}
+	}
+
+	singletoneLogger.LogMessage("Game result: draw")
+	r.closeConnections(websocket.CloseNormalClosure, closeNormalGameOverFrame)
+	r.isDoneChan <- struct{}{}
+
+}
 
 func (r *Room) endGame(winner *Player, loser *Player) {
 	errChangeWinner := winner.playerData.User.AddScore(scoreFactor)
@@ -333,7 +361,8 @@ LOOP:
 	r.game.CloseRoom(r.ID)
 }
 
-func (r *Room) turn(msg *Message, out chan<- *Message, turnFunc func(Turn) error) {
+// color - true - белые, false - черные
+func (r *Room) turn(msg *Message, out chan<- *Message, color bool) {
 	turn := &TurnMessage{}
 
 	err := msg.UnmarshalData(turn)
@@ -342,7 +371,7 @@ func (r *Room) turn(msg *Message, out chan<- *Message, turnFunc func(Turn) error
 		out <- errMsgInvalidJSON
 	}
 
-	err = turnFunc(Turn(turn.Turn))
+	err = r.gameLogic.PlayerTurn(gamelogic.Turn(turn.Turn), color)
 	if err != nil {
 		errMsg, _ := MarshalToMessage(ErrorMsg, &ErrorMessage{err.Error()})
 		out <- errMsg
