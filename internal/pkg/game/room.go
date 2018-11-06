@@ -32,6 +32,7 @@ var (
 	infoMsgAddedToRoom *Message
 
 	errMsgInvalidJSON      *Message
+	errMsgUnknownMsgType   *Message
 	infoMsgRivalDisconnect *Message
 )
 
@@ -41,6 +42,7 @@ func init() {
 	infoMsgGameStarted, _ = MarshalToMessage(InfoMsg, &InfoMessage{"Game is started"})
 	infoMsgAddedToRoom, _ = MarshalToMessage(InfoMsg, &InfoMessage{"Added to room"})
 	errMsgInvalidJSON, _ = MarshalToMessage(ErrorMsg, &ErrorMessage{"Invalid JSON"})
+	errMsgUnknownMsgType, _ = MarshalToMessage(ErrorMsg, &ErrorMessage{"Unknown message type"})
 	// errMsgInternalError, _ = MarshalToMessage(ErrorMsg, &ErrorMessage{"Write Internal server error"})
 	infoMsgRivalDisconnect, _ = MarshalToMessage(InfoMsg, &InfoMessage{"Rival was disconnected"})
 
@@ -195,12 +197,18 @@ func (r *Room) startGame() {
 	for !gameIsEnded {
 		select {
 		case firstMsg := <-r.broadcastsIn[0]:
-			if firstMsg.MsgType == TurnMsg {
+			switch firstMsg.MsgType {
+			case TurnMsg:
 				r.turn(firstMsg, r.broadcastsOut[0], r.gameLogic.FirstPlayerTurn)
+			default:
+				r.broadcastsOut[0] <- errMsgUnknownMsgType
 			}
 		case secondMsg := <-r.broadcastsIn[1]:
-			if secondMsg.MsgType == TurnMsg {
+			switch secondMsg.MsgType {
+			case TurnMsg:
 				r.turn(secondMsg, r.broadcastsOut[1], r.gameLogic.SecondPlayerTurn)
+			default:
+				r.broadcastsOut[1] <- errMsgUnknownMsgType
 			}
 		case closeFirstErr := <-r.closeErrors[0]:
 			singletoneLogger.LogError(closeFirstErr)
