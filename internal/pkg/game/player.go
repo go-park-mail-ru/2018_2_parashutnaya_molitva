@@ -94,25 +94,25 @@ func (p *Player) write(out <-chan *Message, chanCloseError chan<- error) {
 				return
 			}
 
-			err := p.conn.WriteJSON(msg)
-			if websocket.IsUnexpectedCloseError(err) {
+			sendMsg, err := msg.MarshalJSON()
+			if err != nil {
+				singletoneLogger.LogError(errInavlidMsgFormat)
+				continue
+			}
+
+			err = p.conn.WriteMessage(websocket.TextMessage, sendMsg)
+			if err != nil {
 				p.close()
 				chanCloseError <- errors.WithStack(err)
-				return
-			} else if err != nil {
-				singletoneLogger.LogError(errors.WithStack(err))
 				return
 			}
 		case <-p.closeChan:
 			return
 		case <-pingTicker.C:
 			err := p.conn.WriteMessage(websocket.PingMessage, nil)
-			if websocket.IsUnexpectedCloseError(err) {
+			if err != nil {
 				p.close()
 				chanCloseError <- errors.WithStack(err)
-				return
-			} else if err != nil {
-				singletoneLogger.LogError(errors.WithStack(err))
 				return
 			}
 		}
@@ -128,16 +128,21 @@ func (p *Player) read(in chan<- *Message, chanCloseError chan<- error) {
 		p.conn.SetReadDeadline(time.Now().Add(time.Second * time.Duration(gameConfig.PongWait)))
 		return nil
 	})
-	for !p.IsClosed() {
-		err := p.conn.ReadJSON(readMessage)
 
-		if websocket.IsUnexpectedCloseError(err) {
+	for !p.IsClosed() {
+
+		_, msg, err := p.conn.ReadMessage()
+		if err != nil {
 			p.close()
 			chanCloseError <- errors.WithStack(err)
 			return
-		} else if err != nil {
+		}
+
+		readMessage, err = UnmarshalToMessage(msg)
+		if err != nil {
 			singletoneLogger.LogError(errors.WithStack(err))
-			return
+			sendError(p.conn, errInavlidMsgFormat.Error())
+			continue
 		}
 
 		in <- readMessage
