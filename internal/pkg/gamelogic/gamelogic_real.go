@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/chess"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/randomGenerator"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 )
@@ -32,7 +33,7 @@ func NewChessGameLogic(gameDuration int) *ChessGameLogic {
 		whiteTurn:          make(chan *Turn, 1),
 		blackTurn:          make(chan *Turn, 1),
 		turnResponse:       make(chan error, 1),
-		chessEngine:        &ChessEngineMock{},
+		chessEngine:        chess.NewGame(),
 	}
 }
 
@@ -52,23 +53,17 @@ func (c *ChessGameLogic) start(resultChan chan<- Result) {
 
 	isPrevWhite := false
 
-	for !c.chessEngine.IsCheckmate() || !c.chessEngine.IsStalemate() {
+	for !c.chessEngine.IsGameOver() {
 		select {
 		case <-whiteTimer.C:
 
-			if !blackTimer.Stop() {
-				<-blackTimer.C
-			}
+			blackTimer.Stop()
 
 			singletoneLogger.LogMessage("White is timeouted")
 			resultChan <- Result{false, false}
 			return
 		case <-blackTimer.C:
-
-			if !whiteTimer.Stop() {
-				<-whiteTimer.C
-			}
-
+			whiteTimer.Stop()
 			singletoneLogger.LogMessage("Black is timeouted")
 			resultChan <- Result{true, false}
 			return
@@ -77,7 +72,6 @@ func (c *ChessGameLogic) start(resultChan chan<- Result) {
 			err := c.chessEngine.Move(string(*turn))
 			if err != nil {
 				c.turnResponse <- err
-				singletoneLogger.LogError(err)
 				continue
 			}
 			if !whiteTimer.Stop() {
@@ -97,7 +91,6 @@ func (c *ChessGameLogic) start(resultChan chan<- Result) {
 			singletoneLogger.LogMessage("Black turn: " + string(*turn))
 			err := c.chessEngine.Move(string(*turn))
 			if err != nil {
-				singletoneLogger.LogError(err)
 				c.turnResponse <- err
 				continue
 			}
@@ -120,7 +113,7 @@ func (c *ChessGameLogic) start(resultChan chan<- Result) {
 
 	if c.chessEngine.IsCheckmate() {
 		resultChan <- Result{isPrevWhite, false}
-	} else if c.chessEngine.IsStalemate() {
+	} else if c.chessEngine.IsStalemate() || c.chessEngine.IsInsufficientMaterial() {
 		resultChan <- Result{false, true}
 	}
 }
@@ -140,6 +133,8 @@ func (c *ChessGameLogic) PlayerTurn(turn Turn, color bool) error {
 	if err != nil {
 		return err
 	}
+	c.chessEngine.PrintBoard()
+	c.chessEngine.PrintLegalMoves()
 	c.isWhiteTurn = !c.isWhiteTurn
 	return nil
 }

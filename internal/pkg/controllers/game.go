@@ -19,7 +19,6 @@ type FindRoom struct {
 
 func (gr *FindRoom) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	b := isAuth(r)
-	singletoneLogger.LogMessage("Request")
 	if !b {
 		responseWithError(w, http.StatusUnauthorized, errNoAuth)
 		return
@@ -39,14 +38,11 @@ func (gr *FindRoom) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	r.Body.Close()
 
 	params := g.RoomParameters{}
-	singletoneLogger.LogMessage(string(body))
 	err = params.UnmarshalJSON(body)
 	if err != nil {
 		responseWithError(w, http.StatusInternalServerError, errParseJSON)
 		return
 	}
-
-	singletoneLogger.LogMessage("here")
 
 	// Пока только один параметр, так что просто кидаем ошибку без названия параметра
 	_, err = params.Validate()
