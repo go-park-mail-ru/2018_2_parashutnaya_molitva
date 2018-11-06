@@ -10,12 +10,11 @@ type Game struct {
 	turn  pieceColor
 }
 
-func NewGame() Game {
-	game := Game{}
-	board := newBoard()
-	game.board = &board
-	game.turn = white
-	return game
+func NewGame() *Game {
+	return &Game{
+		board: newBoard(),
+		turn:  white,
+	}
 }
 
 func (g *Game) Move(uci string) error {

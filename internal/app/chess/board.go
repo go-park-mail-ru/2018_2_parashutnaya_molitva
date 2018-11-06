@@ -8,7 +8,7 @@ type board struct {
 	field [][]piece
 }
 
-func newBoard() board {
+func newBoard() *board {
 	field := make([][]piece, 8)
 
 	field[0] = []piece{
@@ -34,11 +34,7 @@ func newBoard() board {
 		newPiece(kingType, black), newPiece(bishopType, black), newPiece(knightType, black), newPiece(rookType, black),
 	}
 
-	return board{field: field}
-}
-
-func (b *board) assign(o *board) {
-	b.field = o.field
+	return &board{field: field}
 }
 
 func (b *board) copy() *board {
@@ -52,26 +48,13 @@ func (b *board) copy() *board {
 	return &copiedBoard
 }
 
-func (b *board) moveUci(uci string) {
-	availableMoves := b.pseudoLegalMoves(false)
-	val, exists := availableMoves[uci]
-	if exists == false {
-		return
-	}
-	b.assign(val)
-}
-
-func (b *board) movePieceUci(uci string) {
-	b.movePiece(ucisToCoords(uci))
-}
-
-func (b *board) movePiece(from, to coord) {
+func (b *board) movePiece(from, to *coord) {
 	b.field[to.r][to.c] = b.field[from.r][from.c]
 	b.field[to.r][to.c].setMoved(true)
 	b.field[from.r][from.c] = newPiece(emptyType, none)
 }
 
-func (b *board) pieceAt(pos coord) *piece {
+func (b *board) pieceAt(pos *coord) *piece {
 	if pos.r < 0 || pos.r >= 8 || pos.c < 0 || pos.c >= 8 {
 		nonePiece := newPiece(noneType, none)
 		return &nonePiece
@@ -79,14 +62,14 @@ func (b *board) pieceAt(pos coord) *piece {
 	return &b.field[pos.r][pos.c]
 }
 
-func (b *board) setPieceAt(pos coord, p piece) {
+func (b *board) setPieceAt(pos *coord, p piece) {
 	b.field[pos.r][pos.c] = p
 }
 
 func (b *board) printBoard() {
 	for i := 7; i >= 0; i-- {
 		for j := 0; j < 8; j++ {
-			fmt.Printf("%c", b.pieceAt(coord{i, j}).shortName())
+			fmt.Printf("%c", b.pieceAt(&coord{i, j}).shortName())
 		}
 		fmt.Println()
 	}
@@ -103,7 +86,7 @@ func (b *board) legalMoves(color pieceColor) map[string]*board {
 	return legalMoves
 }
 
-func (b *board) pseudoLegalMovesAtPos(pos coord, attackOnly bool) map[string]*board {
+func (b *board) pseudoLegalMovesAtPos(pos *coord, attackOnly bool) map[string]*board {
 	availableMoves := make(map[string]*board)
 
 	piece := b.pieceAt(pos)
@@ -163,7 +146,7 @@ func (b *board) pseudoLegalMoves(attackOnly bool) map[string]*board {
 	availableMoves := make(map[string]*board)
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
-			movesAtPos := b.pseudoLegalMovesAtPos(coord{i, j}, attackOnly)
+			movesAtPos := b.pseudoLegalMovesAtPos(&coord{i, j}, attackOnly)
 			for key, val := range movesAtPos {
 				availableMoves[key] = val
 			}
@@ -177,8 +160,8 @@ func (b *board) pseudoLegalMovesWithColor(color pieceColor, attackOnly bool) map
 	availableMoves := make(map[string]*board)
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
-			if b.pieceAt(coord{i, j}).getColor() == color {
-				movesAtPos := b.pseudoLegalMovesAtPos(coord{i, j}, attackOnly)
+			if b.pieceAt(&coord{i, j}).getColor() == color {
+				movesAtPos := b.pseudoLegalMovesAtPos(&coord{i, j}, attackOnly)
 				for key, val := range movesAtPos {
 					availableMoves[key] = val
 				}
@@ -192,8 +175,9 @@ func (b *board) pseudoLegalMovesWithColor(color pieceColor, attackOnly bool) map
 func (b *board) removeEnPassant() {
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
-			if (b.pieceAt(coord{i, j}).getType() == enPassantType) {
-				b.setPieceAt(coord{i, j}, newPiece(emptyType, none))
+			if (b.pieceAt(&coord{i, j}).getType() == enPassantType) {
+				b.setPieceAt(&coord{i, j}, newPiece(emptyType, none))
+				break
 			}
 		}
 	}
@@ -218,7 +202,7 @@ func (b *board) isCheck(color pieceColor) bool {
 func (b *board) kingExists(color pieceColor) bool {
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
-			p := b.pieceAt(coord{i, j})
+			p := b.pieceAt(&coord{i, j})
 			if p.getType() == kingType && p.getColor() == color {
 				return true
 			}

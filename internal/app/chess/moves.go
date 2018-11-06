@@ -10,17 +10,17 @@ func promotionMap() map[string]pieceType {
 	return pMap
 }
 
-func pawnMoves(b *board, pos coord, attackOnly bool) map[string]*board {
+func pawnMoves(b *board, pos *coord, attackOnly bool) map[string]*board {
 	availableMoves := make(map[string]*board)
 
 	pawn := b.pieceAt(pos)
 
 	// relative coordinates
-	forward := coord{1, 0}
-	doubleForward := coord{2, 0}
-	capture := coord{1, -1}
-	enPasant := coord{-1, 0}
-	pawnEnPassantRelative := coord{-1, 0}
+	forward := &coord{1, 0}
+	doubleForward := &coord{2, 0}
+	capture := &coord{1, -1}
+	enPasant := &coord{-1, 0}
+	pawnEnPassantRelative := &coord{-1, 0}
 
 	// reverse steps for black
 	if pawn.getColor() == black {
@@ -34,14 +34,14 @@ func pawnMoves(b *board, pos coord, attackOnly bool) map[string]*board {
 	}
 
 	// field coordinates
-	forward = forward.add(&pos)
-	doubleForward = doubleForward.add(&pos)
-	enPasant = doubleForward.add(&enPasant)
+	forward = forward.add(pos)
+	doubleForward = doubleForward.add(pos)
+	enPasant = doubleForward.add(enPasant)
 
 	if !attackOnly {
 		pieceAtForward := b.pieceAt(forward)
 		if pieceAtForward.getType() == emptyType {
-			uci := coordsToUcis(pos, forward)
+			uci := mustCoordsToUcis(pos, forward)
 			// promotion
 			if pawn.getColor() == white && forward.r == 7 ||
 				pawn.getColor() == black && forward.r == 0 {
@@ -67,7 +67,7 @@ func pawnMoves(b *board, pos coord, attackOnly bool) map[string]*board {
 			moveBoard.movePiece(pos, doubleForward)
 			moveBoard.removeEnPassant()
 			moveBoard.setPieceAt(enPasant, newPiece(enPassantType, pawn.getColor()))
-			availableMoves[coordsToUcis(pos, doubleForward)] = moveBoard
+			availableMoves[mustCoordsToUcis(pos, doubleForward)] = moveBoard
 		}
 	}
 
@@ -75,11 +75,11 @@ func pawnMoves(b *board, pos coord, attackOnly bool) map[string]*board {
 
 	for i := 0; i < len(captureMultipliers); i++ {
 		captureAbs := capture.multiply(&captureMultipliers[i])
-		captureAbs = captureAbs.add(&pos)
+		captureAbs = captureAbs.add(pos)
 		pieceAtCapture := b.pieceAt(captureAbs)
 
 		if pieceAtCapture.getColor() != pawn.getColor() && pieceAtCapture.getColor() != none {
-			uci := coordsToUcis(pos, captureAbs)
+			uci := mustCoordsToUcis(pos, captureAbs)
 			// promotion
 			if pawn.getColor() == white && captureAbs.r == 7 ||
 				pawn.getColor() == black && captureAbs.r == 0 {
@@ -96,7 +96,7 @@ func pawnMoves(b *board, pos coord, attackOnly bool) map[string]*board {
 				moveBoard.movePiece(pos, captureAbs)
 				moveBoard.removeEnPassant()
 				if pieceAtCapture.getType() == enPassantType {
-					pawnEnPassantAbsolute := pawnEnPassantRelative.add(&captureAbs)
+					pawnEnPassantAbsolute := pawnEnPassantRelative.add(captureAbs)
 					moveBoard.setPieceAt(pawnEnPassantAbsolute, newPiece(emptyType, none))
 				}
 				availableMoves[uci] = moveBoard
@@ -107,19 +107,19 @@ func pawnMoves(b *board, pos coord, attackOnly bool) map[string]*board {
 	return availableMoves
 }
 
-func knightMoves(b *board, pos coord) map[string]*board {
+func knightMoves(b *board, pos *coord) map[string]*board {
 	availableMoves := make(map[string]*board)
 
 	knight := b.pieceAt(pos)
 
-	steps := []coord{
+	steps := []*coord{
 		{-2, 1}, {-1, 2}, {1, 2}, {2, 1},
 		{2, -1}, {1, -2}, {-1, -2}, {-2, -1},
 	}
 
 	// absolute coords
 	for i := 0; i < len(steps); i++ {
-		steps[i] = steps[i].add(&pos)
+		steps[i] = steps[i].add(pos)
 	}
 
 	for i := 0; i < len(steps); i++ {
@@ -132,26 +132,26 @@ func knightMoves(b *board, pos coord) map[string]*board {
 			moveBoard.movePiece(pos, steps[i])
 			moveBoard.removeEnPassant()
 
-			availableMoves[coordsToUcis(pos, steps[i])] = moveBoard
+			availableMoves[mustCoordsToUcis(pos, steps[i])] = moveBoard
 		}
 	}
 
 	return availableMoves
 }
 
-func bishopMoves(b *board, pos coord) map[string]*board {
+func bishopMoves(b *board, pos *coord) map[string]*board {
 	availableMoves := make(map[string]*board)
 
 	bishop := b.pieceAt(pos)
 
-	steps := make([]coord, 0, 16)
+	steps := make([]*coord, 0, 16)
 
 	rMultipliers := []int{1, 1, -1, -1}
 	cMultipliers := []int{1, -1, 1, -1}
 	for i := 0; i < len(rMultipliers); i++ {
 		for j := 1; j < 8; j++ {
 			step := coord{j * rMultipliers[i], j * cMultipliers[i]}
-			stepAbsolute := step.add(&pos)
+			stepAbsolute := step.add(pos)
 			piece := b.pieceAt(stepAbsolute)
 			if piece.getType() == emptyType ||
 				piece.getType() == enPassantType {
@@ -173,24 +173,24 @@ func bishopMoves(b *board, pos coord) map[string]*board {
 		moveBoard := b.copy()
 		moveBoard.movePiece(pos, steps[i])
 		moveBoard.removeEnPassant()
-		availableMoves[coordsToUcis(pos, steps[i])] = moveBoard
+		availableMoves[mustCoordsToUcis(pos, steps[i])] = moveBoard
 	}
 
 	return availableMoves
 }
 
-func rookMoves(b *board, pos coord) map[string]*board {
+func rookMoves(b *board, pos *coord) map[string]*board {
 	availableMoves := make(map[string]*board)
 	rook := b.pieceAt(pos)
 
-	steps := make([]coord, 0, 16)
+	steps := make([]*coord, 0, 16)
 
 	rMultipliers := []int{1, 0, -1, 0}
 	cMultipliers := []int{0, 1, 0, -1}
 	for i := 0; i < len(rMultipliers); i++ {
 		for j := 1; j < 8; j++ {
 			step := coord{j * rMultipliers[i], j * cMultipliers[i]}
-			stepAbsolute := step.add(&pos)
+			stepAbsolute := step.add(pos)
 			piece := b.pieceAt(stepAbsolute)
 			if piece.getType() == emptyType ||
 				piece.getType() == enPassantType {
@@ -212,13 +212,13 @@ func rookMoves(b *board, pos coord) map[string]*board {
 		moveBoard := b.copy()
 		moveBoard.movePiece(pos, steps[i])
 		moveBoard.removeEnPassant()
-		availableMoves[coordsToUcis(pos, steps[i])] = moveBoard
+		availableMoves[mustCoordsToUcis(pos, steps[i])] = moveBoard
 	}
 
 	return availableMoves
 }
 
-func queenMoves(b *board, pos coord) map[string]*board {
+func queenMoves(b *board, pos *coord) map[string]*board {
 	availableMoves := make(map[string]*board)
 
 	rookAvailableMoves := rookMoves(b, pos)
@@ -234,18 +234,18 @@ func queenMoves(b *board, pos coord) map[string]*board {
 	return availableMoves
 }
 
-func kingMoves(b *board, pos coord, attackOnly bool) map[string]*board {
+func kingMoves(b *board, pos *coord, attackOnly bool) map[string]*board {
 	availableMoves := make(map[string]*board)
 
 	king := b.pieceAt(pos)
 
-	steps := []coord{
+	steps := []*coord{
 		{0, -1}, {1, -1}, {1, 0}, {1, 1},
 		{0, 1}, {-1, 1}, {-1, 0}, {-1, -1},
 	}
 
 	for i := 0; i < len(steps); i++ {
-		stepAbsolute := steps[i].add(&pos)
+		stepAbsolute := steps[i].add(pos)
 		piece := b.pieceAt(stepAbsolute)
 		if piece.getType() == noneType {
 			continue
@@ -257,18 +257,18 @@ func kingMoves(b *board, pos coord, attackOnly bool) map[string]*board {
 			moveBoard := b.copy()
 			moveBoard.movePiece(pos, stepAbsolute)
 			moveBoard.removeEnPassant()
-			availableMoves[coordsToUcis(pos, stepAbsolute)] = moveBoard
+			availableMoves[mustCoordsToUcis(pos, stepAbsolute)] = moveBoard
 		}
 	}
 
 	if !attackOnly {
 		// king-side castling
-		kingSideRookCoord := coord{0, 3}
-		kingSideRookCoord = kingSideRookCoord.add(&pos)
+		kingSideRookCoord := &coord{0, 3}
+		kingSideRookCoord = kingSideRookCoord.add(pos)
 
-		kingKMovementCoords := []coord{{0, 1}, {0, 2}}
+		kingKMovementCoords := []*coord{{0, 1}, {0, 2}}
 		for i := 0; i < len(kingKMovementCoords); i++ {
-			kingKMovementCoords[i] = kingKMovementCoords[i].add(&pos)
+			kingKMovementCoords[i] = kingKMovementCoords[i].add(pos)
 		}
 
 		kRook := b.pieceAt(kingSideRookCoord)
@@ -292,21 +292,21 @@ func kingMoves(b *board, pos coord, attackOnly bool) map[string]*board {
 				moveBoard.movePiece(pos, kingKMovementCoords[len(kingKMovementCoords)-1])
 				moveBoard.movePiece(kingSideRookCoord, kingKMovementCoords[len(kingKMovementCoords)-2])
 				moveBoard.removeEnPassant()
-				availableMoves[coordsToUcis(pos, kingKMovementCoords[len(kingKMovementCoords)-1])] = moveBoard
+				availableMoves[mustCoordsToUcis(pos, kingKMovementCoords[len(kingKMovementCoords)-1])] = moveBoard
 			}
 		}
 
 		// queen-side castling
-		queenSideRookCoord := coord{0, -4}
-		queenSideRookCoord = queenSideRookCoord.add(&pos)
+		queenSideRookCoord := &coord{0, -4}
+		queenSideRookCoord = queenSideRookCoord.add(pos)
 
-		kingQMovementCoords := []coord{{0, -1}, {0, -2}}
+		kingQMovementCoords := []*coord{{0, -1}, {0, -2}}
 		for i := 0; i < len(kingQMovementCoords); i++ {
-			kingQMovementCoords[i] = kingQMovementCoords[i].add(&pos)
+			kingQMovementCoords[i] = kingQMovementCoords[i].add(pos)
 		}
 
-		rookJumpCoord := coord{0, -3}
-		rookJumpCoord = rookJumpCoord.add(&pos)
+		rookJumpCoord := &coord{0, -3}
+		rookJumpCoord = rookJumpCoord.add(pos)
 
 		qRook := b.pieceAt(queenSideRookCoord)
 		if !b.isCheck(king.getColor()) && !king.getIsMoved() && qRook.getType() == rookType && !qRook.getIsMoved() &&
@@ -330,7 +330,7 @@ func kingMoves(b *board, pos coord, attackOnly bool) map[string]*board {
 				moveBoard.movePiece(pos, kingQMovementCoords[len(kingQMovementCoords)-1])
 				moveBoard.movePiece(queenSideRookCoord, kingQMovementCoords[len(kingQMovementCoords)-2])
 				moveBoard.removeEnPassant()
-				availableMoves[coordsToUcis(pos, kingQMovementCoords[len(kingQMovementCoords)-1])] = moveBoard
+				availableMoves[mustCoordsToUcis(pos, kingQMovementCoords[len(kingQMovementCoords)-1])] = moveBoard
 			}
 		}
 
