@@ -218,3 +218,19 @@ func (b *board) isCheckmate(color pieceColor) bool {
 func (b *board) isStalemate(color pieceColor) bool {
 	return !b.isCheck(color) && len(b.legalMoves(color)) == 0
 }
+
+func (b *board) isInsufficientMaterial() bool {
+	pieceCounter := 0
+	for i := 0; i < 8; i++ {
+		for j := 0; j < 8; j++ {
+			p := b.pieceAt(&coord{i, j})
+			if p.getType() != emptyType && p.getType() != noneType && p.pieceType != enPassantType {
+				pieceCounter++
+				if pieceCounter > 2 {
+					return false
+				}
+			}
+		}
+	}
+	return true
+}

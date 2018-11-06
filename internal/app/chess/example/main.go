@@ -7,7 +7,7 @@ import (
 
 func main() {
 	game := chess.NewGame()
-	for isCheckmate := game.IsCheckmate(); !isCheckmate; isCheckmate = game.IsCheckmate() {
+	for !game.IsGameOver() {
 		game.PrintBoard()
 		game.PrintLegalMoves()
 		var uci string

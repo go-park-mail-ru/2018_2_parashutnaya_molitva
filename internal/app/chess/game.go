@@ -3,6 +3,7 @@ package chess
 import (
 	"fmt"
 	"sort"
+	"strings"
 )
 
 type Game struct {
@@ -43,8 +44,39 @@ func (g *Game) IsStalemate() bool {
 	return g.board.isStalemate(g.turn)
 }
 
+func (g *Game) IsInsufficientMaterial() bool {
+	return g.board.isInsufficientMaterial()
+}
+
 func (g *Game) IsGameOver() bool {
-	return g.IsCheckmate() || g.IsStalemate()
+	return g.IsCheckmate() || g.IsStalemate() || g.IsInsufficientMaterial()
+}
+
+// returns true if white
+func (g *Game) CurrentTurn() bool {
+	return g.turn == white
+}
+
+// example: "RNBQKBNRPPPPPPPP................................pppppppprnbqkbnr"
+func (g *Game) BoardString() string {
+	resultBuilder := &strings.Builder{}
+	for i := 0; i < 8; i++ {
+		for j := 0; j < 8; j++ {
+			fmt.Fprintf(resultBuilder, "%c", g.board.pieceAt(&coord{i, j}).shortName())
+		}
+	}
+	return resultBuilder.String()
+}
+
+func (g *Game) LegalMoves() []string {
+	legalMoves := g.board.legalMoves(g.turn)
+	legalMovesSlice := make([]string, 0, len(legalMoves))
+	for key := range legalMoves {
+		legalMovesSlice = append(legalMovesSlice, key)
+	}
+
+	sort.Strings(legalMovesSlice)
+	return legalMovesSlice
 }
 
 func (g *Game) PrintBoard() {
@@ -52,13 +84,5 @@ func (g *Game) PrintBoard() {
 }
 
 func (g *Game) PrintLegalMoves() {
-	var moves []string
-	for move := range g.board.legalMoves(g.turn) {
-		moves = append(moves, move)
-	}
-	sort.Strings(moves)
-	for _, move := range moves {
-		fmt.Printf("%s ", move)
-	}
-	fmt.Println()
+	fmt.Println(g.LegalMoves())
 }
