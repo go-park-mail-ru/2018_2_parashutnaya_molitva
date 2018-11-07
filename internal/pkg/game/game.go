@@ -230,13 +230,15 @@ func (g *Game) listen() {
 }
 
 func (g *Game) printGameState() {
+	singletoneLogger.LogMessage("------------")
+	singletoneLogger.LogMessage("Rooms")
 	g.mx.RLock()
 	for id, r := range g.rooms {
 		g.mx.RUnlock()
 		singletoneLogger.LogMessage(fmt.Sprintf("RoomId: %v", id))
 		singletoneLogger.LogMessage(fmt.Sprintf("RoomParametrs: %#v", r.parameters.Duration))
-		singletoneLogger.LogMessage("------------")
 		g.mx.RLock()
 	}
 	g.mx.RUnlock()
+	singletoneLogger.LogMessage("------------")
 }

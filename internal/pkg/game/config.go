@@ -13,6 +13,7 @@ type GameConfig struct {
 	ValidGameDuration   []int
 	PongWait            int
 	PingPeriod          int
+	ScoreFactor         int
 }
 
 var (

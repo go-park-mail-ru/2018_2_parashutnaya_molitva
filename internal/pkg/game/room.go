@@ -14,7 +14,6 @@ import (
 )
 
 const maxPlayers = 2
-const scoreFactor = 5
 
 var (
 	errRoomIsFull          = errors.New("Room is full")
@@ -266,7 +265,7 @@ func (r *Room) endGameDraw(player1 *Player, player2 *Player) {
 }
 
 func (r *Room) endGame(winner *Player, loser *Player) {
-	errChangeWinner := winner.playerData.User.AddScore(scoreFactor)
+	errChangeWinner := winner.playerData.User.AddScore(gameConfig.ScoreFactor)
 	if errChangeWinner != nil {
 		singletoneLogger.LogError(errChangeWinner)
 		r.closeConnections(websocket.CloseInternalServerErr, errInternalServerError.Error())
@@ -274,7 +273,7 @@ func (r *Room) endGame(winner *Player, loser *Player) {
 		return
 	}
 
-	errChangeLoser := loser.playerData.User.AddScore(-scoreFactor)
+	errChangeLoser := loser.playerData.User.AddScore(-gameConfig.ScoreFactor)
 	if errChangeLoser != nil {
 		singletoneLogger.LogError(errChangeWinner)
 		r.closeConnections(websocket.CloseInternalServerErr, errInternalServerError.Error())
@@ -283,7 +282,7 @@ func (r *Room) endGame(winner *Player, loser *Player) {
 	}
 
 	if !winner.IsClosed() {
-		result, _ := MarshalToMessage(ResultMsg, &ResultMessage{"win", winner.GetScore() + scoreFactor})
+		result, _ := MarshalToMessage(ResultMsg, &ResultMessage{"win", winner.GetScore() + gameConfig.ScoreFactor})
 		errSend := winner.Send(result)
 		if errSend != nil {
 			singletoneLogger.LogError(errSend)
@@ -291,7 +290,7 @@ func (r *Room) endGame(winner *Player, loser *Player) {
 	}
 
 	if !loser.IsClosed() {
-		result, _ := MarshalToMessage(ResultMsg, &ResultMessage{"loser", loser.GetScore() - scoreFactor})
+		result, _ := MarshalToMessage(ResultMsg, &ResultMessage{"loser", loser.GetScore() - gameConfig.ScoreFactor})
 		errSend := loser.Send(result)
 		if errSend != nil {
 			singletoneLogger.LogError(errSend)
