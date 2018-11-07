@@ -14,7 +14,6 @@ import (
 )
 
 const maxPlayers = 2
-const scoreFactor = 5
 
 var (
 	errRoomIsFull          = errors.New("Room is full")
@@ -185,6 +184,8 @@ func (r *Room) startGame() {
 	r.messageToAll(infoMsgGameStarted)
 
 	isFirstWhite, gameOverChannel := r.gameLogic.Start()
+	defer r.gameLogic.Stop()
+
 	if isFirstWhite {
 		singletoneLogger.LogMessage(fmt.Sprintf("Player1 is white: %v\nPlayer2 is black: %v",
 			r.players[0].GetName(), r.players[1].GetName()))
@@ -266,7 +267,7 @@ func (r *Room) endGameDraw(player1 *Player, player2 *Player) {
 }
 
 func (r *Room) endGame(winner *Player, loser *Player) {
-	errChangeWinner := winner.playerData.User.AddScore(scoreFactor)
+	errChangeWinner := winner.playerData.User.AddScore(gameConfig.ScoreFactor)
 	if errChangeWinner != nil {
 		singletoneLogger.LogError(errChangeWinner)
 		r.closeConnections(websocket.CloseInternalServerErr, errInternalServerError.Error())
@@ -274,7 +275,7 @@ func (r *Room) endGame(winner *Player, loser *Player) {
 		return
 	}
 
-	errChangeLoser := loser.playerData.User.AddScore(-scoreFactor)
+	errChangeLoser := loser.playerData.User.AddScore(-gameConfig.ScoreFactor)
 	if errChangeLoser != nil {
 		singletoneLogger.LogError(errChangeWinner)
 		r.closeConnections(websocket.CloseInternalServerErr, errInternalServerError.Error())
@@ -283,7 +284,7 @@ func (r *Room) endGame(winner *Player, loser *Player) {
 	}
 
 	if !winner.IsClosed() {
-		result, _ := MarshalToMessage(ResultMsg, &ResultMessage{"win", winner.GetScore() + scoreFactor})
+		result, _ := MarshalToMessage(ResultMsg, &ResultMessage{"win", winner.GetScore() + gameConfig.ScoreFactor})
 		errSend := winner.Send(result)
 		if errSend != nil {
 			singletoneLogger.LogError(errSend)
@@ -291,7 +292,7 @@ func (r *Room) endGame(winner *Player, loser *Player) {
 	}
 
 	if !loser.IsClosed() {
-		result, _ := MarshalToMessage(ResultMsg, &ResultMessage{"loser", loser.GetScore() - scoreFactor})
+		result, _ := MarshalToMessage(ResultMsg, &ResultMessage{"loser", loser.GetScore() - gameConfig.ScoreFactor})
 		errSend := loser.Send(result)
 		if errSend != nil {
 			singletoneLogger.LogError(errSend)
@@ -306,7 +307,7 @@ func (r *Room) endGame(winner *Player, loser *Player) {
 
 func (r *Room) closeConnections(code int, msg string) {
 	for _, p := range r.players {
-		p.Close(websocket.CloseNormalClosure, closeNormalGameOverFrame)
+		p.Close(code, msg)
 	}
 }
 
@@ -345,9 +346,7 @@ LOOP:
 			break LOOP
 		case <-closeTimer.C:
 
-			for _, p := range r.players {
-				p.Close(websocket.CloseTryAgainLater, errCloseWhileSearch.Error())
-			}
+			r.closeConnections(websocket.CloseTryAgainLater, errCloseWhileSearch.Error())
 
 			singletoneLogger.LogMessage(fmt.Sprintf("Room: %v, was closed due to waiting timeout ", r.ID))
 			r.isDoneChan <- struct{}{}

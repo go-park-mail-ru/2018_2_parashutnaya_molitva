@@ -1,0 +1,11 @@
+{
+    "InitMessageDeadline" : 10,
+    "ValidGameDuration" : [
+        60, 180, 300, 600
+    ],
+    "CloseRoomDeadline" : 20,
+    "PongWait" : 10,
+    "PingPeriod" : 9,
+    "ScoreFactor": 5,
+    "CloseGracePeriod" : 3
+}

@@ -22,7 +22,7 @@ var (
 
 //easyjson:json
 type ResultMessage struct {
-	Result string `jsong:"result"`
+	Result string `json:"result"`
 	Score  int    `json:"score"`
 }
 
