@@ -27,7 +27,8 @@ type Player struct {
 	sync.RWMutex
 	isClosed bool
 
-	closeChan chan struct{}
+	closeChan    chan struct{}
+	isClosedChan bool
 }
 
 func NewPlayer(name string, score int, user UserStorage, conn *websocket.Conn) *Player {
@@ -38,8 +39,9 @@ func NewPlayer(name string, score int, user UserStorage, conn *websocket.Conn) *
 			score,
 			user,
 		},
-		isClosed:  false,
-		closeChan: make(chan struct{}, 1),
+		isClosed:     false,
+		isClosedChan: false,
+		closeChan:    make(chan struct{}, 1),
 	}
 }
 
@@ -59,7 +61,7 @@ func (p *Player) IsClosed() bool {
 
 func (p *Player) Send(msg *Message) error {
 	err := p.conn.WriteJSON(msg)
-	if websocket.IsUnexpectedCloseError(err) {
+	if websocket.IsUnexpectedCloseError(errors.WithStack(err)) {
 		p.close()
 	}
 
@@ -70,7 +72,14 @@ func (p *Player) close() {
 	p.Lock()
 	p.isClosed = true
 	p.Unlock()
-	p.closeChan <- struct{}{}
+}
+
+func (p *Player) closeByChan() {
+	if p.isClosedChan {
+		return
+	}
+	p.isClosedChan = true
+	close(p.closeChan)
 }
 
 // Close - закрывает соедениение с номером ошибки и причиной
@@ -79,9 +88,12 @@ func (p *Player) Close(code int, msg string) {
 	if p.IsClosed() {
 		return
 	}
-	p.close()
-	singletoneLogger.LogMessage("Send close")
 	sendCloseError(p.conn, code, msg)
+	p.close()
+	p.closeByChan()
+	singletoneLogger.LogMessage("Close by chan")
+	p.conn.Close()
+
 }
 
 // Читает сообщения из канал и записывает в соединение
@@ -102,18 +114,38 @@ func (p *Player) write(out <-chan *Message, chanCloseError chan<- error) {
 			}
 
 			err = p.conn.WriteMessage(websocket.TextMessage, sendMsg)
-			if err != nil {
+			if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseTryAgainLater) {
 				p.close()
-				chanCloseError <- errors.WithStack(err)
+				p.closeByChan()
+				return
+			} else if err != nil {
+				// Не блокируемся на ошибики, если уже закрыто соединение
+				p.close()
+				select {
+				case chanCloseError <- errors.WithStack(err):
+				case <-p.closeChan:
+				}
+				// В следующий раз как будет ошибка, но чтение еще не закончилось, chanCloseError не заблочиться
+				p.closeByChan()
 				return
 			}
 		case <-p.closeChan:
 			return
 		case <-pingTicker.C:
 			err := p.conn.WriteMessage(websocket.PingMessage, nil)
-			if err != nil {
+			if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseTryAgainLater) {
 				p.close()
-				chanCloseError <- errors.WithStack(err)
+				p.closeByChan()
+				return
+			} else if err != nil {
+				// Не блокируемся на ошибики, если уже закрыто соединение
+				p.close()
+				select {
+				case chanCloseError <- errors.WithStack(err):
+				case <-p.closeChan:
+				}
+				// В следующий раз как будет ошибка, но чтение еще не закончилось, chanCloseError не заблочиться
+				p.closeByChan()
 				return
 			}
 		}
@@ -133,9 +165,19 @@ func (p *Player) read(in chan<- *Message, chanCloseError chan<- error) {
 	for !p.IsClosed() {
 
 		_, msg, err := p.conn.ReadMessage()
-		if err != nil {
+		if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseTryAgainLater) {
 			p.close()
-			chanCloseError <- errors.WithStack(err)
+			p.closeByChan()
+			return
+		} else if err != nil {
+			p.close()
+			// Не блокируемся на ошибики, если уже закрыто соединение
+			select {
+			case chanCloseError <- errors.WithStack(err):
+			case <-p.closeChan:
+			}
+			// В следующий раз как будет ошибка, но чтение еще не закончилось, chanCloseError не заблочиться
+			p.closeByChan()
 			return
 		}
 

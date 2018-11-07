@@ -6,5 +6,6 @@
     "CloseRoomDeadline" : 20,
     "PongWait" : 10,
     "PingPeriod" : 9,
-    "ScoreFactor": 5
+    "ScoreFactor": 5,
+    "CloseGracePeriod" : 3
 }
