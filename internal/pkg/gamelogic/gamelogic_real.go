@@ -21,6 +21,9 @@ type ChessGameLogic struct {
 
 	turnResponse chan error
 
+	stopChan      chan struct{}
+	isGameStopped bool
+
 	chessEngine ChessEngine
 }
 
@@ -34,6 +37,8 @@ func NewChessGameLogic(gameDuration int) *ChessGameLogic {
 		blackTurn:          make(chan *Turn, 1),
 		turnResponse:       make(chan error, 1),
 		chessEngine:        chess.NewGame(),
+		stopChan:           make(chan struct{}, 1),
+		isGameStopped:      false,
 	}
 }
 
@@ -55,6 +60,12 @@ func (c *ChessGameLogic) start(resultChan chan<- Result) {
 
 	for !c.chessEngine.IsGameOver() {
 		select {
+		case <-c.stopChan:
+			blackTimer.Stop()
+			whiteTimer.Stop()
+
+			singletoneLogger.LogMessage("Game was stopped")
+			return
 		case <-whiteTimer.C:
 
 			blackTimer.Stop()
@@ -145,4 +156,10 @@ func (c *ChessGameLogic) Start() (bool, <-chan Result) {
 
 	randomBool := randomGenerator.RandomBool()
 	return randomBool, resultChan
+}
+
+func (c *ChessGameLogic) Stop() {
+	if !c.isGameStopped {
+		close(c.stopChan)
+	}
 }

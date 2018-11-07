@@ -80,6 +80,7 @@ func (p *Player) Close(code int, msg string) {
 		return
 	}
 	p.close()
+	singletoneLogger.LogMessage("Send close")
 	sendCloseError(p.conn, code, msg)
 }
 
