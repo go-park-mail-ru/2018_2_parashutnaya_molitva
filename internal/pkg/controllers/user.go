@@ -232,6 +232,9 @@ func GetUsersScore(w http.ResponseWriter, r *http.Request) {
 	limit, _ := strconv.Atoi(query.Get("limit"))
 	offset, _ := strconv.Atoi(query.Get("offset"))
 
+	if limit > 100 || limit == 0 {
+		limit = 100
+	}
 	scores, err := user.GetScores(limit, offset)
 	if err != nil {
 		responseWithError(w, http.StatusInternalServerError, "Unknown error")
