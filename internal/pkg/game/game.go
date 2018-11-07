@@ -93,7 +93,6 @@ func (g *Game) InitRoom(guid string, roomParameters RoomParameters) (string, err
 	}
 	g.addUserInSearching(guid)
 	id, err := g.findRoom(guid, roomParameters)
-	singletoneLogger.LogMessage("Finded" + id)
 	if id != "" {
 		return id, nil
 	} else if err != nil {
@@ -142,10 +141,8 @@ func (g *Game) readInitMessage(done chan struct{}, conn *websocket.Conn) (chan *
 				continue
 			}
 
-			singletoneLogger.LogMessage(fmt.Sprintf("%#v", msg))
 			if msg.MsgType != InitMsg {
 				sendError(conn, errInvalidMsgTypeInit.Error())
-				// singletoneLogger.LogError(errInvalidMsgTypeInit)
 				continue
 			}
 

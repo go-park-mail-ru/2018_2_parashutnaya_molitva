@@ -184,6 +184,8 @@ func (r *Room) startGame() {
 	r.messageToAll(infoMsgGameStarted)
 
 	isFirstWhite, gameOverChannel := r.gameLogic.Start()
+	defer r.gameLogic.Stop()
+
 	if isFirstWhite {
 		singletoneLogger.LogMessage(fmt.Sprintf("Player1 is white: %v\nPlayer2 is black: %v",
 			r.players[0].GetName(), r.players[1].GetName()))
@@ -305,7 +307,7 @@ func (r *Room) endGame(winner *Player, loser *Player) {
 
 func (r *Room) closeConnections(code int, msg string) {
 	for _, p := range r.players {
-		p.Close(websocket.CloseNormalClosure, closeNormalGameOverFrame)
+		p.Close(code, msg)
 	}
 }
 
@@ -344,9 +346,7 @@ LOOP:
 			break LOOP
 		case <-closeTimer.C:
 
-			for _, p := range r.players {
-				p.Close(websocket.CloseTryAgainLater, errCloseWhileSearch.Error())
-			}
+			r.closeConnections(websocket.CloseTryAgainLater, errCloseWhileSearch.Error())
 
 			singletoneLogger.LogMessage(fmt.Sprintf("Room: %v, was closed due to waiting timeout ", r.ID))
 			r.isDoneChan <- struct{}{}
