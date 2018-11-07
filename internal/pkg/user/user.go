@@ -70,7 +70,7 @@ func (u *User) ChangePassword(password string) error {
 func (u *User) AddScore(score int) error {
 	u.Score += score
 	err := collection.UpdateId(u.Guid, u)
-	return err
+	return errors.WithStack(err)
 }
 
 func CreateUser(email string, password string) (User, error) {
@@ -105,9 +105,9 @@ func (u *User) UpdateUser(updateUser UpdateUserStruct) error {
 	if updateUser.Avatar != nil {
 		u.Avatar = updateUser.Avatar.(string)
 	}
-	if updateUser.Email != nil {
-		u.Email = updateUser.Email.(string)
-	}
+	//if updateUser.Email != nil {
+	//	u.Email = updateUser.Email.(string)
+	//}
 	if updateUser.Password != nil {
 		hashedPassword, err := hashPassword(updateUser.Password.(string))
 		if err != nil {
@@ -169,24 +169,24 @@ var (
 
 //easyjson:json
 type UpdateUserStruct struct {
-	Avatar   interface{} `json:"avatar"`
-	Email    interface{} `json:"email"`
+	Avatar interface{} `json:"avatar"`
+	//Email    interface{} `json:"email"`
 	Password interface{} `json:"password"`
 }
 
 func (u *UpdateUserStruct) Validate() (string, error) {
 
-	if u.Email != nil {
-		email, ok := u.Email.(string)
-		if !ok {
-			singletoneLogger.LogError(errTypeCastEmail)
-			return "", errTypeCastEmail
-		}
-
-		if err := ValidateEmail(email); err != nil {
-			return "email", err
-		}
-	}
+	//if u.Email != nil {
+	//	email, ok := u.Email.(string)
+	//	if !ok {
+	//		singletoneLogger.LogError(errTypeCastEmail)
+	//		return "", errTypeCastEmail
+	//	}
+	//
+	//	if err := ValidateEmail(email); err != nil {
+	//		return "email", err
+	//	}
+	//}
 
 	if u.Password != nil {
 		password, ok := u.Password.(string)

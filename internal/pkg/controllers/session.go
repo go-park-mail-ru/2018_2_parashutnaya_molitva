@@ -106,8 +106,7 @@ func signIn(w http.ResponseWriter, r *http.Request) {
 		responseWithError(w, http.StatusInternalServerError, "Can't parse json")
 		return
 	}
-	singletoneLogger.LogMessage(parameters.Email)
-	singletoneLogger.LogMessage(parameters.Password)
+
 	u, err := user.LoginUser(parameters.Email, parameters.Password)
 	if err != nil {
 		singletoneLogger.LogError(err)
