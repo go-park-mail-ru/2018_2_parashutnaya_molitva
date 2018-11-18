@@ -11,6 +11,10 @@ echo "Using $MONGODB_APPLICATION_DATABASE database"
 $mongoClient << EOF
 db.createCollection("users")
 db.users.createIndex({"email":1}, {unique: true})
+db.fruit.createIndex({type: 1},
+                      {collation: { locale: 'en', strength: 1 },
+                       unique: true
+                      })
 EOF
 
 sleep 1

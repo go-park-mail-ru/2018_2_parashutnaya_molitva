@@ -1,8 +1,8 @@
 package auth
 
 import (
+	"github.com/globalsign/mgo/bson"
 	"github.com/pkg/errors"
-	"gopkg.in/mgo.v2/bson"
 	"testing"
 )
 
@@ -21,11 +21,11 @@ var TestUserToDelete = TestUserStruct{
 
 func TestSetSession(t *testing.T) {
 	var err error
-	TestUserToStay.Token, _ , err = SetSession(TestUserToStay.Guid)
+	TestUserToStay.Token, _, err = SetSession(TestUserToStay.Guid)
 	if err != nil {
 		t.Error(err)
 	}
-	TestUserToDelete.Token, _ , err = SetSession(TestUserToDelete.Guid)
+	TestUserToDelete.Token, _, err = SetSession(TestUserToDelete.Guid)
 	if err != nil {
 		t.Error(err)
 	}

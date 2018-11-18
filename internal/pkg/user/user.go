@@ -2,10 +2,11 @@ package user
 
 import (
 	simpleErrors "errors"
+	"github.com/globalsign/mgo"
+	"github.com/globalsign/mgo/bson"
 
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"github.com/pkg/errors"
-	"gopkg.in/mgo.v2/bson"
 )
 
 //easyjson:json
@@ -132,7 +133,7 @@ func GetUserByGuid(guid string) (User, error) {
 
 func GetUserByEmail(email string) (User, error) {
 	user := User{}
-	err := collection.Find(bson.M{"email": email}).One(&user)
+	err := collection.Find(bson.M{"email": email}).Collation(getEmailCollation()).One(&user)
 	return user, err
 }
 
@@ -202,4 +203,8 @@ func (u *UpdateUserStruct) Validate() (string, error) {
 
 	return "", nil
 
+}
+
+func getEmailCollation() *mgo.Collation {
+	return &mgo.Collation{Locale: "en", Strength: 1}
 }

@@ -2,10 +2,10 @@ package auth
 
 import (
 	"fmt"
+	"github.com/globalsign/mgo"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/config"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"github.com/pkg/errors"
-	"gopkg.in/mgo.v2"
 	"time"
 )
 
@@ -18,8 +18,8 @@ type authConfigData struct {
 	MongoPort       string
 	TokenExpireTime int
 	TokenLength     int
-	MongoUser	string
-	MongoPassword string
+	MongoUser       string
+	MongoPassword   string
 }
 
 var (
