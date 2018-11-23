@@ -101,5 +101,5 @@ func (sg *StartGame) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sg.Game.InitConnection(u.Email, u.Score, &u, conn)
+	sg.Game.InitConnection(u.Email, guid, u.Score, &u, conn)
 }

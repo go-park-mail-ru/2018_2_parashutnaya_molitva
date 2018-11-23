@@ -16,6 +16,7 @@ type UserStorage interface {
 
 type PlayerData struct {
 	Name  string
+	Guid  string
 	Score int
 	User  UserStorage
 }
@@ -30,17 +31,22 @@ type Player struct {
 	closeChan chan struct{}
 }
 
-func NewPlayer(name string, score int, user UserStorage, conn *websocket.Conn) *Player {
+func NewPlayer(name, guid string, score int, user UserStorage, conn *websocket.Conn) *Player {
 	return &Player{
 		conn: conn,
 		playerData: PlayerData{
 			name,
+			guid,
 			score,
 			user,
 		},
 		isClosed:  false,
 		closeChan: make(chan struct{}, 1),
 	}
+}
+
+func (p *Player) GetGUID() string {
+	return p.playerData.Guid
 }
 
 func (p *Player) GetName() string {
