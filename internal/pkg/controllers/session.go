@@ -107,7 +107,7 @@ func signIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u, err := user.SigninUser(parameters.EmailOrLogin, parameters.Password)
+	u, err := user.SigninUser(parameters.LoginOrEmail, parameters.Password)
 	if err != nil {
 		singletoneLogger.LogError(err)
 		responseWithError(w, http.StatusBadRequest, err.Error())
@@ -125,6 +125,6 @@ func signIn(w http.ResponseWriter, r *http.Request) {
 
 //easyjson:json
 type SignInParameters struct {
-	EmailOrLogin    string `json:"email_or_login" example:"test@mail.ru"`
+	LoginOrEmail    string `json:"login_or_email" example:"test@mail.ru"`
 	Password string `json:"password" example:"1234qwerty"`
 }

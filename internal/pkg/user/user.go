@@ -30,13 +30,13 @@ func (u *User) ChangeAvatar(avatarName string) error {
 	return nil
 }
 
-func SigninUser(emailOrLogin string, password string) (User, error) {
+func SigninUser(loginOrEmail string, password string) (User, error) {
 	var err error
 	var u User
-	if emailRegex.MatchString(emailOrLogin) {
-		u, err = GetUserByEmail(emailOrLogin)
+	if emailRegex.MatchString(loginOrEmail) {
+		u, err = GetUserByEmail(loginOrEmail)
 	} else {
-		u, err = GetUserByLogin(emailOrLogin)
+		u, err = GetUserByLogin(loginOrEmail)
 	}
 	if (err != nil) && (err.Error() == "not found") {
 		return User{}, err//simpleErrors.New("User not found")

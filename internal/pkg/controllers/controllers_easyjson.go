@@ -250,8 +250,8 @@ func easyjson650569b1DecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternal
 			continue
 		}
 		switch key {
-		case "email_or_login":
-			out.EmailOrLogin = string(in.String())
+		case "login_or_email":
+			out.LoginOrEmail = string(in.String())
 		case "password":
 			out.Password = string(in.String())
 		default:
@@ -269,14 +269,14 @@ func easyjson650569b1EncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternal
 	first := true
 	_ = first
 	{
-		const prefix string = ",\"email_or_login\":"
+		const prefix string = ",\"login_or_email\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
 		} else {
 			out.RawString(prefix)
 		}
-		out.String(string(in.EmailOrLogin))
+		out.String(string(in.LoginOrEmail))
 	}
 	{
 		const prefix string = ",\"password\":"
