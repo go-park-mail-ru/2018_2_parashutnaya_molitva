@@ -7,12 +7,13 @@ import (
 )
 
 const (
-	TurnMsg   = "turn"
-	ErrorMsg  = "error"
-	InitMsg   = "init"
-	InfoMsg   = "info"
-	StartMsg  = "start"
-	ResultMsg = "result"
+	TurnMsg      = "turn"
+	ErrorMsg     = "error"
+	InitMsg      = "init"
+	InfoMsg      = "info"
+	StartMsg     = "start"
+	ResultMsg    = "result"
+	SurrenderMsg = "surrender"
 )
 
 var (

@@ -211,6 +211,9 @@ func (r *Room) startGame() {
 			switch firstMsg.MsgType {
 			case TurnMsg:
 				r.turn(firstMsg, r.broadcastsOut[0], isFirstWhite)
+			case SurrenderMsg:
+				r.endGame(r.players[1], r.players[0])
+				return
 			default:
 				r.broadcastsOut[0] <- errMsgUnknownMsgType
 			}
@@ -218,6 +221,9 @@ func (r *Room) startGame() {
 			switch secondMsg.MsgType {
 			case TurnMsg:
 				r.turn(secondMsg, r.broadcastsOut[1], !isFirstWhite)
+			case SurrenderMsg:
+				r.endGame(r.players[0], r.players[1])
+				return
 			default:
 				r.broadcastsOut[1] <- errMsgUnknownMsgType
 			}
