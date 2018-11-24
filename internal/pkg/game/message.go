@@ -34,6 +34,7 @@ type TurnMessage struct {
 //easyjson:json
 type StartMessage struct {
 	Color string `json:"color"`
+	GUID  string `json:"guid"`
 }
 
 //easyjson:json

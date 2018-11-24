@@ -88,12 +88,15 @@ func (g *Game) deleteFromSearching(guid string) {
 
 func (g *Game) InitRoom(guid string, roomParameters RoomParameters) (string, error) {
 
+	singletoneLogger.LogMessage(fmt.Sprintf("In searching: %#v", g.searchingGuids))
 	if g.isUserAlreadySearching(guid) {
 		return "", errAlreadySearching
 	}
 	g.addUserInSearching(guid)
+	defer g.deleteFromSearching(guid)
 	id, err := g.findRoom(guid, roomParameters)
-	if id != "" {
+	singletoneLogger.LogMessage(fmt.Sprintf("In searching: %#v", g.searchingGuids))
+	if id != "" && err == nil {
 		return id, nil
 	} else if err != nil {
 		return "", err
@@ -102,7 +105,6 @@ func (g *Game) InitRoom(guid string, roomParameters RoomParameters) (string, err
 	r := NewRoom(g, roomParameters, gameConfig.CloseRoomDeadline)
 	r.TakeSlot(guid)
 	g.createRoom <- r
-	g.deleteFromSearching(guid)
 	return r.ID, nil
 }
 
@@ -161,7 +163,7 @@ func (g *Game) readInitMessage(done chan struct{}, conn *websocket.Conn) (chan *
 	return chanMessage, chanCloseError
 }
 
-func (g *Game) initConnection(name string, score int, user UserStorage, conn *websocket.Conn) {
+func (g *Game) initConnection(name, guid string, score int, user UserStorage, conn *websocket.Conn) {
 	done := make(chan struct{})
 	t := time.NewTimer(time.Second * time.Duration(gameConfig.InitMessageDeadline))
 	initChan, closeErrorChan := g.readInitMessage(done, conn)
@@ -177,7 +179,7 @@ func (g *Game) initConnection(name string, score int, user UserStorage, conn *we
 			return
 		}
 
-		room.AddPlayer(NewPlayer(name, score, user, conn))
+		room.AddPlayer(NewPlayer(name, guid, score, user, conn))
 		singletoneLogger.LogMessage(fmt.Sprintf("Successfully init msg was read: %v", initMessage))
 	case <-t.C:
 		close(done)
@@ -195,8 +197,8 @@ func (g *Game) initConnection(name string, score int, user UserStorage, conn *we
 	}
 }
 
-func (g *Game) InitConnection(name string, score int, user UserStorage, conn *websocket.Conn) {
-	go g.initConnection(name, score, user, conn)
+func (g *Game) InitConnection(name, guid string, score int, user UserStorage, conn *websocket.Conn) {
+	go g.initConnection(name, guid, score, user, conn)
 }
 
 func (g *Game) CloseRoom(roomID string) {
@@ -212,7 +214,6 @@ func (g *Game) listen() {
 			g.mx.Lock()
 			delete(g.rooms, roomID)
 			g.mx.Unlock()
-
 			singletoneLogger.LogMessage(fmt.Sprintf("Room: %v, was deleted", roomID))
 			g.printGameState()
 		case room := <-g.createRoom:
