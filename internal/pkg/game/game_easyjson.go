@@ -109,6 +109,8 @@ func easyjson85f0d656DecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternal
 		switch key {
 		case "color":
 			out.Color = string(in.String())
+		case "guid":
+			out.GUID = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -132,6 +134,16 @@ func easyjson85f0d656EncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternal
 			out.RawString(prefix)
 		}
 		out.String(string(in.Color))
+	}
+	{
+		const prefix string = ",\"guid\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.GUID))
 	}
 	out.RawByte('}')
 }

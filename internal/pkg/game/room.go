@@ -38,8 +38,6 @@ var (
 )
 
 func init() {
-	startMsgWhite, _ = MarshalToMessage(StartMsg, &StartMessage{"w"})
-	startMsgBlack, _ = MarshalToMessage(StartMsg, &StartMessage{"b"})
 	infoMsgGameStarted, _ = MarshalToMessage(InfoMsg, &InfoMessage{"Game is started"})
 	infoMsgAddedToRoom, _ = MarshalToMessage(InfoMsg, &InfoMessage{"Added to room"})
 	errMsgInvalidJSON, _ = MarshalToMessage(ErrorMsg, &ErrorMessage{"Invalid JSON"})
@@ -189,12 +187,20 @@ func (r *Room) startGame() {
 	if isFirstWhite {
 		singletoneLogger.LogMessage(fmt.Sprintf("Player1 is white: %v\nPlayer2 is black: %v",
 			r.players[0].GetName(), r.players[1].GetName()))
+
+		startMsgWhite, _ = MarshalToMessage(StartMsg, &StartMessage{"w", r.players[1].GetGUID()})
 		r.broadcastsOut[0] <- startMsgWhite
+
+		startMsgBlack, _ = MarshalToMessage(StartMsg, &StartMessage{"w", r.players[0].GetGUID()})
 		r.broadcastsOut[1] <- startMsgBlack
 	} else {
 		singletoneLogger.LogMessage(fmt.Sprintf("Player1 is black: %v\nPlayer2 is white: %v",
 			r.players[0].GetName(), r.players[1].GetName()))
+
+		startMsgBlack, _ = MarshalToMessage(StartMsg, &StartMessage{"b", r.players[1].GetGUID()})
 		r.broadcastsOut[0] <- startMsgBlack
+
+		startMsgWhite, _ = MarshalToMessage(StartMsg, &StartMessage{"w", r.players[0].GetGUID()})
 		r.broadcastsOut[1] <- startMsgWhite
 	}
 

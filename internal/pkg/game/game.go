@@ -163,7 +163,7 @@ func (g *Game) readInitMessage(done chan struct{}, conn *websocket.Conn) (chan *
 	return chanMessage, chanCloseError
 }
 
-func (g *Game) initConnection(name string, score int, user UserStorage, conn *websocket.Conn) {
+func (g *Game) initConnection(name, guid string, score int, user UserStorage, conn *websocket.Conn) {
 	done := make(chan struct{})
 	t := time.NewTimer(time.Second * time.Duration(gameConfig.InitMessageDeadline))
 	initChan, closeErrorChan := g.readInitMessage(done, conn)
@@ -179,7 +179,7 @@ func (g *Game) initConnection(name string, score int, user UserStorage, conn *we
 			return
 		}
 
-		room.AddPlayer(NewPlayer(name, score, user, conn))
+		room.AddPlayer(NewPlayer(name, guid, score, user, conn))
 		singletoneLogger.LogMessage(fmt.Sprintf("Successfully init msg was read: %v", initMessage))
 	case <-t.C:
 		close(done)
@@ -197,8 +197,8 @@ func (g *Game) initConnection(name string, score int, user UserStorage, conn *we
 	}
 }
 
-func (g *Game) InitConnection(name string, score int, user UserStorage, conn *websocket.Conn) {
-	go g.initConnection(name, score, user, conn)
+func (g *Game) InitConnection(name, guid string, score int, user UserStorage, conn *websocket.Conn) {
+	go g.initConnection(name, guid, score, user, conn)
 }
 
 func (g *Game) CloseRoom(roomID string) {
