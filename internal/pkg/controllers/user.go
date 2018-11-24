@@ -97,7 +97,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u, err := user.CreateUser(parameters.Email, parameters.Password)
+	u, err := user.CreateUser(parameters.Email, parameters.Login, parameters.Password)
 	if err != nil {
 		singletoneLogger.LogError(err)
 		responseWithError(w, http.StatusBadRequest, err.Error())
@@ -109,6 +109,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 //easyjson:json
 type CreateUserParameters struct {
 	Email    string `json:"email" example:"test@mail.ru"`
+	Login string `json:"login" example:"killer228"`
 	Password string `json:"password" example:"1234qwerty"`
 }
 
@@ -116,6 +117,11 @@ func (c *CreateUserParameters) Validate() (string, error) {
 	err := user.ValidateEmail(c.Email)
 	if err != nil {
 		return "email", err
+	}
+
+	err = user.ValidateLogin(c.Login)
+	if err != nil {
+		return "login", err
 	}
 
 	err = user.ValidatePassword(c.Password)

@@ -3,22 +3,25 @@ package user
 import (
 	"github.com/pkg/errors"
 	"reflect"
+	"strings"
 	"testing"
 )
 
 type TestUserDataStruct struct {
 	Email    string
+	Login string
 	Password string
 }
 
 var TestUserData1 = TestUserDataStruct{
-	"testтест@test.test",
+	"test@mail.ru",
+	"tes228",
 	"1234",
 }
 var testUser *User
 
 func TestIsUserExisting(t *testing.T) {
-	isExisting, err := IsUserExisting(TestUserData1.Email)
+	isExisting, err := IsUserEmailExisting(TestUserData1.Email)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -28,14 +31,14 @@ func TestIsUserExisting(t *testing.T) {
 }
 
 func TestCreateUser(t *testing.T) {
-	u, err := CreateUser(TestUserData1.Email, TestUserData1.Password)
+	u, err := CreateUser(TestUserData1.Email, TestUserData1.Login, TestUserData1.Password)
 	if err != nil {
 		t.Fatal(err)
 	}
 	testUser = &u
 }
 
-func TestFindUser(t *testing.T) {
+func TestFindUserByEmail(t *testing.T) {
 	u, err := GetUserByEmail(TestUserData1.Email)
 	if err != nil {
 		t.Fatal(err)
@@ -43,8 +46,24 @@ func TestFindUser(t *testing.T) {
 	testUser = &u
 }
 
+func TestFindUserByLogin(t *testing.T) {
+	u, err := GetUserByLogin(TestUserData1.Login)
+	if err != nil {
+		t.Fatal(err)
+	}
+	testUser = &u
+}
+
+func TestFindUserByEmailUppercase(t *testing.T) {
+	u, err := GetUserByEmail(strings.ToUpper(TestUserData1.Email))
+	if err != nil {
+		t.Fatal(err)
+	}
+	testUser = &u
+}
+
 func TestLoginUser(t *testing.T) {
-	u, err := LoginUser(TestUserData1.Email, TestUserData1.Password)
+	u, err := SigninUser(TestUserData1.Email, TestUserData1.Password)
 	if err != nil {
 		t.Fatal(err)
 	}
