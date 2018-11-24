@@ -88,12 +88,15 @@ func (g *Game) deleteFromSearching(guid string) {
 
 func (g *Game) InitRoom(guid string, roomParameters RoomParameters) (string, error) {
 
+	singletoneLogger.LogMessage(fmt.Sprintf("In searching: %#v", g.searchingGuids))
 	if g.isUserAlreadySearching(guid) {
 		return "", errAlreadySearching
 	}
 	g.addUserInSearching(guid)
+	defer g.deleteFromSearching(guid)
 	id, err := g.findRoom(guid, roomParameters)
-	if id != "" {
+	singletoneLogger.LogMessage(fmt.Sprintf("In searching: %#v", g.searchingGuids))
+	if id != "" && err == nil {
 		return id, nil
 	} else if err != nil {
 		return "", err
@@ -102,7 +105,6 @@ func (g *Game) InitRoom(guid string, roomParameters RoomParameters) (string, err
 	r := NewRoom(g, roomParameters, gameConfig.CloseRoomDeadline)
 	r.TakeSlot(guid)
 	g.createRoom <- r
-	g.deleteFromSearching(guid)
 	return r.ID, nil
 }
 
@@ -212,7 +214,6 @@ func (g *Game) listen() {
 			g.mx.Lock()
 			delete(g.rooms, roomID)
 			g.mx.Unlock()
-
 			singletoneLogger.LogMessage(fmt.Sprintf("Room: %v, was deleted", roomID))
 			g.printGameState()
 		case room := <-g.createRoom:
