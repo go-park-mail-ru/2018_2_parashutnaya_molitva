@@ -1,9 +1,9 @@
 package controllers
 
 import (
+	simpleErrors "errors"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/fileStorage"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
-	simpleErrors "errors"
 	"net/http"
 	"path/filepath"
 )

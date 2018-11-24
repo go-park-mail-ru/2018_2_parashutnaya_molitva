@@ -250,8 +250,8 @@ func easyjson650569b1DecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternal
 			continue
 		}
 		switch key {
-		case "email":
-			out.Email = string(in.String())
+		case "email_or_login":
+			out.EmailOrLogin = string(in.String())
 		case "password":
 			out.Password = string(in.String())
 		default:
@@ -269,14 +269,14 @@ func easyjson650569b1EncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternal
 	first := true
 	_ = first
 	{
-		const prefix string = ",\"email\":"
+		const prefix string = ",\"email_or_login\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
 		} else {
 			out.RawString(prefix)
 		}
-		out.String(string(in.Email))
+		out.String(string(in.EmailOrLogin))
 	}
 	{
 		const prefix string = ",\"password\":"
@@ -350,7 +350,9 @@ func easyjson650569b1DecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternal
 				}
 				for !in.IsDelim(']') {
 					var v1 user.UserScore
-					(v1).UnmarshalEasyJSON(in)
+					if data := in.Raw(); in.Ok() {
+						in.AddError((v1).UnmarshalJSON(data))
+					}
 					out.Scores = append(out.Scores, v1)
 					in.WantComma()
 				}
@@ -386,7 +388,7 @@ func easyjson650569b1EncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternal
 				if v2 > 0 {
 					out.RawByte(',')
 				}
-				(v3).MarshalEasyJSON(out)
+				out.Raw((v3).MarshalJSON())
 			}
 			out.RawByte(']')
 		}
@@ -663,6 +665,8 @@ func easyjson650569b1DecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternal
 		switch key {
 		case "email":
 			out.Email = string(in.String())
+		case "login":
+			out.Login = string(in.String())
 		case "password":
 			out.Password = string(in.String())
 		default:
@@ -688,6 +692,16 @@ func easyjson650569b1EncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternal
 			out.RawString(prefix)
 		}
 		out.String(string(in.Email))
+	}
+	{
+		const prefix string = ",\"login\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Login))
 	}
 	{
 		const prefix string = ",\"password\":"

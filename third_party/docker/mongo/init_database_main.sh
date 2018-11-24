@@ -10,7 +10,14 @@ echo "=> Creating a ${MONGODB_APPLICATION_DATABASE} database user with a passwor
 echo "Using $MONGODB_APPLICATION_DATABASE database"
 $mongoClient << EOF
 db.createCollection("users")
-db.users.createIndex({"email":1}, {unique: true})
+db.users.createIndex(
+    {"email":1},
+    {   unique: true,
+        collation: { locale: 'en', strength: 1 },
+    })
+db.users.createIndex(
+    {"login":1},
+    {   unique: true})
 EOF
 
 sleep 1

@@ -7,9 +7,9 @@ const (
 )
 
 type dbConfigData struct {
-	MongoHost string
-	MongoPort string
-	MongoUser string
+	MongoHost     string
+	MongoPort     string
+	MongoUser     string
 	MongoPassword string
 }
 

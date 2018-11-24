@@ -2,15 +2,17 @@ package user
 
 import (
 	simpleErrors "errors"
+	"github.com/globalsign/mgo"
+	"github.com/globalsign/mgo/bson"
 
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"github.com/pkg/errors"
-	"gopkg.in/mgo.v2/bson"
 )
 
 //easyjson:json
 type User struct {
 	Guid         bson.ObjectId `bson:"_id" json:"guid"`
+	Login        string        `bson:"login" json:"login"`
 	Email        string        `bson:"email" json:"email"`
 	Password     string        `bson:"-" json:"-"`
 	HashPassword string        `bson:"password" json:"-"`
@@ -28,14 +30,16 @@ func (u *User) ChangeAvatar(avatarName string) error {
 	return nil
 }
 
-func (u *User) ChangeUser() error {
-	return nil
-}
-
-func LoginUser(email string, password string) (User, error) {
-	u, err := GetUserByEmail(email)
+func SigninUser(emailOrLogin string, password string) (User, error) {
+	var err error
+	var u User
+	if emailRegex.MatchString(emailOrLogin) {
+		u, err = GetUserByEmail(emailOrLogin)
+	} else {
+		u, err = GetUserByLogin(emailOrLogin)
+	}
 	if (err != nil) && (err.Error() == "not found") {
-		return User{}, simpleErrors.New("User not found")
+		return User{}, err//simpleErrors.New("User not found")
 	}
 	if err != nil {
 		singletoneLogger.LogError(err)
@@ -47,6 +51,12 @@ func LoginUser(email string, password string) (User, error) {
 		return User{}, simpleErrors.New("Wrong password")
 	}
 	return u, nil
+}
+
+func (u *User) ChangeLogin(login string) error {
+	u.Login = login
+	err := collection.UpdateId(u.Guid, u)
+	return err
 }
 
 func (u *User) ChangeEmail(email string) error {
@@ -73,14 +83,22 @@ func (u *User) AddScore(score int) error {
 	return errors.WithStack(err)
 }
 
-func CreateUser(email string, password string) (User, error) {
-	isExisting, err := IsUserExisting(email)
+func CreateUser(email string, login string, password string) (User, error) {
+	isEmailExisting, err := IsUserEmailExisting(email)
 	if err != nil {
 		singletoneLogger.LogError(err)
-		return User{}, err
+		return User{}, simpleErrors.New("Unknown error")
 	}
-	if isExisting {
-		return User{}, errors.New("User already exists")
+	if isEmailExisting {
+		return User{}, simpleErrors.New("User with such email already exists")
+	}
+	isLoginExisting, err := IsUserLoginExisting(login)
+	if err != nil {
+		singletoneLogger.LogError(err)
+		return User{}, simpleErrors.New("Unknown error")
+	}
+	if isLoginExisting {
+		return User{}, simpleErrors.New("User with such login already exists")
 	}
 
 	hashedPassword, err := hashPassword(password)
@@ -90,6 +108,7 @@ func CreateUser(email string, password string) (User, error) {
 	}
 	u := User{
 		Guid:         bson.NewObjectId(),
+		Login:        login,
 		Email:        email,
 		HashPassword: hashedPassword,
 	}
@@ -132,7 +151,13 @@ func GetUserByGuid(guid string) (User, error) {
 
 func GetUserByEmail(email string) (User, error) {
 	user := User{}
-	err := collection.Find(bson.M{"email": email}).One(&user)
+	err := collection.Find(bson.M{"email": email}).Collation(getEmailCollation()).One(&user)
+	return user, err
+}
+
+func GetUserByLogin(login string) (User, error) {
+	user := User{}
+	err := collection.Find(bson.M{"login": login}).One(&user)
 	return user, err
 }
 
@@ -152,7 +177,7 @@ func GetUsersCount() (int, error) {
 	return count, err
 }
 
-func IsUserExisting(email string) (bool, error) {
+func IsUserEmailExisting(email string) (bool, error) {
 	_, err := GetUserByEmail(email)
 	if (err != nil) && (err.Error() == "not found") {
 		return false, nil
@@ -162,14 +187,25 @@ func IsUserExisting(email string) (bool, error) {
 	return true, nil
 }
 
+func IsUserLoginExisting(login string) (bool, error) {
+	_, err := GetUserByLogin(login)
+	if (err != nil) && (err.Error() == "not found") {
+		return false, nil
+	} else if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
 var (
-	errTypeCastEmail   = errors.New("Can't cast Email interface{} to string")
-	errTypeCastPasswod = errors.New("Can't cast Password interface{} to string")
+	errTypeCastEmail    = errors.New("Can't cast Email interface{} to string")
+	errTypeCastPassword = errors.New("Can't cast Password interface{} to string")
 )
 
 //easyjson:json
 type UpdateUserStruct struct {
 	Avatar interface{} `json:"avatar"`
+	Login  interface{} `json:"login"`
 	//Email    interface{} `json:"email"`
 	Password interface{} `json:"password"`
 }
@@ -191,8 +227,8 @@ func (u *UpdateUserStruct) Validate() (string, error) {
 	if u.Password != nil {
 		password, ok := u.Password.(string)
 		if !ok {
-			singletoneLogger.LogError(errTypeCastPasswod)
-			return "", errTypeCastPasswod
+			singletoneLogger.LogError(errTypeCastPassword)
+			return "", errTypeCastPassword
 		}
 
 		if err := ValidatePassword(password); err != nil {
@@ -200,6 +236,27 @@ func (u *UpdateUserStruct) Validate() (string, error) {
 		}
 	}
 
+	if u.Login != nil {
+		login, ok := u.Login.(string)
+		if !ok {
+			err := errors.New("Can't cast Login interface{} to string")
+			singletoneLogger.LogError(err)
+			return "", err
+		}
+
+		if err := ValidateLogin(login); err != nil {
+			return "password", err
+		}
+	}
+
 	return "", nil
 
+}
+
+func getEmailCollation() *mgo.Collation {
+	return &mgo.Collation{Locale: "en", Strength: 1}
+}
+
+func getLoginCollation() *mgo.Collation {
+	return getEmailCollation()
 }
