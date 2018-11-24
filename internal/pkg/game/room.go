@@ -129,6 +129,58 @@ func NewRoom(g *Game, params RoomParameters, closeTime int) *Room {
 	return r
 }
 
+func (r *Room) listen() {
+	closeTimer := time.NewTimer(time.Second * time.Duration(r.closeTime))
+	startTimer := time.Now()
+LOOP:
+	for {
+		select {
+		case p := <-r.register:
+
+			if !closeTimer.Stop() {
+				<-closeTimer.C
+			}
+			closeTimer.Reset(time.Second * time.Duration(r.closeTime))
+			singletoneLogger.LogMessage("Timer was reseted")
+
+			r.players = append(r.players, p)
+			singletoneLogger.LogMessage(fmt.Sprintf("RoomID %v: Player was added: %v", r.ID, p.playerData.Name))
+
+			p.Start(r.broadcastsIn[len(r.players)-1], r.broadcastsOut[len(r.players)-1], r.closeErrors[len(r.players)-1])
+
+			r.broadcastsOut[len(r.players)-1] <- infoMsgAddedToRoom
+
+			if r.isAllPlayersCreated() {
+				r.isFullChan <- struct{}{}
+			}
+		case err := <-r.closeErrors[0]:
+			singletoneLogger.LogError(err)
+			singletoneLogger.LogMessage(fmt.Sprintf("Room: %v, was closed due to player leave: Player: GUID:%v Name:%v",
+				r.ID, r.players[0].GetGUID(), r.players[0].GetName()))
+			r.isDoneChan <- struct{}{}
+			break LOOP
+		case <-r.isFullChan:
+			if !closeTimer.Stop() {
+				<-closeTimer.C
+			}
+			go r.startGame()
+			break LOOP
+		case <-closeTimer.C:
+
+			r.closeConnections(websocket.CloseTryAgainLater, errCloseWhileSearch.Error())
+
+			singletoneLogger.LogMessage(fmt.Sprintf("Room: %v, was closed due to waiting timeout ", r.ID))
+			r.isDoneChan <- struct{}{}
+			break LOOP
+		}
+	}
+	<-r.isDoneChan
+	finishTime := time.Now().Sub(startTimer)
+	singletoneLogger.LogMessage(fmt.Sprintf("%v", finishTime.Seconds()))
+
+	r.game.CloseRoom(r.ID)
+}
+
 func (r *Room) TakeSlot(guid string) {
 	r.Lock()
 	r.availableSlots--
@@ -175,15 +227,18 @@ func (r *Room) startGame() {
 	singletoneLogger.LogMessage(fmt.Sprintf("RoomID: %v, is started game with:\nPlayer1: %v\nPlayer2: %v",
 		r.ID, r.players[0].playerData, r.players[1].playerData))
 
-	for idx, p := range r.players {
-		p.Start(r.broadcastsIn[idx], r.broadcastsOut[idx], r.closeErrors[idx])
-	}
-
 	r.messageToAll(infoMsgGameStarted)
 
 	isFirstWhite, gameOverChannel := r.gameLogic.Start()
 	defer r.gameLogic.Stop()
 
+	r.sendStartMessages(isFirstWhite)
+
+	r.listenPlayers(isFirstWhite, gameOverChannel)
+
+}
+
+func (r *Room) sendStartMessages(isFirstWhite bool) {
 	if isFirstWhite {
 		singletoneLogger.LogMessage(fmt.Sprintf("Player1 is white: %v\nPlayer2 is black: %v",
 			r.players[0].GetName(), r.players[1].GetName()))
@@ -203,7 +258,9 @@ func (r *Room) startGame() {
 		startMsgWhite, _ = MarshalToMessage(StartMsg, &StartMessage{"w", r.players[0].GetGUID()})
 		r.broadcastsOut[1] <- startMsgWhite
 	}
+}
 
+func (r *Room) listenPlayers(isFirstWhite bool, gameOverChannel <-chan gamelogic.Result) {
 	gameIsEnded := false
 	for !gameIsEnded {
 		select {
@@ -249,9 +306,7 @@ func (r *Room) startGame() {
 			} else {
 				r.endGame(r.players[1], r.players[0])
 			}
-
 		}
-
 	}
 }
 
@@ -321,55 +376,6 @@ func (r *Room) closeConnections(code int, msg string) {
 	for _, p := range r.players {
 		p.Close(code, msg)
 	}
-}
-
-func (r *Room) listen() {
-	closeTimer := time.NewTimer(time.Second * time.Duration(r.closeTime))
-	startTimer := time.Now()
-LOOP:
-	for {
-		select {
-		case p := <-r.register:
-
-			if !closeTimer.Stop() {
-				<-closeTimer.C
-			}
-			closeTimer.Reset(time.Second * time.Duration(r.closeTime))
-			singletoneLogger.LogMessage("Timer was reseted")
-
-			r.players = append(r.players, p)
-			singletoneLogger.LogMessage(fmt.Sprintf("RoomID %v: Player was added: %v", r.ID, p.playerData.Name))
-
-			err := p.Send(infoMsgAddedToRoom)
-			if websocket.IsUnexpectedCloseError(err) {
-				r.isDoneChan <- struct{}{}
-			} else if err != nil {
-				singletoneLogger.LogError(err)
-			}
-
-			if r.isAllPlayersCreated() {
-				r.isFullChan <- struct{}{}
-			}
-		case <-r.isFullChan:
-			if !closeTimer.Stop() {
-				<-closeTimer.C
-			}
-			go r.startGame()
-			break LOOP
-		case <-closeTimer.C:
-
-			r.closeConnections(websocket.CloseTryAgainLater, errCloseWhileSearch.Error())
-
-			singletoneLogger.LogMessage(fmt.Sprintf("Room: %v, was closed due to waiting timeout ", r.ID))
-			r.isDoneChan <- struct{}{}
-			break LOOP
-		}
-	}
-	<-r.isDoneChan
-	finishTime := time.Now().Sub(startTimer)
-	singletoneLogger.LogMessage(fmt.Sprintf("%v", finishTime.Seconds()))
-
-	r.game.CloseRoom(r.ID)
 }
 
 // color - true - белые, false - черные
