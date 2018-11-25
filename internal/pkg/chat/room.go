@@ -64,8 +64,8 @@ type Room struct {
 	isFullChan     chan struct{}
 	isDoneChan     chan struct{}
 	broadcastAllIn chan *UserMsg
-	broadcastsIn   [maxPlayers]chan *UserMsg
-	broadcastsOut  [maxPlayers]chan *UserMsg
+	broadcastsIn   []chan *UserMsg
+	broadcastsOut  []chan *UserMsg
 	closeErrors    [maxPlayers]chan error
 
 	isFirstWinner bool
@@ -78,23 +78,13 @@ func NewRoom() *Room {
 	}
 
 	r := &Room{
-		ID:         id,
-		players:    make([]*User, 0, maxPlayers),
-		register:   make(chan *User),
-		isFullChan: make(chan struct{}, 1),
-		isDoneChan: make(chan struct{}, 1),
-		broadcastsOut: [maxPlayers]chan *UserMsg{
-			make(chan *UserMsg),
-			make(chan *UserMsg),
-			make(chan *UserMsg),
-			make(chan *UserMsg),
-		},
-		broadcastsIn: [maxPlayers]chan *UserMsg{
-			make(chan *UserMsg),
-			make(chan *UserMsg),
-			make(chan *UserMsg),
-			make(chan *UserMsg),
-		},
+		ID:            id,
+		players:       make([]*User, 0, maxPlayers),
+		register:      make(chan *User),
+		isFullChan:    make(chan struct{}, 1),
+		isDoneChan:    make(chan struct{}, 1),
+		broadcastsOut: make([]chan *UserMsg, 0, maxPlayers),
+		broadcastsIn:  make([]chan *UserMsg, 0, maxPlayers),
 		closeErrors: [maxPlayers]chan error{
 			make(chan error),
 			make(chan error),
@@ -123,13 +113,17 @@ func (r *Room) listen() {
 			closeTimer.Reset(time.Second * time.Duration(r.closeTime))
 			singletoneLogger.LogMessage("Timer was reseted")
 
-			r.players = append(r.players, p)
 			singletoneLogger.LogMessage(fmt.Sprintf("RoomID %v: Player was added: %v", r.ID, p.UserData.Name))
 
-			p.Start(r.broadcastsIn[len(r.players)-1], r.broadcastsOut[len(r.players)-1], r.closeErrors[len(r.players)-1])
+			r.broadcastsIn = append(r.broadcastsIn, make(chan *UserMsg))
+			r.broadcastsOut = append(r.broadcastsOut, make(chan *UserMsg))
+
+			p.Start(r.broadcastsIn[len(r.broadcastsIn)-1], r.broadcastsOut[len(r.broadcastsOut)-1], nil)
 
 			go func() {
-				r.broadcastAllIn <- <-r.broadcastsIn[len(r.players)-1]
+				for {
+					r.broadcastAllIn <- <-r.broadcastsIn[len(r.broadcastsIn)-1]
+				}
 			}()
 		}
 	}
