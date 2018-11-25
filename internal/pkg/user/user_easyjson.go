@@ -4,6 +4,7 @@ package user
 
 import (
 	json "encoding/json"
+
 	easyjson "github.com/mailru/easyjson"
 	jlexer "github.com/mailru/easyjson/jlexer"
 	jwriter "github.com/mailru/easyjson/jwriter"
@@ -36,8 +37,8 @@ func easyjson9e1087fdDecodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternal
 			continue
 		}
 		switch key {
-		case "email":
-			out.Email = string(in.String())
+		case "login":
+			out.Login = string(in.String())
 		case "score":
 			out.Score = int(in.Int())
 		default:
@@ -55,14 +56,14 @@ func easyjson9e1087fdEncodeGithubComGoParkMailRu20182ParashutnayaMolitvaInternal
 	first := true
 	_ = first
 	{
-		const prefix string = ",\"email\":"
+		const prefix string = ",\"login\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
 		} else {
 			out.RawString(prefix)
 		}
-		out.String(string(in.Email))
+		out.String(string(in.Login))
 	}
 	{
 		const prefix string = ",\"score\":"
