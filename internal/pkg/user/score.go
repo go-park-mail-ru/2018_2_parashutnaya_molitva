@@ -2,7 +2,7 @@ package user
 
 //easyjson:json
 type UserScore struct {
-	Email string `json:"email" bson:"email"`
+	Login string `json:"login" bson:'login'`
 	Score int    `json:"score" bson:"score"`
 }
 
