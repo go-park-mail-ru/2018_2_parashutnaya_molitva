@@ -1,12 +1,13 @@
 package server
 
 import (
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/gRPC/mainServer"
 	"net/http"
 	"strconv"
 
 	_ "github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/docs"
 	"github.com/gorilla/websocket"
-	httpSwagger "github.com/swaggo/http-swagger"
+	"github.com/swaggo/http-swagger"
 
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/controllers"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/fileStorage"
@@ -60,5 +61,6 @@ func StartApp(port int) error {
 	router.HandleFunc("/docs/*", httpSwagger.WrapHandler)
 	router.PathPrefix("/storage/").Handler(fileStorage.StorageHandler)
 
+	go mainServer.GRPCServer()
 	return http.ListenAndServe(stringPort, router)
 }

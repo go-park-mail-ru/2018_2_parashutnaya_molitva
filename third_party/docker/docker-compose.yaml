@@ -1,0 +1,54 @@
+version: '3'
+
+services:
+  auth-mongo:
+    container_name: kekmate-auth-mongo
+    restart: always
+    build:
+      context: ./mongo/.
+      dockerfile: Dockerfile.mongo
+    volumes:
+    - /data/db/auth:/data/db
+    environment:
+    - AUTH=yes
+    - MONGODB_ADMIN_USER=root
+    - MONGODB_ADMIN_PASS=root
+    - MONGODB_APPLICATION_DATABASE=auth
+    - MONGODB_APPLICATION_USER=user
+    - MONGODB_APPLICATION_PASS=user
+    ports:
+    - '27017:27017'
+  main-mongo:
+    container_name: kekmate-main-mongo
+    restart: always
+    environment:
+    - AUTH=yes
+    - MONGODB_ADMIN_USER=root
+    - MONGODB_ADMIN_PASS=root
+    - MONGODB_APPLICATION_DATABASE=main
+    - MONGODB_APPLICATION_USER=user
+    - MONGODB_APPLICATION_PASS=user
+    build:
+      context: ./mongo/.
+      dockerfile: Dockerfile.mongo
+    volumes:
+    - /data/db/main:/data/db
+    ports:
+    - '27018:27017'
+  chat-mongo:
+    container_name: kekmate-chat-mongo
+    restart: always
+    environment:
+    - AUTH=yes
+    - MONGODB_ADMIN_USER=root
+    - MONGODB_ADMIN_PASS=root
+    - MONGODB_APPLICATION_DATABASE=chat
+    - MONGODB_APPLICATION_USER=user
+    - MONGODB_APPLICATION_PASS=user
+    build:
+      context: ./mongo/.
+      dockerfile: Dockerfile.mongo
+    volumes:
+    - /data/db/chat:/data/db
+    ports:
+    - '27019:27017'

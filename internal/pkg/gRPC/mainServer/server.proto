@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+// protoc --go_out=plugins=grpc:. *.proto
+
+package mainServer;
+
+message Session {
+    string cookie = 1;
+}
+
+message User {
+    bool isAuth = 1;
+    string guid = 2;
+    string login = 3;
+    string email = 4;
+}
+
+service AuthChecker {
+    rpc AuthUser(Session) returns (User) {}
+}
