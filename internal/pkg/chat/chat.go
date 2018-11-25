@@ -49,9 +49,9 @@ func (sc *StartChat) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sc.Chat.InitConnection(userData, conn)
+	go sc.Chat.initConnection(userData, conn)
 }
 
-func (c *Chat) InitConnection (user *mainServer.User, conn *websocket.Conn) {
-
+func (c *Chat) initConnection (user *mainServer.User, conn *websocket.Conn) {
+// ВЛАД ПИШИ ТУТ
 }
