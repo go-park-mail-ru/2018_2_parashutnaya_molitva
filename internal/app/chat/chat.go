@@ -2,6 +2,8 @@ package chat
 
 import (
 	"fmt"
+	"net/http"
+
 	chatModel "github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/chat"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/gRPC/mainServer"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
@@ -9,7 +11,6 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
-	"net/http"
 )
 
 func StartChatServer() error {

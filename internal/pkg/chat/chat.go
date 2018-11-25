@@ -1,21 +1,27 @@
 package chat
 
 import (
+	"net/http"
+	"strconv"
+
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/gRPC/mainServer"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/session"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"github.com/gorilla/websocket"
 	"golang.org/x/net/context"
-	"net/http"
 )
+
+var kek = 0
 
 type Chat struct {
 	authService mainServer.AuthCheckerClient
+	room        *Room
 }
 
 func NewChat(authService mainServer.AuthCheckerClient) *Chat {
 	return &Chat{
 		authService,
+		NewRoom(),
 	}
 }
 
@@ -32,7 +38,7 @@ func (sc *StartChat) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		singletoneLogger.LogMessage(noCookie.Error())
 	} else {
 		var err error
-		userData, err = sc.Chat.authService.AuthUser(ctx, &mainServer.Session{Cookie:cookie.Value})
+		userData, err = sc.Chat.authService.AuthUser(ctx, &mainServer.Session{Cookie: cookie.Value})
 		if err != nil {
 			singletoneLogger.LogError(err)
 		}
@@ -52,6 +58,18 @@ func (sc *StartChat) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	go sc.Chat.initConnection(userData, conn)
 }
 
-func (c *Chat) initConnection (user *mainServer.User, conn *websocket.Conn) {
-// ВЛАД ПИШИ ТУТ
+func (c *Chat) initConnection(user *mainServer.User, conn *websocket.Conn) {
+	var login string
+	var guid string
+	if !user.IsAuth {
+		login = "Anonim"
+		str := strconv.Itoa(kek)
+		kek++
+		guid = str
+	} else {
+		login = user.Login
+		guid = user.Guid
+	}
+	roomUser := NewUser(login, guid, conn)
+	c.room.AddPlayer(roomUser)
 }
