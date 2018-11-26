@@ -6,23 +6,11 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
-	"github.com/pkg/errors"
 
 	"github.com/gorilla/websocket"
 )
 
 //go:generate easyjson -pkg
-
-var (
-	errNoRoom               = errors.New("No Room")
-	errUnexpectedClose      = errors.New("Unexpected Close")
-	errInitMsgWaitTooLong   = errors.New("Waiting Init Message too long")
-	errInvalidMsgTypeInit   = errors.New("Invalid type: wating for Init")
-	errInvalidMsgInitFormat = errors.New("Invalid init message format")
-	errInavlidMsgFormat     = errors.New("Invalid message format")
-	errAlreadySearching     = errors.New("Already searching")
-	errAlreadyInRoom        = errors.New("Already in room")
-)
 
 type Game struct {
 	mx             sync.RWMutex
