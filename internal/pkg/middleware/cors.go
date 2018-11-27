@@ -1,6 +1,7 @@
-package server
+package middleware
 
 import (
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"net/http"
 	"strconv"
 	"strings"
@@ -13,7 +14,14 @@ var (
 	confifFile   = "cors.json"
 	corsData     CorsData
 )
+func init() {
+	err := configReader.Read(confifFile, &corsData)
+	if err != nil {
+		singletoneLogger.LogError(err)
+	}
+}
 
+//easyjson:json
 type CorsData struct {
 	AllowOrigins     []string
 	AllowMethods     []string
@@ -22,7 +30,7 @@ type CorsData struct {
 	AllowCredentials bool
 }
 
-func corsMiddleware(h http.Handler) http.Handler {
+func CorsMiddleware(h http.Handler) http.Handler {
 	var mw http.HandlerFunc = func(res http.ResponseWriter, req *http.Request) {
 		val, ok := req.Header["Origin"]
 		if ok {

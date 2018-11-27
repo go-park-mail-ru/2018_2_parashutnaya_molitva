@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/gRPC/core"
 	"sync"
 	"time"
 
@@ -13,6 +14,8 @@ import (
 //go:generate easyjson -pkg
 
 type Game struct {
+	GRPCCore core.CoreClient
+
 	mx             sync.RWMutex
 	rooms          map[string]*Room
 	searchingGuids map[string]struct{}
@@ -21,8 +24,9 @@ type Game struct {
 	createRoom chan *Room
 }
 
-func NewGame() *Game {
+func NewGame(core core.CoreClient) *Game {
 	g := &Game{
+		GRPCCore:       core,
 		mx:             sync.RWMutex{},
 		rooms:          map[string]*Room{},
 		closeRoom:      make(chan string),
@@ -151,7 +155,7 @@ func (g *Game) readInitMessage(done chan struct{}, conn *websocket.Conn) (chan *
 	return chanMessage, chanCloseError
 }
 
-func (g *Game) initConnection(name, guid string, score int, user UserStorage, conn *websocket.Conn) {
+func (g *Game) initConnection(name, guid string, score int, conn *websocket.Conn) {
 	done := make(chan struct{})
 	t := time.NewTimer(time.Second * time.Duration(gameConfig.InitMessageDeadline))
 	initChan, closeErrorChan := g.readInitMessage(done, conn)
@@ -167,7 +171,7 @@ func (g *Game) initConnection(name, guid string, score int, user UserStorage, co
 			return
 		}
 
-		room.AddPlayer(NewPlayer(name, guid, score, user, conn))
+		room.AddPlayer(NewPlayer(name, guid, score, conn))
 		singletoneLogger.LogMessage(fmt.Sprintf("Successfully init msg was read: %v", initMessage))
 	case <-t.C:
 		close(done)
@@ -185,8 +189,8 @@ func (g *Game) initConnection(name, guid string, score int, user UserStorage, co
 	}
 }
 
-func (g *Game) InitConnection(name, guid string, score int, user UserStorage, conn *websocket.Conn) {
-	go g.initConnection(name, guid, score, user, conn)
+func (g *Game) InitConnection(name, guid string, score int, conn *websocket.Conn) {
+	go g.initConnection(name, guid, score, conn)
 }
 
 func (g *Game) CloseRoom(roomID string) {

@@ -2,6 +2,8 @@ package game
 
 import (
 	"fmt"
+	GRPCCore "github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/gRPC/core"
+	"golang.org/x/net/context"
 	"sync"
 	"time"
 
@@ -10,15 +12,14 @@ import (
 	"github.com/pkg/errors"
 )
 
-type UserStorage interface {
-	AddScore(int) error
+type UserController interface {
+	AddScoreToUser(ctx context.Context, scoreAdd *GRPCCore.ScoreAdd) (*GRPCCore.Nothing, error)
 }
 
 type PlayerData struct {
-	Name  string
-	Guid  string
-	Score int
-	User  UserStorage
+	Name           string
+	Guid           string
+	Score          int
 }
 
 type Player struct {
@@ -32,14 +33,13 @@ type Player struct {
 	isClosedChan bool
 }
 
-func NewPlayer(name, guid string, score int, user UserStorage, conn *websocket.Conn) *Player {
+func NewPlayer(name, guid string, score int, conn *websocket.Conn) *Player {
 	return &Player{
 		conn: conn,
 		playerData: PlayerData{
 			name,
 			guid,
 			score,
-			user,
 		},
 		isClosed:     false,
 		isClosedChan: false,

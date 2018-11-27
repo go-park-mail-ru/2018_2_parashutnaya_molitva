@@ -1,13 +1,14 @@
 package controllers
 
 import (
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/gRPC/core"
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/session"
+	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 
-	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/db"
 	g "github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/game"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
-	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/user"
 	"github.com/gorilla/websocket"
 )
 
@@ -17,14 +18,23 @@ type FindRoom struct {
 	Game *g.Game
 }
 
-func (gr *FindRoom) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	b := isAuth(r)
+func (fr *FindRoom) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	sessionCookie, err := r.Cookie(session.CookieName)
+	if err != nil {
+		responseWithError(w, http.StatusUnauthorized, errNoUser)
+	}
+	userData, err := fr.Game.GRPCCore.GetUserBySession(r.Context(), &core.Session{Cookie: sessionCookie.Value})
+	if err != nil {
+		singletoneLogger.LogError(errors.Wrap(err, "can't do grpc request to core for user data by cookie"))
+		responseWithError(w, http.StatusUnauthorized, errNoUser)
+	}
+	b := userData.IsAuth
 	if !b {
 		responseWithError(w, http.StatusUnauthorized, errNoAuth)
 		return
 	}
 
-	guid := userGuid(r)
+	guid := userData.Guid
 	if guid == "" {
 		responseWithError(w, http.StatusUnauthorized, errNoUser)
 		return
@@ -51,7 +61,7 @@ func (gr *FindRoom) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	roomID, err := gr.Game.InitRoom(guid, params)
+	roomID, err := fr.Game.InitRoom(guid, params)
 	if err != nil {
 		responseWithError(w, http.StatusConflict, err.Error())
 		return
@@ -70,19 +80,18 @@ type StartGame struct {
 }
 
 func (sg *StartGame) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	b := isAuth(r)
+	sessionCookie, err := r.Cookie(session.CookieName)
+	if err != nil {
+		responseWithError(w, http.StatusUnauthorized, errNoUser)
+	}
+	userData, err := sg.Game.GRPCCore.GetUserBySession(r.Context(), &core.Session{Cookie: sessionCookie.Value})
+	if err != nil {
+		singletoneLogger.LogError(errors.Wrap(err, "can't do grpc request to core for user data by cookie"))
+		responseWithError(w, http.StatusUnauthorized, errNoUser)
+	}
+	b := userData.IsAuth
 	if !b {
 		responseWithError(w, http.StatusUnauthorized, errNoAuth)
-		return
-	}
-
-	guid := userGuid(r)
-	u, err := user.GetUserByGuid(guid)
-	if err != nil && db.IsNotFoundError(err) {
-		responseWithError(w, http.StatusNotFound, "User not found")
-		return
-	} else if err != nil {
-		responseWithError(w, http.StatusInternalServerError, "Internal error")
 		return
 	}
 
@@ -97,5 +106,5 @@ func (sg *StartGame) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sg.Game.InitConnection(u.Email, guid, u.Score, &u, conn)
+	sg.Game.InitConnection(userData.Email, userData.Guid, int(userData.Score), conn)
 }

@@ -1,17 +1,16 @@
 package server
 
 import (
-	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/gRPC/mainServer"
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/gRPC/core"
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/middleware"
 	"net/http"
 	"strconv"
 
 	_ "github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/docs"
-	"github.com/gorilla/websocket"
 	"github.com/swaggo/http-swagger"
 
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/controllers"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/fileStorage"
-	g "github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/game"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
@@ -21,28 +20,19 @@ type ServerData struct {
 	port int
 }
 
-var (
-	errNoPort = errors.New("Port wasn't passed")
-)
-
 func StartApp(port int) error {
 	if port == -1 {
-		return errNoPort
+		return errors.New("Port wasn't passed")
 	}
 
 	stringPort := ":" + strconv.Itoa(port)
-
-	err := configReader.Read(confifFile, &corsData)
-	if err != nil {
-		singletoneLogger.LogError(err)
-	}
 
 	singletoneLogger.LogMessage("Server starting at " + stringPort)
 
 	router := mux.NewRouter()
 	router.Use(authMiddleware)
-	router.Use(corsMiddleware)
-	router.Use(recoverPanicMiddleware)
+	router.Use(middleware.CorsMiddleware)
+	router.Use(middleware.RecoverPanicMiddleware)
 
 	router.HandleFunc("/api/session", controllers.Session).Methods("POST", "GET", "OPTIONS")
 	router.HandleFunc("/api/session", controllers.DeleteSession).Methods("DELETE", "OPTIONS")
@@ -53,14 +43,10 @@ func StartApp(port int) error {
 	router.HandleFunc("/api/avatar", controllers.UploadAvatar).Methods("POST", "OPTIONS")
 	router.HandleFunc("/api/user", controllers.CreateUser).Methods("POST", "OPTIONS")
 
-	game := g.NewGame()
-	router.Handle("/api/game", &controllers.FindRoom{game}).Methods("POST", "OPTIONS")
-
-	router.Handle("/api/game/ws", &controllers.StartGame{game, &websocket.Upgrader{}})
 	// Документация
 	router.HandleFunc("/docs/*", httpSwagger.WrapHandler)
 	router.PathPrefix("/storage/").Handler(fileStorage.StorageHandler)
 
-	go mainServer.GRPCServer()
+	go core.GRPCServer()
 	return http.ListenAndServe(stringPort, router)
 }

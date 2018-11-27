@@ -4,22 +4,19 @@ import "testing"
 
 var TestMessages = []Message{
 	{
-		"",
-		"",
-		"hello world!2",
-		0,
+		FromLogin: "",
+		ToLogin:   "",
+		Text:      "hello world!2",
 	},
 	{
-		"kek",
-		"lol",
-		"sosi hui1",
-		0,
+		FromLogin: "kek",
+		ToLogin:   "lol",
+		Text:      "sosi hui1",
 	},
 	{
-		"kek",
-		"lol",
-		"sosi hui2",
-		0,
+		FromLogin: "kek",
+		ToLogin:   "lol",
+		Text:      "sosi hui2",
 	},
 }
 func TestMessageInsert(t *testing.T) {
@@ -52,7 +49,6 @@ func TestDialogMessageCheck(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(messages)
 	if messages[0].Text != TestMessages[1].Text {
 		t.Fatal("not Same Message")
 	}
@@ -70,7 +66,6 @@ func TestDialogReverseMessageCheck(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(messages)
 	if messages[0].Text != TestMessages[2].Text {
 		t.Fatal("not Same Message")
 	}

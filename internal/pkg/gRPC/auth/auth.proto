@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+// protoc --go_out=plugins=grpc:. *.proto
+
+package auth;
+
+message SessionCookie {
+    string cookie = 1;
+}
+
+message UserGuid {
+    string guid = 1;
+}
+
+message UserAuthed {
+    bool isAuth = 1;
+    string guid = 2;
+}
+
+message SessionToken {
+    string token = 1;
+    string timeExpire = 2;
+}
+
+message Nothing {}
+
+service Auth {
+    rpc DeleteSession(SessionCookie) returns (Nothing) {}
+    rpc CheckSession(SessionCookie) returns (UserAuthed) {}
+    rpc SetSession(UserGuid) returns (SessionToken) {}
+}

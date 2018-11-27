@@ -113,7 +113,7 @@ var doc = `{
                 "operationId": "post-session",
                 "parameters": [
                     {
-                        "description": "User auth data",
+                        "description": "userController auth data",
                         "name": "AuthData",
                         "in": "body",
                         "required": true,
@@ -190,7 +190,7 @@ var doc = `{
                 "operationId": "post-user",
                 "parameters": [
                     {
-                        "description": "User id",
+                        "description": "userController id",
                         "name": "data",
                         "in": "body",
                         "required": true,
@@ -311,7 +311,7 @@ var doc = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "User id",
+                        "description": "userController id",
                         "name": "guid",
                         "in": "query",
                         "required": true
@@ -322,7 +322,7 @@ var doc = `{
                         "description": "OK",
                         "schema": {
                             "type": "object",
-                            "$ref": "#/definitions/user.User"
+                            "$ref": "#/definitions/user.userController"
                         }
                     },
                     "400": {
@@ -481,7 +481,7 @@ var doc = `{
                 }
             }
         },
-        "user.User": {
+        "user.userController": {
             "type": "object",
             "properties": {
                 "avatar": {

@@ -2,10 +2,11 @@ package chat
 
 import (
 	"fmt"
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/gRPC"
 	"net/http"
 
 	chatModel "github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/chat"
-	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/gRPC/mainServer"
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/gRPC/core"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
@@ -15,7 +16,7 @@ import (
 
 func StartChatServer() error {
 	grcpConn, err := grpc.Dial(
-		"127.0.0.1:8081",
+		"127.0.0.1:"+ gRPC.GetCorePort(),
 		grpc.WithInsecure(),
 	)
 	if err != nil {
@@ -23,7 +24,7 @@ func StartChatServer() error {
 	}
 	defer grcpConn.Close()
 
-	chat := chatModel.NewChat(mainServer.NewAuthCheckerClient(grcpConn))
+	chat := chatModel.NewChat(core.NewCoreClient(grcpConn))
 
 	router := mux.NewRouter()
 	router.Handle("/api/chat/ws", &chatModel.StartChat{Chat: chat, Upgrader: &websocket.Upgrader{}})

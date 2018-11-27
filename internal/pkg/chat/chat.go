@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/gRPC/mainServer"
+	gRPCcore "github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/gRPC/core"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/session"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"github.com/gorilla/websocket"
@@ -14,14 +14,14 @@ import (
 var kek = 0
 
 type Chat struct {
-	authService mainServer.AuthCheckerClient
-	room        *Room
+	coreClient gRPCcore.CoreClient
+	room       *Room
 }
 
-func NewChat(authService mainServer.AuthCheckerClient) *Chat {
+func NewChat(authService gRPCcore.CoreClient) *Chat {
 	return &Chat{
-		authService,
-		NewRoom(),
+		coreClient: authService,
+		room:       NewRoom(),
 	}
 }
 
@@ -32,13 +32,13 @@ type StartChat struct {
 
 func (sc *StartChat) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
-	userData := &mainServer.User{}
+	userData := &gRPCcore.User{}
 	cookie, noCookie := r.Cookie(session.CookieName)
 	if noCookie != nil {
 		singletoneLogger.LogMessage(noCookie.Error())
 	} else {
 		var err error
-		userData, err = sc.Chat.authService.AuthUser(ctx, &mainServer.Session{Cookie: cookie.Value})
+		userData, err = sc.Chat.coreClient.GetUserBySession(ctx, &gRPCcore.Session{Cookie: cookie.Value})
 		if err != nil {
 			singletoneLogger.LogError(err)
 		}
@@ -58,7 +58,7 @@ func (sc *StartChat) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	go sc.Chat.initConnection(userData, conn)
 }
 
-func (c *Chat) initConnection(user *mainServer.User, conn *websocket.Conn) {
+func (c *Chat) initConnection(user *gRPCcore.User, conn *websocket.Conn) {
 	var login string
 	var guid string
 	if !user.IsAuth {

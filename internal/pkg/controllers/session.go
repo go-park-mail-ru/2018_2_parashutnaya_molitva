@@ -81,7 +81,7 @@ func getSession(w http.ResponseWriter, r *http.Request) {
 // @ID post-session
 // @Accept  json
 // @Produce  json
-// @Param AuthData body controllers.SignInParameters true "User auth data"
+// @Param AuthData body controllers.SignInParameters true "userController auth data"
 // @Success 200 {object} controllers.responseUserGuidStruct
 // @Failure 404 {object} controllers.ErrorResponse
 // @Failure 500 {object} controllers.ErrorResponse

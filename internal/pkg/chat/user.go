@@ -171,7 +171,7 @@ func (p *User) read(in chan<- *UserMsg, chanCloseError chan<- error) {
 }
 
 func (p *User) Start(in chan<- *UserMsg, out <-chan *UserMsg, chanCloseError chan<- error) {
-	singletoneLogger.LogMessage(fmt.Sprintf("Start listen User: %v", p.UserData.Name))
+	singletoneLogger.LogMessage(fmt.Sprintf("Start listen userController: %v", p.UserData.Name))
 
 	go p.read(in, chanCloseError)
 	go p.write(out, chanCloseError)

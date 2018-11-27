@@ -1,4 +1,4 @@
-package server
+package middleware
 
 import (
 	"net/http"
@@ -6,7 +6,7 @@ import (
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 )
 
-func recoverPanicMiddleware(h http.Handler) http.Handler {
+func RecoverPanicMiddleware(h http.Handler) http.Handler {
 	var mw http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if r := recover(); r != nil {

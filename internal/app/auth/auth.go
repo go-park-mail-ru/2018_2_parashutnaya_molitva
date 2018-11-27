@@ -1,10 +1,15 @@
 package auth
 
-// В дальнейшем удет отдельным микросервисом
 import (
-	"github.com/pkg/errors"
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/gRPC/auth"
+	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
+	"time"
 )
 
-func StartAuth() error {
-	return errors.New("No code")
+func StartAuth() {
+	err := auth.GRPCServer()
+	if err != nil {
+		singletoneLogger.LogError(err)
+		time.Sleep(1)
+	}
 }

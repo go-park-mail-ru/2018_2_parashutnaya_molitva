@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+// protoc --go_out=plugins=grpc:. *.proto
+
+package core;
+
+message Session {
+    string cookie = 1;
+}
+
+message User {
+    bool isAuth = 1;
+    string guid = 2;
+    string login = 3;
+    string email = 4;
+    int32 score = 5;
+}
+
+message ScoreAdd {
+     string guid = 1;
+     int32 score = 2;
+}
+
+message Nothing {}
+
+service Core {
+    rpc GetUserBySession(Session) returns (User) {}
+    rpc AddScoreToUser(ScoreAdd) returns (Nothing) {}
+}
