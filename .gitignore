@@ -2,3 +2,8 @@
 configs/*.json
 storage/*
 .vscode
+
+auth
+core
+game
+log.*
