@@ -206,7 +206,6 @@ var (
 type UpdateUserStruct struct {
 	Avatar interface{} `json:"avatar"`
 	Login  interface{} `json:"login"`
-	//Email    interface{} `json:"email"`
 	Password interface{} `json:"password"`
 }
 

@@ -471,7 +471,6 @@
                     "type": "object"
                 },
                 "password": {
-                    "description": "Email    interface{} `json:\"email\"`",
                     "type": "object"
                 }
             }
