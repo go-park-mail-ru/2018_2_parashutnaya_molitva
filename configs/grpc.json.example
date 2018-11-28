@@ -1,4 +1,4 @@
 {
   "CorePort": "8081",
-  "AuthPOrt": "8082"
+  "AuthPort": "8082"
 }
