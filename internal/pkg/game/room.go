@@ -1,6 +1,7 @@
 package game
 
 import (
+	"context"
 	"fmt"
 	GRPCCore "github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/gRPC/core"
 	"log"
@@ -335,7 +336,8 @@ func (r *Room) endGameDraw(player1 *Player, player2 *Player) {
 }
 
 func (r *Room) endGame(winner *Player, loser *Player) {
-	_, errChangeWinner := r.game.GRPCCore.AddScoreToUser(nil,
+	ctx := context.Background()
+	_, errChangeWinner := r.game.GRPCCore.AddScoreToUser(ctx,
 		&GRPCCore.ScoreAdd{Guid: winner.playerData.Guid, Score: int32(gameConfig.ScoreFactor)})
 	if errChangeWinner != nil {
 		singletoneLogger.LogError(errChangeWinner)
@@ -344,7 +346,7 @@ func (r *Room) endGame(winner *Player, loser *Player) {
 		return
 	}
 
-	_, errChangeLoser := r.game.GRPCCore.AddScoreToUser(nil,
+	_, errChangeLoser := r.game.GRPCCore.AddScoreToUser(ctx,
 		&GRPCCore.ScoreAdd{Guid: loser.playerData.Guid, Score: int32(gameConfig.ScoreFactor)})
 	if errChangeLoser != nil {
 		singletoneLogger.LogError(errChangeWinner)
