@@ -34,14 +34,8 @@ func CorsMiddleware(h http.Handler) http.Handler {
 	var mw http.HandlerFunc = func(res http.ResponseWriter, req *http.Request) {
 		val, ok := req.Header["Origin"]
 		if ok {
-		LOOP:
-			for _, origin := range corsData.AllowOrigins {
-				if origin == val[0] {
-					res.Header().Set("Access-Control-Allow-Origin", origin)
-					res.Header().Set("Access-Control-Allow-Credentials", strconv.FormatBool(corsData.AllowCredentials))
-					break LOOP
-				}
-			}
+				res.Header().Set("Access-Control-Allow-Origin", val[0])
+				res.Header().Set("Access-Control-Allow-Credentials", strconv.FormatBool(corsData.AllowCredentials))
 		}
 
 		if req.Method == "OPTIONS" {

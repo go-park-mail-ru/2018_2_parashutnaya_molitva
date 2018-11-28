@@ -4,7 +4,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var encriptionCost = 15
+var encriptionCost = 4
 
 func hashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), encriptionCost)
