@@ -59,11 +59,11 @@ func (*Server) GetUserBySession(ctx context.Context, session *Session) (*User, e
 func (*Server) AddScoreToUser(ctx context.Context, scoreAdd *ScoreAdd) (*Nothing, error) {
 	u, err := user.GetUserByGuid(scoreAdd.Guid)
 	if err != nil {
-		return nil, errors.Wrap(err, "can't find user")
+		return &Nothing{}, errors.Wrap(err, "can't find user")
 	}
 	err = u.AddScore(int(scoreAdd.Score))
 	if err != nil {
-		return nil, errors.Wrap(err, "can't update score of user")
+		return &Nothing{}, errors.Wrap(err, "can't update score of user")
 	}
-	return nil, nil
+	return &Nothing{}, nil
 }
