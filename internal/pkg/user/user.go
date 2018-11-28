@@ -39,7 +39,7 @@ func SigninUser(loginOrEmail string, password string) (User, error) {
 		u, err = GetUserByLogin(loginOrEmail)
 	}
 	if (err != nil) && (err.Error() == "not found") {
-		return User{}, err//simpleErrors.New("user not found")
+		return User{}, simpleErrors.New("User not found")
 	}
 	if err != nil {
 		singletoneLogger.LogError(err)
