@@ -212,7 +212,7 @@ var xxx_messageInfo_Nothing proto.InternalMessageInfo
 
 func init() {
 	proto.RegisterType((*Session)(nil), "core.Session")
-	proto.RegisterType((*User)(nil), "core.userController")
+	proto.RegisterType((*User)(nil), "core.User")
 	proto.RegisterType((*ScoreAdd)(nil), "core.ScoreAdd")
 	proto.RegisterType((*Nothing)(nil), "core.Nothing")
 }
