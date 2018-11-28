@@ -26,7 +26,7 @@ func TestIsUserExisting(t *testing.T) {
 		t.Fatal(err)
 	}
 	if isExisting {
-		t.Fatal(errors.New("userController should not exist"))
+		t.Fatal(errors.New("user should not exist"))
 	}
 }
 

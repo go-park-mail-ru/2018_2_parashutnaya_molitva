@@ -39,7 +39,7 @@ func SigninUser(loginOrEmail string, password string) (User, error) {
 		u, err = GetUserByLogin(loginOrEmail)
 	}
 	if (err != nil) && (err.Error() == "not found") {
-		return User{}, err//simpleErrors.New("userController not found")
+		return User{}, simpleErrors.New("User not found")
 	}
 	if err != nil {
 		singletoneLogger.LogError(err)
@@ -90,7 +90,7 @@ func CreateUser(email string, login string, password string) (User, error) {
 		return User{}, simpleErrors.New("Unknown error")
 	}
 	if isEmailExisting {
-		return User{}, simpleErrors.New("userController with such email already exists")
+		return User{}, simpleErrors.New("user with such email already exists")
 	}
 	isLoginExisting, err := IsUserLoginExisting(login)
 	if err != nil {
@@ -98,7 +98,7 @@ func CreateUser(email string, login string, password string) (User, error) {
 		return User{}, simpleErrors.New("Unknown error")
 	}
 	if isLoginExisting {
-		return User{}, simpleErrors.New("userController with such login already exists")
+		return User{}, simpleErrors.New("user with such login already exists")
 	}
 
 	hashedPassword, err := hashPassword(password)

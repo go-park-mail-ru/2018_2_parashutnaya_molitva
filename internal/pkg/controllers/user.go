@@ -23,8 +23,8 @@ type responseUserGuidStruct struct {
 // @ID get-user
 // @Accept  json
 // @Produce  json
-// @Param guid query string true "userController id"
-// @Success 200 {object} user.userController
+// @Param guid query string true "user id"
+// @Success 200 {object} user.User
 // @Failure 400 {object} controllers.ErrorResponse
 // @Failure 404 {object} controllers.ErrorResponse
 // @Failure 500 {object} controllers.ErrorResponse
@@ -44,7 +44,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 	u, err := user.GetUserByGuid(guid)
 	if err != nil && db.IsNotFoundError(err) {
-		responseWithError(w, http.StatusNotFound, "userController not found")
+		responseWithError(w, http.StatusNotFound, "user not found")
 		return
 	}
 	if err != nil {
@@ -61,7 +61,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 // @ID post-user
 // @Accept  json
 // @Produce  json
-// @Param data body controllers.CreateUserParameters true "userController id"
+// @Param data body controllers.CreateUserParameters true "user id"
 // @Success 200 {object} controllers.responseUserGuidStruct
 // @Failure 400 {object} controllers.ErrorResponse
 // @Failure 400 {object} controllers.ErrorFormResponse

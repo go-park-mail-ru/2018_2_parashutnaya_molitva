@@ -103,7 +103,7 @@
                 "operationId": "post-session",
                 "parameters": [
                     {
-                        "description": "User auth data",
+                        "description": "user auth data",
                         "name": "AuthData",
                         "in": "body",
                         "required": true,
@@ -180,7 +180,7 @@
                 "operationId": "post-user",
                 "parameters": [
                     {
-                        "description": "User id",
+                        "description": "user id",
                         "name": "data",
                         "in": "body",
                         "required": true,
@@ -301,7 +301,7 @@
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "User id",
+                        "description": "user id",
                         "name": "guid",
                         "in": "query",
                         "required": true
@@ -400,6 +400,10 @@
                     "type": "string",
                     "example": "test@mail.ru"
                 },
+                "login": {
+                    "type": "string",
+                    "example": "killer228"
+                },
                 "password": {
                     "type": "string",
                     "example": "1234qwerty"
@@ -431,7 +435,7 @@
         "controllers.SignInParameters": {
             "type": "object",
             "properties": {
-                "email": {
+                "login_or_email": {
                     "type": "string",
                     "example": "test@mail.ru"
                 },
@@ -463,10 +467,11 @@
                 "avatar": {
                     "type": "object"
                 },
-                "email": {
+                "login": {
                     "type": "object"
                 },
                 "password": {
+                    "description": "Email    interface{} `json:\"email\"`",
                     "type": "object"
                 }
             }
@@ -481,6 +486,9 @@
                     "type": "string"
                 },
                 "guid": {
+                    "type": "string"
+                },
+                "login": {
                     "type": "string"
                 },
                 "score": {
