@@ -5,6 +5,9 @@ definitions:
       email:
         example: test@mail.ru
         type: string
+      login:
+        example: killer228
+        type: string
       password:
         example: 1234qwerty
         type: string
@@ -26,7 +29,7 @@ definitions:
     type: object
   controllers.SignInParameters:
     properties:
-      email:
+      login_or_email:
         example: test@mail.ru
         type: string
       password:
@@ -47,9 +50,10 @@ definitions:
     properties:
       avatar:
         type: object
-      email:
+      login:
         type: object
       password:
+        description: Email    interface{} `json:"email"`
         type: object
     type: object
   user.User:
@@ -59,6 +63,8 @@ definitions:
       email:
         type: string
       guid:
+        type: string
+      login:
         type: string
       score:
         type: integer
@@ -154,7 +160,7 @@ paths:
       - application/json
       operationId: post-session
       parameters:
-      - description: User auth data
+      - description: user auth data
         in: body
         name: AuthData
         required: true
@@ -186,7 +192,7 @@ paths:
       - application/json
       operationId: post-user
       parameters:
-      - description: User id
+      - description: user id
         in: body
         name: data
         required: true
@@ -223,7 +229,7 @@ paths:
       - application/json
       operationId: get-user
       parameters:
-      - description: User id
+      - description: user id
         in: query
         name: guid
         required: true

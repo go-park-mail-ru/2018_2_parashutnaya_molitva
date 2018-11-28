@@ -24,7 +24,7 @@ type responseUserGuidStruct struct {
 // @Accept  json
 // @Produce  json
 // @Param guid query string true "user id"
-// @Success 200 {object} user.user
+// @Success 200 {object} user.User
 // @Failure 400 {object} controllers.ErrorResponse
 // @Failure 404 {object} controllers.ErrorResponse
 // @Failure 500 {object} controllers.ErrorResponse
