@@ -400,8 +400,8 @@ func (r *Room) turn(msg *Message, out chan<- *Message, color bool) {
 		out <- errMsg
 		return
 	}
-	turn.TimeRemainingBlack = timeRemainingBlack.Nanoseconds() / 1e6 //milliseconds
-	turn.TimeRemainingWhite = timeRemainingWhite.Nanoseconds() / 1e6 //milliseconds
+	turn.TimeRemainingBlack = timeRemainingBlack.Nanoseconds() / 1e6 //microseconds
+	turn.TimeRemainingWhite = timeRemainingWhite.Nanoseconds() / 1e6 //microseconds
 	msgWithTime, err := MarshalToMessage(TurnMsg, turn)
 	if err != nil {
 		log.Println(err)
