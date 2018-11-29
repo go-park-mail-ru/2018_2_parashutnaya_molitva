@@ -1,9 +1,9 @@
 .idea
-configs/*.json
-storage/*
+/configs/*.json
+/storage/*
 .vscode
 
-auth
-core
-game
-log.*
+/auth
+/core
+/game
+/log.*
