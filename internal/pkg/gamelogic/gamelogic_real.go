@@ -129,9 +129,9 @@ func (c *ChessGameLogic) start(resultChan chan<- Result) {
 	}
 }
 
-func (c *ChessGameLogic) PlayerTurn(turn Turn, color bool) error {
+func (c *ChessGameLogic) PlayerTurn(turn Turn, color bool) (time.Duration, time.Duration, error) {
 	if color != c.isWhiteTurn {
-		return errNotYourTurn
+		return 0, 0, errNotYourTurn
 	}
 	switch color {
 	case true:
@@ -142,12 +142,12 @@ func (c *ChessGameLogic) PlayerTurn(turn Turn, color bool) error {
 
 	err := <-c.turnResponse
 	if err != nil {
-		return err
+		return 0, 0, err
 	}
 	c.chessEngine.PrintBoard()
 	c.chessEngine.PrintLegalMoves()
 	c.isWhiteTurn = !c.isWhiteTurn
-	return nil
+	return c.whiteRemainingTime, c.blackRemainingTime, nil
 }
 
 func (c *ChessGameLogic) Start() (bool, <-chan Result) {

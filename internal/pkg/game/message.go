@@ -30,6 +30,8 @@ type ResultMessage struct {
 //easyjson:json
 type TurnMessage struct {
 	Turn string `json:"turn"`
+	TimeRemainingWhite int64 `json:"time_remaining_white"`
+	TimeRemainingBlack int64 `json:"time_remaining_black"`
 }
 
 //easyjson:json

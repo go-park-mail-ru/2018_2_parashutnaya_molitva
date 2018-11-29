@@ -394,11 +394,18 @@ func (r *Room) turn(msg *Message, out chan<- *Message, color bool) {
 		out <- errMsgInvalidJSON
 	}
 
-	err = r.gameLogic.PlayerTurn(gamelogic.Turn(turn.Turn), color)
+	timeRemainingWhite, timeRemainingBlack, err := r.gameLogic.PlayerTurn(gamelogic.Turn(turn.Turn), color)
 	if err != nil {
 		errMsg, _ := MarshalToMessage(ErrorMsg, &ErrorMessage{err.Error()})
 		out <- errMsg
-	} else {
-		r.messageToAll(msg)
+		return
 	}
+	turn.TimeRemainingBlack = timeRemainingBlack.Nanoseconds() / 1e6 //milliseconds
+	turn.TimeRemainingWhite = timeRemainingWhite.Nanoseconds() / 1e6 //milliseconds
+	msgWithTime, err := MarshalToMessage(TurnMsg, turn)
+	if err != nil {
+		log.Println(err)
+		out <- errMsgInvalidJSON
+	}
+	r.messageToAll(msgWithTime)
 }
