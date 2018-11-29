@@ -3,10 +3,11 @@ package game
 import (
 	"context"
 	"fmt"
-	GRPCCore "github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/gRPC/core"
 	"log"
 	"sync"
 	"time"
+
+	GRPCCore "github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/gRPC/core"
 
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/gamelogic"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/randomGenerator"
@@ -347,7 +348,7 @@ func (r *Room) endGame(winner *Player, loser *Player) {
 	}
 
 	_, errChangeLoser := r.game.GRPCCore.AddScoreToUser(ctx,
-		&GRPCCore.ScoreAdd{Guid: loser.playerData.Guid, Score: int32(gameConfig.ScoreFactor)})
+		&GRPCCore.ScoreAdd{Guid: loser.playerData.Guid, Score: -int32(gameConfig.ScoreFactor)})
 	if errChangeLoser != nil {
 		singletoneLogger.LogError(errChangeWinner)
 		r.closeConnections(websocket.CloseInternalServerErr, errInternalServerError.Error())
