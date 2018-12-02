@@ -2,10 +2,11 @@ package game
 
 import (
 	"fmt"
-	GRPCCore "github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/gRPC/core"
-	"golang.org/x/net/context"
 	"sync"
 	"time"
+
+	GRPCCore "github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/gRPC/core"
+	"golang.org/x/net/context"
 
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 	"github.com/gorilla/websocket"
@@ -17,12 +18,13 @@ type UserController interface {
 }
 
 type PlayerData struct {
-	Name           string
-	Guid           string
-	Score          int
+	Name  string
+	Guid  string
+	Score int
 }
 
 type Player struct {
+	closeMutex sync.Mutex
 	conn       *websocket.Conn
 	playerData PlayerData
 
@@ -35,7 +37,8 @@ type Player struct {
 
 func NewPlayer(name, guid string, score int, conn *websocket.Conn) *Player {
 	return &Player{
-		conn: conn,
+		closeMutex: sync.Mutex{},
+		conn:       conn,
 		playerData: PlayerData{
 			name,
 			guid,
@@ -94,10 +97,13 @@ func (p *Player) Close(code int, msg string) {
 	if p.IsClosed() {
 		return
 	}
+
+	singletoneLogger.LogMessage(fmt.Sprintf("Closing connection: %#v", p.playerData))
+	p.closeMutex.Lock()
 	sendCloseError(p.conn, code, msg)
+	p.closeMutex.Unlock()
 	p.close()
 	p.closeByChan()
-	singletoneLogger.LogMessage("Close by chan")
 	p.conn.Close()
 
 }
@@ -121,14 +127,17 @@ func (p *Player) write(out <-chan *Message, chanCloseError chan<- error) {
 
 			err = p.conn.WriteMessage(websocket.TextMessage, sendMsg)
 			if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseTryAgainLater) {
+				singletoneLogger.LogMessage(fmt.Sprintf("Close error: %#v.\nUser: %#v", errors.WithStack(err), p.playerData))
 				p.close()
 				p.closeByChan()
 				return
 			} else if err != nil {
+				singletoneLogger.LogMessage(fmt.Sprintf("Unexpected error: %#v.\nUser: %#v", errors.WithStack(err), p.playerData))
 				// Не блокируемся на ошибики, если уже закрыто соединение
 				p.close()
 				select {
 				case chanCloseError <- errors.WithStack(err):
+					singletoneLogger.LogMessage(fmt.Sprintf("Write Close error was send to chanCloseError, User: %#v", p.playerData))
 				case <-p.closeChan:
 				}
 				// В следующий раз как будет ошибка, но чтение еще не закончилось, chanCloseError не заблочиться
@@ -140,14 +149,17 @@ func (p *Player) write(out <-chan *Message, chanCloseError chan<- error) {
 		case <-pingTicker.C:
 			err := p.conn.WriteMessage(websocket.PingMessage, nil)
 			if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseTryAgainLater) {
+				singletoneLogger.LogMessage(fmt.Sprintf("PingTicker, Close error: %#v.\nUser: %#v", errors.WithStack(err), p.playerData))
 				p.close()
 				p.closeByChan()
 				return
 			} else if err != nil {
+				singletoneLogger.LogMessage(fmt.Sprintf("PingTicker, Unexpected error: %#v.\nUser: %#v", errors.WithStack(err), p.playerData))
 				// Не блокируемся на ошибики, если уже закрыто соединение
 				p.close()
 				select {
 				case chanCloseError <- errors.WithStack(err):
+					singletoneLogger.LogMessage(fmt.Sprintf("PingTicker Close error was send to chanCloseError, User: %#v", p.playerData))
 				case <-p.closeChan:
 				}
 				// В следующий раз как будет ошибка, но чтение еще не закончилось, chanCloseError не заблочиться
@@ -180,6 +192,7 @@ func (p *Player) read(in chan<- *Message, chanCloseError chan<- error) {
 			// Не блокируемся на ошибики, если уже закрыто соединение
 			select {
 			case chanCloseError <- errors.WithStack(err):
+				singletoneLogger.LogMessage(fmt.Sprintf("Read Close error was send to chanCloseError, User: %#v", p.playerData))
 			case <-p.closeChan:
 			}
 			// В следующий раз как будет ошибка, но чтение еще не закончилось, chanCloseError не заблочиться
