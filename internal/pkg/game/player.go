@@ -25,7 +25,9 @@ type PlayerData struct {
 
 type Player struct {
 	closeMutex sync.Mutex
+	connWriteMutex sync.Mutex
 	conn       *websocket.Conn
+
 	playerData PlayerData
 
 	sync.RWMutex
@@ -37,6 +39,7 @@ type Player struct {
 
 func NewPlayer(name, guid string, score int, conn *websocket.Conn) *Player {
 	return &Player{
+		connWriteMutex: sync.Mutex{},
 		closeMutex: sync.Mutex{},
 		conn:       conn,
 		playerData: PlayerData{
@@ -69,7 +72,9 @@ func (p *Player) IsClosed() bool {
 }
 
 func (p *Player) Send(msg *Message) error {
+	p.connWriteMutex.Lock()
 	err := p.conn.WriteJSON(msg)
+	p.connWriteMutex.Unlock()
 	if websocket.IsUnexpectedCloseError(errors.WithStack(err)) {
 		p.close()
 	}
@@ -124,8 +129,9 @@ func (p *Player) write(out <-chan *Message, chanCloseError chan<- error) {
 				singletoneLogger.LogError(errInavlidMsgFormat)
 				continue
 			}
-
+			p.connWriteMutex.Lock()
 			err = p.conn.WriteMessage(websocket.TextMessage, sendMsg)
+			p.connWriteMutex.Unlock()
 			if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseTryAgainLater) {
 				singletoneLogger.LogMessage(fmt.Sprintf("Close error: %#v.\nUser: %#v", errors.WithStack(err), p.playerData))
 				p.close()
