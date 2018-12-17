@@ -3,29 +3,14 @@ package fileStorage
 import (
 	"io"
 	"mime/multipart"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/config"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/randomGenerator"
 	"github.com/go-park-mail-ru/2018_2_parashutnaya_molitva/internal/pkg/singletoneLogger"
 )
 
-var StoragePath string
-var StorageHandler http.Handler
-
-//var StorageHandleFunc http.HandlerFunc
-
-func init() {
-	StoragePath = filepath.Join(config.ProjectPath(), "storage")
-	StorageHandler = http.StripPrefix("/storage/", http.FileServer(http.Dir(StoragePath)))
-}
-
-func StorageHandleFunc(w http.ResponseWriter, r *http.Request) {
-	StorageHandler.ServeHTTP(w, r)
-}
 
 func UploadFile(fileFromRequest multipart.File, fileName string) error {
 	fileToSave, err := os.OpenFile(filepath.Join(StoragePath, fileName), os.O_WRONLY|os.O_CREATE, 0666)
