@@ -14,8 +14,6 @@ import (
 
 func UploadFile(fileFromRequest multipart.File, fileName string) error {
 	fileToSave, err := os.OpenFile(filepath.Join(StoragePath, fileName), os.O_WRONLY|os.O_CREATE, 0666)
-	singletoneLogger.LogMessage("filepath :")
-	singletoneLogger.LogMessage(filepath.Join(StoragePath, fileName))
 	if err != nil {
 		singletoneLogger.LogError(err)
 		return err

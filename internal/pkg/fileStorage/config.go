@@ -12,9 +12,9 @@ const (
 
 var (
 	jsonConfigReader  = config.JsonConfigReader{}
-	fileStorageConfig         fileStorageConfigData
-	StoragePath      string
-	StorageHandler  http.Handler
+	fileStorageConfig fileStorageConfigData
+	StoragePath       string
+	StorageHandler    http.Handler
 )
 
 type fileStorageConfigData struct {
@@ -27,5 +27,6 @@ func init() {
 	if err != nil {
 		singletoneLogger.LogError(err)
 	}
+	StoragePath := fileStorageConfig.Path
 	StorageHandler = http.StripPrefix("/storage/", http.FileServer(http.Dir(StoragePath)))
 }
