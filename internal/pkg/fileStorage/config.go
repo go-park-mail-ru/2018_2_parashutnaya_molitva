@@ -27,6 +27,6 @@ func init() {
 	if err != nil {
 		singletoneLogger.LogError(err)
 	}
-	StoragePath := fileStorageConfig.Path
+	StoragePath = fileStorageConfig.Path
 	StorageHandler = http.StripPrefix("/storage/", http.FileServer(http.Dir(StoragePath)))
 }
