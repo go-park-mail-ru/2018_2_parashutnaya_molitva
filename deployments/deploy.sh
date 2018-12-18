@@ -10,4 +10,5 @@ git reset --hard $TRAVIS_COMMIT
 git clean -f
 ./stop.sh
 ./run.sh
+exit
 EOF
