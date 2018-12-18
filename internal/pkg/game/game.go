@@ -178,6 +178,7 @@ func (g *Game) initConnection(name, guid string, score int, conn *websocket.Conn
 
 		singletoneLogger.LogError(errInitMsgWaitTooLong)
 		sendCloseError(conn, websocket.CloseNormalClosure, errInitMsgWaitTooLong.Error())
+		conn.Close()
 	case closeError := <-closeErrorChan:
 		close(done)
 
