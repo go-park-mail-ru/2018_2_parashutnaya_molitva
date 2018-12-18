@@ -9,6 +9,9 @@ import (
 	"github.com/pkg/errors"
 )
 
+const(
+	errNotFound = "not found"
+)
 //easyjson:json
 type User struct {
 	Guid         bson.ObjectId `bson:"_id" json:"guid"`
@@ -38,7 +41,7 @@ func SigninUser(loginOrEmail string, password string) (User, error) {
 	} else {
 		u, err = GetUserByLogin(loginOrEmail)
 	}
-	if (err != nil) && (err.Error() == "not found") {
+	if (err != nil) && (err.Error() == errNotFound) {
 		return User{}, simpleErrors.New("User not found")
 	}
 	if err != nil {
@@ -179,7 +182,7 @@ func GetUsersCount() (int, error) {
 
 func IsUserEmailExisting(email string) (bool, error) {
 	_, err := GetUserByEmail(email)
-	if (err != nil) && (err.Error() == "not found") {
+	if (err != nil) && (err.Error() == errNotFound) {
 		return false, nil
 	} else if err != nil {
 		return false, err
@@ -189,7 +192,7 @@ func IsUserEmailExisting(email string) (bool, error) {
 
 func IsUserLoginExisting(login string) (bool, error) {
 	_, err := GetUserByLogin(login)
-	if (err != nil) && (err.Error() == "not found") {
+	if (err != nil) && (err.Error() == errNotFound) {
 		return false, nil
 	} else if err != nil {
 		return false, err

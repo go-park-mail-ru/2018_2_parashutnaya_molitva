@@ -1,0 +1,16 @@
+language: go
+go:
+- "1.10.x"
+go_import_path: github.com/go-park-mail-ru/2018_2_parashutnaya_molitva
+jobs:
+  include:
+  - stage: build
+    script: ./deployments/build.sh
+  - stage: lint
+    script: ./deployments/lint.sh
+  - stage: deploy
+    if: branch = master
+    script: ./deployments/deploy.sh
+before_install:
+- openssl aes-256-cbc -K $encrypted_e6c63077673a_key -iv $encrypted_e6c63077673a_iv
+  -in id_rsa.enc -out ./ssh_key -d

@@ -1,0 +1,3 @@
+#!/bin/bash
+export PATH=$PATH:$TRAVIS_BUILD_DIR/deployments/linters
+gometalinter --config=gometalinter.json  ./internal/...

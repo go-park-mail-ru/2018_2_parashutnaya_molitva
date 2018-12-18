@@ -1,0 +1,6 @@
+{
+  "Enable": ["unconvert", "goconst"],
+  "Exclude": [
+    "_easyjson.go"
+  ]
+}
