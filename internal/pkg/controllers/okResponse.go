@@ -16,6 +16,7 @@ func GenerateMessageJSON(responseMessage json.Marshaler) []byte {
 }
 
 func responseWithOk(writer http.ResponseWriter, responseMessage json.Marshaler) {
+	writer.Header().Set("x-vasya", "2012")
 	writer.WriteHeader(http.StatusOK)
 	writer.Write(GenerateMessageJSON(responseMessage))
 }
