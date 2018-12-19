@@ -6,4 +6,5 @@
 /auth
 /core
 /game
-/log.*
+
+docker-compose.yaml
