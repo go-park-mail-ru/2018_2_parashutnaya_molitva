@@ -64,7 +64,7 @@ func pawnMoves(b *board, pos *coord, attackOnly bool) map[string]*board {
 		}
 
 		pieceAtDoubleForward := b.pieceAt(doubleForward)
-		if pieceAtDoubleForward.getType() == emptyType && !pawn.getIsMoved() {
+		if pieceAtDoubleForward.getType() == emptyType && !pawn.getIsMoved() && pieceAtForward.getType() == emptyType {
 			moveBoard := b.copy()
 			moveBoard.movePiece(pos, doubleForward)
 			moveBoard.removeEnPassant()
