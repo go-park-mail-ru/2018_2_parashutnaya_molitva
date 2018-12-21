@@ -3,9 +3,9 @@
 tag="kekmatego"
 logPath="/var/log/kekmate"
 
-go build -race -o auth cmd/auth/auth.go
-go build -race -o core cmd/server/main.go
-go build -race -o game cmd/game/main.go
+go build -o auth cmd/auth/auth.go
+go build -o core cmd/server/main.go
+go build -o game cmd/game/main.go
 
 ./auth ${tag} >> ${logPath}/log.auth &
 ./core -port 3334 $tag  >> ${logPath}/log.core &
