@@ -1,10 +1,8 @@
 package user
 
 import (
-	"regexp"
-	"unicode"
-
 	"github.com/pkg/errors"
+	"regexp"
 )
 
 var (
@@ -13,7 +11,7 @@ var (
 	errEmptyLogin   = errors.New("Empty login")
 	errLoginTooLong   = errors.New("Too long login")
 	errInvalidEmail    = errors.New("Email is invalid")
-	errInvalidPassword = errors.New("Must contain at least 8 characters, 1 number, 1 upper and 1 lowercase")
+	errInvalidPassword = errors.New("Must contain at least 4 characters")
 )
 
 var (
@@ -44,26 +42,7 @@ func ValidateLogin(login string) error {
 }
 
 func verifyPassword(s string) bool {
-	var number, upper, lower bool
-	ascii := true
-
-	for _, r := range s {
-		if r > unicode.MaxASCII || !unicode.IsPrint(r) {
-			ascii = false
-			return false
-		}
-
-		switch {
-		case unicode.IsNumber(r):
-			number = true
-		case unicode.IsUpper(r):
-			upper = true
-		case unicode.IsLower(r):
-			lower = true
-		}
-	}
-
-	return (len(s) >= 8) && number && upper && lower && ascii
+	return len(s) >= 4
 }
 
 func ValidateEmail(email string) error {

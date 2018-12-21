@@ -12,7 +12,6 @@ func CreateAuthCookie(token string, timeExpire time.Time) *http.Cookie {
 		Name:     CookieName,
 		Value:    token,
 		Expires:  timeExpire,
-		Secure: true,
 		HttpOnly: true,
 	}
 }
